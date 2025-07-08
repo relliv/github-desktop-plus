@@ -13,7 +13,7 @@
         process.platform === 'darwin' ? 'rounded' : ''
       ]"
     >
-      <Minus class="w-3 h-3" />
+      <Minus class="w-3 h-3" :stroke-width="1" />
     </button>
     
     <button
@@ -23,8 +23,8 @@
         process.platform === 'darwin' ? 'rounded' : ''
       ]"
     >
-      <Square v-if="!isMaximized" class="w-3 h-3" />
-      <Minimize2 v-else class="w-3 h-3" />
+      <Square v-if="!isMaximized" class="w-3 h-3" :stroke-width="1" />
+      <Minimize2 v-else class="w-3 h-3" :stroke-width="1" />
     </button>
     
     <button
@@ -34,7 +34,7 @@
         process.platform === 'darwin' ? 'rounded' : ''
       ]"
     >
-      <X class="w-3 h-3" />
+      <X class="w-3 h-3" :stroke-width="1" />
     </button>
   </div>
 </template>

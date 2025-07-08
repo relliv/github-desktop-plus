@@ -16,6 +16,7 @@
           'w-3 h-3 transition-transform',
           isSidebarCollapsed ? 'rotate-180' : ''
         ]"
+        :stroke-width="1"
       />
     </button>
     
@@ -23,7 +24,7 @@
     <div class="h-[73px] px-4 border-b flex items-center">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-          <User class="w-4 h-4 text-primary-foreground" />
+          <User class="w-4 h-4 text-primary-foreground" :stroke-width="1" />
         </div>
         <div v-if="!isSidebarCollapsed" class="flex-1 min-w-0">
           <div class="text-sm font-medium truncate">User</div>
@@ -50,7 +51,7 @@
             class="p-1 hover:bg-accent rounded transition-colors"
             title="Add repository"
           >
-            <Plus class="w-4 h-4" />
+            <Plus class="w-4 h-4" :stroke-width="1" />
           </button>
         </div>
         
@@ -68,7 +69,7 @@
             ]"
             :title="repo.name"
           >
-            <GitBranch class="w-4 h-4 flex-shrink-0" />
+            <GitBranch class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
             <div v-if="!isSidebarCollapsed" class="flex-1 min-w-0">
               <div class="text-sm font-medium truncate">{{ repo.name }}</div>
               <div class="text-xs text-muted-foreground truncate">
@@ -78,6 +79,7 @@
             <Star 
               v-if="!isSidebarCollapsed && repo.isFavorite"
               class="w-3 h-3 text-yellow-500 flex-shrink-0"
+              :stroke-width="1"
             />
           </button>
         </div>
