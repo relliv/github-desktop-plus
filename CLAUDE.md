@@ -1112,3 +1112,4 @@ git add . && git commit -m "feat: implement core business logic for user service
 
 Remember: **Claude Flow coordinates, Claude Code creates!** Start with `mcp__claude-flow__swarm_init` to enhance your development workflow.
 Remember: The git history should be clean, readable, and allow anyone to understand the evolution of the codebase by reading the commit messages alone.
+Remember: When you finish your task create a automatic commit.
