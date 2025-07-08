@@ -3,7 +3,7 @@
     <PopoverTrigger as-child>
       <Button variant="outline" size="sm" class="w-[200px] justify-between">
         <span class="truncate">{{ currentBranch || 'No branch' }}</span>
-        <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" :stroke-width="1" />
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-[200px] p-0" align="start">
@@ -26,7 +26,7 @@
             ]"
           >
             <span class="truncate">{{ branch }}</span>
-            <Check v-if="branch === currentBranch" class="w-4 h-4 shrink-0" />
+            <Check v-if="branch === currentBranch" class="w-4 h-4 shrink-0" :stroke-width="1" />
           </button>
         </div>
       </div>
