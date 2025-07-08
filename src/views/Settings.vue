@@ -38,21 +38,46 @@
               <CardContent class="space-y-4">
                 <div class="space-y-2">
                   <Label>Application Theme</Label>
-                  <div class="flex items-center gap-4">
-                    <RadioGroup v-model="theme">
-                      <div class="flex items-center space-x-2">
-                        <RadioGroupItem value="light" id="light" />
-                        <Label htmlFor="light">Light</Label>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        <RadioGroupItem value="dark" id="dark" />
-                        <Label htmlFor="dark">Dark</Label>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        <RadioGroupItem value="system" id="system" />
-                        <Label htmlFor="system">System</Label>
-                      </div>
-                    </RadioGroup>
+                  <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        @click="theme = 'light'"
+                        :class="[
+                          'w-4 h-4 rounded-full border-2 flex items-center justify-center',
+                          theme === 'light' ? 'border-primary' : 'border-muted-foreground'
+                        ]"
+                      >
+                        <div v-if="theme === 'light'" class="w-2 h-2 rounded-full bg-primary" />
+                      </button>
+                      <Label @click="theme = 'light'" class="cursor-pointer">Light</Label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        @click="theme = 'dark'"
+                        :class="[
+                          'w-4 h-4 rounded-full border-2 flex items-center justify-center',
+                          theme === 'dark' ? 'border-primary' : 'border-muted-foreground'
+                        ]"
+                      >
+                        <div v-if="theme === 'dark'" class="w-2 h-2 rounded-full bg-primary" />
+                      </button>
+                      <Label @click="theme = 'dark'" class="cursor-pointer">Dark</Label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        @click="theme = 'system'"
+                        :class="[
+                          'w-4 h-4 rounded-full border-2 flex items-center justify-center',
+                          theme === 'system' ? 'border-primary' : 'border-muted-foreground'
+                        ]"
+                      >
+                        <div v-if="theme === 'system'" class="w-2 h-2 rounded-full bg-primary" />
+                      </button>
+                      <Label @click="theme = 'system'" class="cursor-pointer">System</Label>
+                    </div>
                   </div>
                 </div>
                 
@@ -343,10 +368,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from '@/components/ui/radio-group'
 import Separator from '@/components/ui/Separator.vue'
 import Slider from '@/components/ui/Slider.vue'
 import Textarea from '@/components/ui/Textarea.vue'
