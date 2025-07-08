@@ -8,7 +8,8 @@
     <!-- Toggle button -->
     <button
       @click="toggleSidebar"
-      class="absolute -right-3 top-12 w-6 h-6 bg-background border rounded-full flex items-center justify-center hover:bg-accent transition-colors z-10 shadow-sm"
+      class="absolute -right-3 w-6 h-6 bg-background border rounded-full flex items-center justify-center hover:bg-accent transition-colors z-10 shadow-sm"
+      :style="{ top: 'calc(2.5rem + 1.5rem)' }"
     >
       <ChevronLeft 
         :class="[
