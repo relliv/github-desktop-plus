@@ -2,7 +2,7 @@
   <div class="flex-1 flex items-center justify-center p-8">
     <div class="max-w-2xl w-full text-center">
       <div class="mb-8">
-        <GitBranch class="w-24 h-24 mx-auto text-primary mb-4" />
+        <GitBranch class="w-24 h-24 mx-auto text-primary mb-4" :stroke-width="1" />
         <h1 class="text-4xl font-bold mb-4">Welcome to GitHub Desktop Plus</h1>
         <p class="text-lg text-muted-foreground">
           A powerful Git client built with Electron and Vue 3
@@ -11,7 +11,7 @@
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Card class="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="openRepository">
-          <FolderOpen class="w-12 h-12 mb-4 text-primary" />
+          <FolderOpen class="w-12 h-12 mb-4 text-primary" :stroke-width="1" />
           <h3 class="text-lg font-semibold mb-2">Open Repository</h3>
           <p class="text-sm text-muted-foreground">
             Open an existing Git repository from your computer
@@ -19,7 +19,7 @@
         </Card>
         
         <Card class="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="cloneRepository">
-          <Download class="w-12 h-12 mb-4 text-primary" />
+          <Download class="w-12 h-12 mb-4 text-primary" :stroke-width="1" />
           <h3 class="text-lg font-semibold mb-2">Clone Repository</h3>
           <p class="text-sm text-muted-foreground">
             Clone a repository from GitHub or any Git URL
@@ -38,13 +38,13 @@
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <GitBranch class="w-5 h-5 text-muted-foreground" />
+                <GitBranch class="w-5 h-5 text-muted-foreground" :stroke-width="1" />
                 <div>
                   <div class="font-medium">{{ repo.name }}</div>
                   <div class="text-sm text-muted-foreground">{{ repo.path }}</div>
                 </div>
               </div>
-              <Star v-if="repo.isFavorite" class="w-4 h-4 text-yellow-500" />
+              <Star v-if="repo.isFavorite" class="w-4 h-4 text-yellow-500" :stroke-width="1" />
             </div>
           </Card>
         </div>
