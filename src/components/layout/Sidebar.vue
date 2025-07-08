@@ -89,6 +89,7 @@
         icon="Settings"
         label="Settings"
         :collapsed="isSidebarCollapsed"
+        @click="navigateToSettings"
       />
       <SidebarButton
         :icon="isDark ? 'Sun' : 'Moon'"
@@ -144,5 +145,9 @@ const openRepository = async () => {
 const selectRepository = (repo: any) => {
   repositoryStore.setCurrentRepository(repo)
   router.push('/repository')
+}
+
+const navigateToSettings = () => {
+  router.push('/settings')
 }
 </script>
