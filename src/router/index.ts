@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '../layouts/MainLayout.vue'
 import Welcome from '../views/Welcome.vue'
 import Repository from '../views/Repository.vue'
+import Settings from '../views/Settings.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -22,6 +23,14 @@ const routes: RouteRecordRaw[] = [
         component: Repository,
         meta: {
           title: 'Repository - GitHub Desktop Plus'
+        }
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: Settings,
+        meta: {
+          title: 'Settings - GitHub Desktop Plus'
         }
       }
     ]
