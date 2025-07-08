@@ -1,15 +1,19 @@
 <template>
-  <div class="flex h-screen bg-background text-foreground">
-    <!-- Title Bar -->
-    <TitleBar />
-    
-    <!-- Sidebar -->
-    <Sidebar />
-    
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col pt-8 overflow-hidden">
-      <router-view />
-    </main>
+  <div class="flex bg-background text-foreground">
+    <div class="flex flex-col h-screen w-full">
+      <!-- Title Bar -->
+      <TitleBar />
+
+      <div class="flex flex-row h-full">
+        <!-- Sidebar -->
+        <Sidebar />
+        
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col pt-8 overflow-hidden">
+          <router-view />
+        </main>
+      </div>
+    </div>
   </div>
 </template>
 

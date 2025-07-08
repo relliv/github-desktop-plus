@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="fixed top-0 right-0 h-8 flex items-center z-50"
+    class="flex flex-row z-50"
     :class="[
       process.platform === 'darwin' ? 'pr-2' : 'pr-0'
     ]"
@@ -23,10 +23,8 @@
         process.platform === 'darwin' ? 'rounded' : ''
       ]"
     >
-      <component 
-        :is="isMaximized ? (process.platform === 'darwin' ? 'Minimize2' : 'Minimize2') : 'Square'" 
-        class="w-3 h-3" 
-      />
+      <Square v-if="!isMaximized" class="w-3 h-3" />
+      <Minimize2 v-else class="w-3 h-3" />
     </button>
     
     <button
@@ -43,7 +41,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Minus, Square, Minimize2, X } from 'lucide-vue-next'
+import { Minus, Square, Maximize2, Minimize2, X } from 'lucide-vue-next'
 
 const isMaximized = ref(false)
 const process = window.process || { platform: 'win32' }

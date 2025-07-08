@@ -51,9 +51,11 @@ async function createWindow() {
     minHeight: 600,
     frame: false,
     titleBarStyle: 'hidden',
-    trafficLightPosition: { x: 16, y: 16 },
+    trafficLightPosition: null,
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     show: false, // Don't show until ready
+    titleBarOverlay: false,
+    hasShadow: true,
     webPreferences: {
       preload,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
