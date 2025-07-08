@@ -45,7 +45,7 @@
     <!-- No changes -->
     <div v-else class="flex items-center justify-center h-full">
       <div class="text-center">
-        <FileText class="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+        <FileText class="w-12 h-12 mx-auto mb-3 text-muted-foreground" :stroke-width="1" />
         <p class="text-sm text-muted-foreground">No changes in repository</p>
       </div>
     </div>
