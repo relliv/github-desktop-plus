@@ -18,6 +18,7 @@ export const api = {
     clone: (options: CloneOptions) => ipcRenderer.invoke('git:clone', options),
     validate: (path: string) => ipcRenderer.invoke('git:validate', path),
     create: (options: CreateRepositoryOptions) => ipcRenderer.invoke('git:create', options),
+    getRemoteUrl: (path: string) => ipcRenderer.invoke('git:getRemoteUrl', path),
     onCloneProgress: (callback: (progress: any) => void) => {
       ipcRenderer.on('git:clone:progress', (_, progress) => callback(progress))
       return () => ipcRenderer.removeListener('git:clone:progress', callback)
@@ -50,5 +51,9 @@ export const api = {
     toggleFavorite: (id: number) => ipcRenderer.invoke('repository:toggle-favorite', id),
     delete: (id: number) => ipcRenderer.invoke('repository:delete', id),
     updateBranch: (id: number, branch: string) => ipcRenderer.invoke('repository:update-branch', id, branch),
+  },
+  
+  shell: {
+    openPath: (path: string) => ipcRenderer.invoke('shell:open-path', path),
   }
 }

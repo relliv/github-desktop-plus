@@ -20,6 +20,10 @@
       </div>
       
       <div class="flex items-center gap-2">
+        <Button variant="ghost" size="sm" @click="openRepositorySettings">
+          <Settings class="w-4 h-4" :stroke-width="1" />
+        </Button>
+        <div class="w-px h-6 bg-border" />
         <Button variant="ghost" size="sm" @click="fetchChanges">
           <RefreshCw class="w-4 h-4 mr-2" :stroke-width="1" />
           Fetch
@@ -62,6 +66,9 @@
         <DiffViewer />
       </div>
     </div>
+    
+    <!-- Repository Settings Dialog -->
+    <RepositorySettingsDialog ref="repoSettingsDialog" @repository-removed="handleRepositoryRemoved" />
   </div>
   
   <!-- No repository selected -->
@@ -185,7 +192,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { GitBranch, Star, RefreshCw, Download, Upload, ChevronRight, FilePlus, FolderOpen } from 'lucide-vue-next'
+import { GitBranch, Star, RefreshCw, Download, Upload, ChevronRight, FilePlus, FolderOpen, Settings } from 'lucide-vue-next'
 import { useRepositoryStore } from '../stores/repository.store'
 import Button from '../components/ui/Button.vue'
 import BranchSelector from '../components/repository/BranchSelector.vue'
@@ -194,12 +201,14 @@ import DiffViewer from '../components/repository/DiffViewer.vue'
 import CloneDialog from '../components/dialogs/CloneDialog.vue'
 import OpenRepositoryDialog from '../components/dialogs/OpenRepositoryDialog.vue'
 import CreateRepositoryDialog from '../components/dialogs/CreateRepositoryDialog.vue'
+import RepositorySettingsDialog from '../components/dialogs/RepositorySettingsDialog.vue'
 
 const repositoryStore = useRepositoryStore()
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>()
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>()
+const repoSettingsDialog = ref<InstanceType<typeof RepositorySettingsDialog>>()
 
 const currentRepository = computed(() => repositoryStore.currentRepository)
 const gitStatus = computed(() => repositoryStore.gitStatus)
@@ -278,5 +287,16 @@ const formatDate = (date: Date) => {
 const handleRepositoryAction = (path: string) => {
   // Repository is already added and set as current by the dialog
   // The view will automatically update via computed properties
+}
+
+const openRepositorySettings = () => {
+  if (currentRepository.value) {
+    repoSettingsDialog.value?.open(currentRepository.value)
+  }
+}
+
+const handleRepositoryRemoved = () => {
+  // Repository has been removed, current repository will be null
+  // The view will automatically show the welcome screen
 }
 </script>
