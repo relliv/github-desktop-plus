@@ -2,7 +2,7 @@
   <div class="flex-1 flex flex-col">
     <!-- Header -->
     <div class="h-[50px] px-6 border-b flex items-center">
-      <h1 class="text-2xl font-semibold">Settings</h1>
+      <h1 class="text-lg font-semibold">Settings</h1>
     </div>
     
     <!-- Settings Content -->
