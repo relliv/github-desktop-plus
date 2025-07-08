@@ -2,14 +2,16 @@
 
 ## 🚀 IMPORTANT: Claude Flow AI-Driven Development
 
-### Claude Code Handles:
+### Claude Code Handles
+
 - ✅ **ALL file operations** (Read, Write, Edit, MultiEdit)
 - ✅ **ALL code generation** and development tasks
 - ✅ **ALL bash commands** and system operations
 - ✅ **ALL actual implementation** work
 - ✅ **Project navigation** and code analysis
 
-### Claude Flow MCP Tools Handle:
+### Claude Flow MCP Tools Handle
+
 - 🧠 **Coordination only** - Orchestrating Claude Code's actions
 - 💾 **Memory management** - Persistent state across sessions
 - 🤖 **Neural features** - Cognitive patterns and learning
@@ -17,7 +19,8 @@
 - 🐝 **Swarm orchestration** - Multi-agent coordination
 - 🔗 **GitHub integration** - Advanced repository management
 
-### ⚠️ Key Principle:
+### ⚠️ Key Principle
+
 **MCP tools DO NOT create content or write code.** They coordinate and enhance Claude Code's native capabilities. Think of them as an orchestration layer that helps Claude Code work more efficiently.
 
 ## 🚀 CRITICAL: Parallel Execution & Batch Operations
@@ -39,6 +42,7 @@ If you need to do X operations, they should be in 1 message, not X messages
 ### 📦 BATCH TOOL EXAMPLES
 
 **✅ CORRECT - Everything in ONE Message:**
+
 ```javascript
 [Single Message with BatchTool]:
   mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
@@ -55,6 +59,7 @@ If you need to do X operations, they should be in 1 message, not X messages
 ```
 
 **❌ WRONG - Multiple Messages (NEVER DO THIS):**
+
 ```javascript
 Message 1: mcp__claude-flow__swarm_init
 Message 2: mcp__claude-flow__agent_spawn 
@@ -68,16 +73,19 @@ Message 6: Write "package.json"
 ### 🎯 BATCH OPERATIONS BY TYPE
 
 **File Operations (Single Message):**
+
 - Read 10 files? → One message with 10 Read calls
 - Write 5 files? → One message with 5 Write calls
 - Edit 1 file many times? → One MultiEdit call
 
 **Swarm Operations (Single Message):**
+
 - Need 8 agents? → One message with swarm_init + 8 agent_spawn calls
 - Multiple memories? → One message with all memory_usage calls
 - Task + monitoring? → One message with task_orchestrate + swarm_monitor
 
 **Command Operations (Single Message):**
+
 - Multiple directories? → One message with all mkdir commands
 - Install + test + lint? → One message with all npm commands
 - Git operations? → One message with all git commands
@@ -85,57 +93,67 @@ Message 6: Write "package.json"
 ## 🚀 Quick Setup (Stdio MCP - Recommended)
 
 ### 1. Add MCP Server (Stdio - No Port Needed)
+
 ```bash
 # Add Claude Flow MCP server to Claude Code using stdio
 claude mcp add claude-flow npx claude-flow mcp start
 ```
 
 ### 2. Use MCP Tools for Coordination in Claude Code
+
 Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 
 **Initialize a swarm:**
+
 - Use the `mcp__claude-flow__swarm_init` tool to set up coordination topology
 - Choose: mesh, hierarchical, ring, or star
 - This creates a coordination framework for Claude Code's work
 
 **Spawn agents:**
+
 - Use `mcp__claude-flow__agent_spawn` tool to create specialized coordinators
 - Agent types represent different thinking patterns, not actual coders
 - They help Claude Code approach problems from different angles
 
 **Orchestrate tasks:**
+
 - Use `mcp__claude-flow__task_orchestrate` tool to coordinate complex workflows
 - This breaks down tasks for Claude Code to execute systematically
 - The agents don't write code - they coordinate Claude Code's actions
 
 ## Available MCP Tools for Coordination
 
-### Coordination Tools:
+### Coordination Tools
+
 - `mcp__claude-flow__swarm_init` - Set up coordination topology for Claude Code
 - `mcp__claude-flow__agent_spawn` - Create cognitive patterns to guide Claude Code
 - `mcp__claude-flow__task_orchestrate` - Break down and coordinate complex tasks
 
-### Monitoring Tools:
+### Monitoring Tools
+
 - `mcp__claude-flow__swarm_status` - Monitor coordination effectiveness
 - `mcp__claude-flow__agent_list` - View active cognitive patterns
 - `mcp__claude-flow__agent_metrics` - Track coordination performance
 - `mcp__claude-flow__task_status` - Check workflow progress
 - `mcp__claude-flow__task_results` - Review coordination outcomes
 
-### Memory & Neural Tools:
+### Memory & Neural Tools
+
 - `mcp__claude-flow__memory_usage` - Persistent memory across sessions
 - `mcp__claude-flow__neural_status` - Neural pattern effectiveness
 - `mcp__claude-flow__neural_train` - Improve coordination patterns
 - `mcp__claude-flow__neural_patterns` - Analyze thinking approaches
 
-### GitHub Integration Tools (NEW!):
+### GitHub Integration Tools (NEW!)
+
 - `mcp__claude-flow__github_swarm` - Create specialized GitHub management swarms
 - `mcp__claude-flow__repo_analyze` - Deep repository analysis with AI
 - `mcp__claude-flow__pr_enhance` - AI-powered pull request improvements
 - `mcp__claude-flow__issue_triage` - Intelligent issue classification
 - `mcp__claude-flow__code_review` - Automated code review with swarms
 
-### System Tools:
+### System Tools
+
 - `mcp__claude-flow__benchmark_run` - Measure coordination efficiency
 - `mcp__claude-flow__features_detect` - Available capabilities
 - `mcp__claude-flow__swarm_monitor` - Real-time coordination tracking
@@ -143,14 +161,17 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 ## Workflow Examples (Coordination-Focused)
 
 ### Research Coordination Example
+
 **Context:** Claude Code needs to research a complex topic systematically
 
 **Step 1:** Set up research coordination
+
 - Tool: `mcp__claude-flow__swarm_init`
 - Parameters: `{"topology": "mesh", "maxAgents": 5, "strategy": "balanced"}`
 - Result: Creates a mesh topology for comprehensive exploration
 
 **Step 2:** Define research perspectives
+
 - Tool: `mcp__claude-flow__agent_spawn`
 - Parameters: `{"type": "researcher", "name": "Literature Review"}`
 - Tool: `mcp__claude-flow__agent_spawn`
@@ -158,11 +179,13 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 - Result: Different cognitive patterns for Claude Code to use
 
 **Step 3:** Coordinate research execution
+
 - Tool: `mcp__claude-flow__task_orchestrate`
 - Parameters: `{"task": "Research neural architecture search papers", "strategy": "adaptive"}`
 - Result: Claude Code systematically searches, reads, and analyzes papers
 
 **What Actually Happens:**
+
 1. The swarm sets up a coordination framework
 2. Each agent MUST use Claude Flow hooks for coordination:
    - `npx claude-flow hook pre-task` before starting
@@ -173,24 +196,29 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 5. Results are synthesized by Claude Code with full coordination history
 
 ### Development Coordination Example
+
 **Context:** Claude Code needs to build a complex system with multiple components
 
 **Step 1:** Set up development coordination
+
 - Tool: `mcp__claude-flow__swarm_init`
 - Parameters: `{"topology": "hierarchical", "maxAgents": 8, "strategy": "specialized"}`
 - Result: Hierarchical structure for organized development
 
 **Step 2:** Define development perspectives
+
 - Tool: `mcp__claude-flow__agent_spawn`
 - Parameters: `{"type": "architect", "name": "System Design"}`
 - Result: Architectural thinking pattern for Claude Code
 
 **Step 3:** Coordinate implementation
+
 - Tool: `mcp__claude-flow__task_orchestrate`
 - Parameters: `{"task": "Implement user authentication with JWT", "strategy": "parallel"}`
 - Result: Claude Code implements features using its native tools
 
 **What Actually Happens:**
+
 1. The swarm creates a development coordination plan
 2. Each agent coordinates using mandatory hooks:
    - Pre-task hooks for context loading
@@ -201,26 +229,31 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 5. All code is written by Claude Code with full coordination
 
 ### GitHub Repository Management Example (NEW!)
+
 **Context:** Claude Code needs to manage a complex GitHub repository
 
 **Step 1:** Initialize GitHub swarm
+
 - Tool: `mcp__claude-flow__github_swarm`
 - Parameters: `{"repository": "owner/repo", "agents": 5, "focus": "maintenance"}`
 - Result: Specialized swarm for repository management
 
 **Step 2:** Analyze repository health
+
 - Tool: `mcp__claude-flow__repo_analyze`
 - Parameters: `{"deep": true, "include": ["issues", "prs", "code"]}`
 - Result: Comprehensive repository analysis
 
 **Step 3:** Enhance pull requests
+
 - Tool: `mcp__claude-flow__pr_enhance`
 - Parameters: `{"pr_number": 123, "add_tests": true, "improve_docs": true}`
 - Result: AI-powered PR improvements
 
 ## Best Practices for Coordination
 
-### ✅ DO:
+### ✅ DO
+
 - Use MCP tools to coordinate Claude Code's approach to complex tasks
 - Let the swarm break down problems into manageable pieces
 - Use memory tools to maintain context across sessions
@@ -228,7 +261,8 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 - Train neural patterns for better coordination over time
 - Leverage GitHub tools for repository management
 
-### ❌ DON'T:
+### ❌ DON'T
+
 - Expect agents to write code (Claude Code does all implementation)
 - Use MCP tools for file operations (use Claude Code's native tools)
 - Try to make agents execute bash commands (Claude Code handles this)
@@ -237,6 +271,7 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 ## Memory and Persistence
 
 The swarm provides persistent memory that helps Claude Code:
+
 - Remember project context across sessions
 - Track decisions and rationale
 - Maintain consistency in large projects
@@ -246,6 +281,7 @@ The swarm provides persistent memory that helps Claude Code:
 ## Performance Benefits
 
 When using Claude Flow coordination with Claude Code:
+
 - **84.8% SWE-Bench solve rate** - Better problem-solving through coordination
 - **32.3% token reduction** - Efficient task breakdown reduces redundancy
 - **2.8-4.4x speed improvement** - Parallel coordination strategies
@@ -257,6 +293,7 @@ When using Claude Flow coordination with Claude Code:
 Claude Flow includes powerful hooks that automate coordination:
 
 ### Pre-Operation Hooks
+
 - **Auto-assign agents** before file edits based on file type
 - **Validate commands** before execution for safety
 - **Prepare resources** automatically for complex operations
@@ -265,6 +302,7 @@ Claude Flow includes powerful hooks that automate coordination:
 - **GitHub context** loading for repository operations
 
 ### Post-Operation Hooks  
+
 - **Auto-format code** using language-specific formatters
 - **Train neural patterns** from successful operations
 - **Update memory** with operation context
@@ -273,6 +311,7 @@ Claude Flow includes powerful hooks that automate coordination:
 - **Sync GitHub** state for consistency
 
 ### Session Management
+
 - **Generate summaries** at session end
 - **Persist state** across Claude Code sessions
 - **Track metrics** for continuous improvement
@@ -280,6 +319,7 @@ Claude Flow includes powerful hooks that automate coordination:
 - **Export workflows** for reuse
 
 ### Advanced Features (v2.0.0!)
+
 - **🚀 Automatic Topology Selection** - Optimal swarm structure for each task
 - **⚡ Parallel Execution** - 2.8-4.4x speed improvements  
 - **🧠 Neural Training** - Continuous learning from operations
@@ -290,7 +330,9 @@ Claude Flow includes powerful hooks that automate coordination:
 - **🔗 GitHub Integration** - Repository-aware swarms
 
 ### Configuration
+
 Hooks are pre-configured in `.claude/settings.json`. Key features:
+
 - Automatic agent assignment for different file types
 - Code formatting on save
 - Neural pattern learning from edits
@@ -318,6 +360,7 @@ See `.claude/commands/` for detailed documentation on all features.
 ### 🚨 CRITICAL INSTRUCTION: You are the SWARM ORCHESTRATOR
 
 **MANDATORY**: When using swarms, you MUST:
+
 1. **SPAWN ALL AGENTS IN ONE BATCH** - Use multiple tool calls in a SINGLE message
 2. **EXECUTE TASKS IN PARALLEL** - Never wait for one task before starting another
 3. **USE BATCHTOOL FOR EVERYTHING** - Multiple operations = Single message with multiple tools
@@ -330,6 +373,7 @@ See `.claude/commands/` for detailed documentation on all features.
 When you spawn an agent using the Task tool, that agent MUST:
 
 **1️⃣ BEFORE Starting Work:**
+
 ```bash
 # Check previous work and load context
 npx claude-flow hook pre-task --description "[agent task]" --auto-spawn-agents false
@@ -337,6 +381,7 @@ npx claude-flow hook session-restore --session-id "swarm-[id]" --load-memory tru
 ```
 
 **2️⃣ DURING Work (After EVERY Major Step):**
+
 ```bash
 # Store progress in memory after each file operation
 npx claude-flow hook post-edit --file "[filepath]" --memory-key "swarm/[agent]/[step]"
@@ -349,6 +394,7 @@ npx claude-flow hook pre-search --query "[what to check]" --cache-results true
 ```
 
 **3️⃣ AFTER Completing Work:**
+
 ```bash
 # Save all results and learnings
 npx claude-flow hook post-task --task-id "[task]" --analyze-performance true
@@ -376,6 +422,7 @@ REMEMBER: Coordinate with other agents by checking memory BEFORE making decision
 ### ⚡ PARALLEL EXECUTION IS MANDATORY
 
 **THIS IS WRONG ❌ (Sequential - NEVER DO THIS):**
+
 ```
 Message 1: Initialize swarm
 Message 2: Spawn agent 1
@@ -385,6 +432,7 @@ Message 5: Create file 2
 ```
 
 **THIS IS CORRECT ✅ (Parallel - ALWAYS DO THIS):**
+
 ```
 Message 1: [BatchTool]
   - mcp__claude-flow__swarm_init
@@ -515,7 +563,8 @@ Dependencies: ↳ X deps | Actionable: ▶
   Bash("cd test-app && npm test")
 ```
 
-### 🚫 NEVER DO THIS (Sequential = WRONG):
+### 🚫 NEVER DO THIS (Sequential = WRONG)
+
 ```javascript
 // ❌ WRONG: Multiple messages, one operation each
 Message 1: mcp__claude-flow__swarm_init
@@ -586,6 +635,7 @@ Agent Activity:
 ## Claude Flow v2.0.0 Features
 
 Claude Flow extends the base coordination with:
+
 - **🔗 GitHub Integration** - Deep repository management
 - **🎯 Project Templates** - Quick-start for common projects
 - **📊 Advanced Analytics** - Detailed performance insights
@@ -595,9 +645,419 @@ Claude Flow extends the base coordination with:
 
 ## Support
 
-- Documentation: https://github.com/Ejb503/claude-flow
-- Issues: https://github.com/Ejb503/claude-flow/issues
-- Examples: https://github.com/Ejb503/claude-flow/tree/main/examples
+- Documentation: <https://github.com/Ejb503/claude-flow>
+- Issues: <https://github.com/Ejb503/claude-flow/issues>
+- Examples: <https://github.com/Ejb503/claude-flow/tree/main/examples>
+
+# Development Workflow
+
+# GitHub Desktop Clone - Comprehensive AI Coding Prompt
+
+```markdown
+# GitHub Desktop Clone Development Specification
+
+## Project Overview
+Create a fully functional GitHub Desktop clone using Electron, Vue 3 (Composition API), Tailwind CSS 3, and shadcn-vue component library. The application must provide complete Git management capabilities with or without GitHub authentication, featuring dark/light mode support and full responsiveness.
+
+## Technology Stack
+- **Frontend Framework**: Vue 3 with Composition API
+- **Desktop Framework**: Electron (latest stable)
+- **Styling**: Tailwind CSS 3
+- **UI Components**: shadcn-vue (https://www.shadcn-vue.com/)
+- **State Management**: Pinia
+- **Git Integration**: NodeGit or simple-git
+- **Icons**: Lucide Icons
+- **Build Tool**: Vite
+- **TypeScript**: Full type safety
+
+## Architecture Requirements
+
+### Project Structure
+```
+
+src/
+├── main/                    # Electron main process
+│   ├── index.ts
+│   ├── ipc/                # IPC handlers
+│   │   ├── git.handler.ts
+│   │   ├── auth.handler.ts
+│   │   ├── repository.handler.ts
+│   │   └── index.ts
+│   ├── services/           # Main process services
+│   │   ├── git.service.ts
+│   │   ├── auth.service.ts
+│   │   └── file.service.ts
+│   └── windows/
+│       └── main.window.ts
+├── renderer/               # Vue application
+│   ├── App.vue
+│   ├── main.ts
+│   ├── components/         # Atomic components
+│   │   ├── repository/
+│   │   │   ├── RepositoryItem.vue
+│   │   │   ├── RepositoryList.vue
+│   │   │   └── RepositorySearch.vue
+│   │   ├── commit/
+│   │   │   ├── CommitItem.vue
+│   │   │   ├── CommitList.vue
+│   │   │   ├── CommitDetails.vue
+│   │   │   └── CommitForm.vue
+│   │   ├── branch/
+│   │   │   ├── BranchItem.vue
+│   │   │   ├── BranchList.vue
+│   │   │   ├── BranchSelector.vue
+│   │   │   └── BranchCreate.vue
+│   │   ├── diff/
+│   │   │   ├── DiffViewer.vue
+│   │   │   ├── FileChange.vue
+│   │   │   └── LineChange.vue
+│   │   ├── ui/               # Generic UI components
+│   │   │   ├── ContextMenu.vue
+│   │   │   ├── SearchBar.vue
+│   │   │   ├── ThemeToggle.vue
+│   │   │   └── StatusBar.vue
+│   │   └── auth/
+│   │       ├── LoginForm.vue
+│   │       └── UserAvatar.vue
+│   ├── layouts/
+│   │   ├── MainLayout.vue
+│   │   ├── SidebarLayout.vue
+│   │   └── HeaderLayout.vue
+│   ├── views/              # Page components
+│   │   ├── Repository.vue
+│   │   ├── Changes.vue
+│   │   ├── History.vue
+│   │   ├── Branches.vue
+│   │   └── Settings.vue
+│   ├── composables/        # Vue composables
+│   │   ├── useGit.ts
+│   │   ├── useRepository.ts
+│   │   ├── useTheme.ts
+│   │   ├── useContextMenu.ts
+│   │   └── useSearch.ts
+│   ├── stores/             # Pinia stores
+│   │   ├── repository.store.ts
+│   │   ├── auth.store.ts
+│   │   ├── ui.store.ts
+│   │   └── settings.store.ts
+│   └── router/
+│       └── index.ts
+├── shared/                 # Shared between main and renderer
+│   ├── models/
+│   │   ├── events.ts       # IPC event names and types
+│   │   ├── repository.ts
+│   │   ├── commit.ts
+│   │   ├── branch.ts
+│   │   └── user.ts
+│   ├── utils/
+│   │   ├── date.utils.ts
+│   │   ├── git.utils.ts
+│   │   └── string.utils.ts
+│   ├── constants/
+│   │   ├── ipc.constants.ts
+│   │   └── app.constants.ts
+│   └── types/
+│       └── index.ts
+└── preload/
+    └── index.ts            # Electron preload script
+
+```
+
+## Core Features Implementation
+
+### 1. Repository Management
+- **Clone Repository**: Support HTTPS/SSH URLs with progress tracking
+- **Open Local Repository**: File system browser with validation
+- **Repository List**: Recent repositories with favorites and search
+- **Repository Actions**: Pull, Push, Fetch with conflict resolution
+- **Submodule Support**: Initialize, update, and manage submodules
+
+### 2. Branch Operations
+- **Branch List**: Local and remote branches with status indicators
+- **Branch Creation**: From current branch or specific commit
+- **Branch Switching**: With uncommitted changes handling
+- **Branch Merging**: With conflict resolution UI
+- **Branch Deletion**: With safety checks
+- **Branch Search**: Filter by name, author, or date
+
+### 3. Commit Management
+- **Staging Area**: File-by-file or partial staging
+- **Commit Creation**: With message templates and co-authors
+- **Commit History**: Searchable with filters (author, date, message)
+- **Commit Details**: Show diff, stats, and metadata
+- **Commit Operations**: Amend, revert, cherry-pick
+- **Interactive Rebase**: Visual commit reordering
+
+### 4. Diff Viewer
+- **Syntax Highlighting**: Language-aware highlighting
+- **Side-by-side View**: With synchronized scrolling
+- **Inline Comments**: Add review comments
+- **Image Diff**: Support for image comparisons
+- **Binary File Handling**: Appropriate placeholders
+
+### 5. Search Functionality
+- **Global Search**: Across repositories, branches, and commits
+- **Contextual Search**: Within current view
+- **Search Filters**: By type, date range, author
+- **Search History**: Recent searches persistence
+- **Keyboard Shortcuts**: Quick search activation
+
+### 6. Authentication
+- **GitHub OAuth**: Web-based authentication flow
+- **Personal Access Tokens**: Manual token entry
+- **SSH Key Management**: Generate and manage SSH keys
+- **Multiple Accounts**: Switch between accounts
+- **Credential Storage**: Secure storage with OS keychain
+
+### 7. UI/UX Features
+- **Theme System**: 
+  - Light/Dark mode with system preference detection
+  - Custom color themes with theme editor
+  - Syntax highlighting themes
+- **Context Menus**: Right-click actions throughout
+- **Drag & Drop**: Repository folders, files for staging
+- **Keyboard Shortcuts**: Comprehensive shortcut system
+- **Responsive Design**: Adapt to window resizing
+- **Accessibility**: ARIA labels, keyboard navigation
+
+### 8. Settings & Preferences
+- **Git Configuration**: User name, email, default branch
+- **Editor Integration**: External editor selection
+- **Appearance**: Font size, theme, layout options
+- **Advanced Git**: Merge strategies, diff algorithms
+- **Proxy Settings**: HTTP/HTTPS proxy configuration
+
+## Component Specifications
+
+### Base Component Structure
+```vue
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { ComponentProps } from '@/shared/types'
+
+// Props with proper typing
+interface Props extends ComponentProps {
+  // Specific props
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  // Default values
+})
+
+// Emits with proper typing
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+  'action': [payload: ActionPayload]
+}>()
+
+// Composables
+const { t } = useI18n()
+
+// Component logic following single responsibility
+</script>
+
+<template>
+  <!-- Template with proper accessibility -->
+</template>
+```
+
+### IPC Communication Pattern
+
+```typescript
+// shared/models/events.ts
+export const IPC_EVENTS = {
+  GIT: {
+    CLONE: 'git:clone',
+    COMMIT: 'git:commit',
+    PUSH: 'git:push',
+    PULL: 'git:pull',
+    FETCH: 'git:fetch',
+    BRANCH_CREATE: 'git:branch:create',
+    BRANCH_DELETE: 'git:branch:delete',
+    BRANCH_CHECKOUT: 'git:branch:checkout',
+  },
+  REPOSITORY: {
+    OPEN: 'repository:open',
+    CLOSE: 'repository:close',
+    LIST: 'repository:list',
+    SEARCH: 'repository:search',
+  },
+  AUTH: {
+    LOGIN: 'auth:login',
+    LOGOUT: 'auth:logout',
+    REFRESH: 'auth:refresh',
+  },
+} as const
+
+// Type-safe IPC handler
+interface IPCHandler<T = any, R = any> {
+  channel: string
+  handler: (event: IpcMainInvokeEvent, args: T) => Promise<R>
+}
+```
+
+### Store Pattern (Pinia)
+
+```typescript
+// stores/repository.store.ts
+export const useRepositoryStore = defineStore('repository', () => {
+  // State
+  const repositories = ref<Repository[]>([])
+  const currentRepository = ref<Repository | null>(null)
+  const loading = ref(false)
+  const error = ref<Error | null>(null)
+
+  // Getters
+  const favoriteRepositories = computed(() => 
+    repositories.value.filter(repo => repo.isFavorite)
+  )
+
+  // Actions
+  async function loadRepositories() {
+    loading.value = true
+    error.value = null
+    try {
+      const result = await window.api.repository.list()
+      repositories.value = result
+    } catch (e) {
+      error.value = e as Error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    // State
+    repositories: readonly(repositories),
+    currentRepository: readonly(currentRepository),
+    loading: readonly(loading),
+    error: readonly(error),
+    // Getters
+    favoriteRepositories,
+    // Actions
+    loadRepositories,
+  }
+})
+```
+
+### Composable Pattern
+
+```typescript
+// composables/useGit.ts
+export function useGit() {
+  const loading = ref(false)
+  const error = ref<Error | null>(null)
+
+  async function executeGitCommand<T>(
+    command: () => Promise<T>,
+    options?: { showLoading?: boolean }
+  ): Promise<T | null> {
+    if (options?.showLoading) {
+      loading.value = true
+    }
+    error.value = null
+    
+    try {
+      return await command()
+    } catch (e) {
+      error.value = e as Error
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    loading: readonly(loading),
+    error: readonly(error),
+    executeGitCommand,
+  }
+}
+```
+
+## Design System
+
+### Color Palette
+
+```css
+/* Extend Tailwind with custom colors */
+:root {
+  /* Light theme */
+  --color-primary: 24 24 27; /* zinc-900 */
+  --color-secondary: 63 63 70; /* zinc-700 */
+  --color-accent: 59 130 246; /* blue-500 */
+  --color-success: 34 197 94; /* green-500 */
+  --color-warning: 251 146 60; /* orange-400 */
+  --color-danger: 239 68 68; /* red-500 */
+  
+  /* Dark theme */
+  [data-theme="dark"] {
+    --color-primary: 250 250 250; /* zinc-50 */
+    --color-secondary: 161 161 170; /* zinc-400 */
+  }
+}
+```
+
+### Component Guidelines
+
+1. **Single Responsibility**: Each component handles one specific task
+2. **Props Validation**: Use TypeScript interfaces for all props
+3. **Event Naming**: Use kebab-case with clear action verbs
+4. **Slot Usage**: Provide slots for extensibility
+5. **Accessibility**: Include ARIA labels and keyboard support
+6. **Error Handling**: Graceful degradation with user feedback
+7. **Loading States**: Skeleton screens or spinners
+8. **Empty States**: Meaningful messages and actions
+
+## Performance Optimization
+
+1. **Virtual Scrolling**: For large lists (commits, files)
+2. **Lazy Loading**: Route-based code splitting
+3. **Debouncing**: Search and filter inputs
+4. **Memoization**: Expensive computations
+5. **Web Workers**: Heavy Git operations
+6. **Caching**: Repository metadata and user preferences
+
+## Security Considerations
+
+1. **CSP Headers**: Strict content security policy
+2. **Input Sanitization**: Prevent XSS attacks
+3. **Secure IPC**: Validate all IPC messages
+4. **Credential Storage**: Use OS keychain APIs
+5. **HTTPS Only**: For all external requests
+6. **Permission System**: Limited file system access
+
+## Testing Strategy
+
+1. **Unit Tests**: Components and utilities (Vitest)
+2. **Integration Tests**: IPC communication
+3. **E2E Tests**: Critical user flows (Playwright)
+4. **Visual Regression**: UI consistency (Percy)
+5. **Performance Tests**: Large repository handling
+
+## Development Guidelines
+
+1. **Code Style**: ESLint + Prettier configuration
+2. **Commit Convention**: Conventional Commits
+3. **Documentation**: JSDoc for public APIs
+4. **Error Messages**: User-friendly with recovery actions
+5. **Logging**: Structured logging with levels
+6. **Telemetry**: Optional anonymous usage statistics
+
+## Build and Distribution
+
+1. **Auto-updater**: Electron's built-in updater
+2. **Code Signing**: Platform-specific certificates
+3. **Installers**: MSI (Windows), DMG (macOS), AppImage (Linux)
+4. **CI/CD**: GitHub Actions for automated builds
+5. **Release Notes**: Auto-generated from commits
+
+This specification provides a comprehensive blueprint for building a professional GitHub Desktop clone that adheres to SOLID, DRY, and KISS principles while maintaining high code quality and user experience standards.
+
+```
+
+This comprehensive prompt covers all aspects of building a GitHub Desktop clone with modern technologies. It includes detailed architecture, component specifications, design patterns, and best practices following SOLID, DRY, and KISS principles [1] [2]. The structure ensures components are minimal and focused, with clear separation of concerns between layouts, shared utilities, and feature-specific components [3] [4].
 
 ---
 
