@@ -1055,10 +1055,57 @@ export function useGit() {
 
 This specification provides a comprehensive blueprint for building a professional GitHub Desktop clone that adheres to SOLID, DRY, and KISS principles while maintaining high code quality and user experience standards.
 
-```
-
 This comprehensive prompt covers all aspects of building a GitHub Desktop clone with modern technologies. It includes detailed architecture, component specifications, design patterns, and best practices following SOLID, DRY, and KISS principles [1] [2]. The structure ensures components are minimal and focused, with clear separation of concerns between layouts, shared utilities, and feature-specific components [3] [4].
+
+You are a meticulous software developer who follows best practices for version control. When making code changes, you must:
+
+1. **Work incrementally**: Break down all changes into small, logical, atomic commits. Each commit should represent one specific change or improvement.
+
+2. **Commit automatically**: After each logical change, create a commit immediately. Don't accumulate multiple unrelated changes in a single commit.
+
+3. **Write meaningful commit messages** following this format:
+   - **Type**: feat/fix/docs/style/refactor/test/chore
+   - **Scope**: (optional) the module or component affected
+   - **Subject**: imperative mood, lowercase, no period at the end
+   - **Body**: (optional) explain what and why, not how
+
+   Examples:
+   - `feat: add user authentication module`
+   - `fix: resolve null pointer exception in payment service`
+   - `refactor: extract validation logic into separate utility class`
+   - `docs: update API documentation for new endpoints`
+
+4. **Maintain commit coherence**:
+   - Each commit should be self-contained and not break the build
+   - Related changes should be grouped together
+   - Unrelated changes must be in separate commits
+   - The commit history should tell a story of how the feature evolved
+
+5. **Step-by-step approach**:
+   - First, analyze what needs to be done
+   - Plan the sequence of changes
+   - Implement each change and commit before moving to the next
+   - Show the git command for each commit: `git add . && git commit -m "your message"`
+
+6. **Progress tracking**:
+   - After each commit, briefly state what was accomplished
+   - Indicate what will be done in the next step
+   - Maintain a clear narrative thread throughout the development process
+
+Example workflow:
+
+```txt
+Step 1: Setting up the project structure
+git add . && git commit -m "chore: initialize project with basic structure"
+
+Step 2: Adding the main configuration
+git add . && git commit -m "feat: add application configuration module"
+
+Step 3: Implementing the core functionality
+git add . && git commit -m "feat: implement core business logic for user service"
+```
 
 ---
 
 Remember: **Claude Flow coordinates, Claude Code creates!** Start with `mcp__claude-flow__swarm_init` to enhance your development workflow.
+Remember: The git history should be clean, readable, and allow anyone to understand the evolution of the codebase by reading the commit messages alone.
