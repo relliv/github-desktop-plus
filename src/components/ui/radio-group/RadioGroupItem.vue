@@ -14,7 +14,7 @@
       v-if="checked"
       class="flex items-center justify-center"
     >
-      <Circle class="h-2.5 w-2.5 fill-current text-current" />
+      <Circle class="h-2.5 w-2.5 fill-current text-current" :stroke-width="1" />
     </span>
   </button>
 </template>
