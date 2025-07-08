@@ -47,6 +47,13 @@
           </h3>
           <div v-if="!isSidebarCollapsed" class="flex gap-1">
             <button
+              @click="createRepository"
+              class="p-1 hover:bg-accent rounded transition-colors"
+              title="Create new repository"
+            >
+              <FilePlus class="w-4 h-4" :stroke-width="1" />
+            </button>
+            <button
               @click="cloneRepository"
               class="p-1 hover:bg-accent rounded transition-colors"
               title="Clone repository"
@@ -109,6 +116,9 @@
     
     <!-- Open Repository Dialog -->
     <OpenRepositoryDialog ref="openRepoDialog" @repository-opened="handleRepositoryOpened" />
+    
+    <!-- Create Repository Dialog -->
+    <CreateRepositoryDialog ref="createRepoDialog" @repository-created="handleRepositoryCreated" />
   </aside>
 </template>
 
@@ -121,13 +131,15 @@ import {
   Plus, 
   GitBranch, 
   Star,
-  Settings
+  Settings,
+  FilePlus
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app.store'
 import { useRepositoryStore } from '../../stores/repository.store'
 import SidebarButton from '../ui/SidebarButton.vue'
 import CloneDialog from '../dialogs/CloneDialog.vue'
 import OpenRepositoryDialog from '../dialogs/OpenRepositoryDialog.vue'
+import CreateRepositoryDialog from '../dialogs/CreateRepositoryDialog.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -135,6 +147,7 @@ const repositoryStore = useRepositoryStore()
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>()
+const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>()
 
 const isSidebarCollapsed = computed(() => appStore.isSidebarCollapsed)
 const repositories = computed(() => repositoryStore.repositories)
@@ -144,6 +157,10 @@ const toggleSidebar = () => appStore.toggleSidebar()
 
 const openRepository = () => {
   openRepoDialog.value?.open()
+}
+
+const createRepository = () => {
+  createRepoDialog.value?.open()
 }
 
 const cloneRepository = () => {
@@ -166,6 +183,12 @@ const handleCloneComplete = (path: string) => {
 }
 
 const handleRepositoryOpened = (path: string) => {
+  // Repository is already added by the dialog
+  // Just navigate to repository view
+  router.push('/repository')
+}
+
+const handleRepositoryCreated = (path: string) => {
   // Repository is already added by the dialog
   // Just navigate to repository view
   router.push('/repository')
