@@ -39,7 +39,7 @@
                 <div class="space-y-2">
                   <Label>Application Theme</Label>
                   <div class="flex items-center gap-4">
-                    <RadioGroup v-model="theme" @update:modelValue="updateTheme">
+                    <RadioGroup v-model="theme">
                       <div class="flex items-center space-x-2">
                         <RadioGroupItem value="light" id="light" />
                         <Label htmlFor="light">Light</Label>
@@ -365,7 +365,10 @@ const categories = [
 const activeCategory = ref('general')
 
 // General settings
-const theme = ref(appStore.isDark ? 'dark' : 'light')
+const theme = computed({
+  get: () => appStore.theme,
+  set: (value: 'light' | 'dark' | 'system') => appStore.setTheme(value)
+})
 const language = ref('en')
 const autoLaunch = ref(false)
 
@@ -389,14 +392,7 @@ const useProxy = ref(false)
 const proxyUrl = ref('')
 const proxyBypass = ref('')
 
-const updateTheme = (value: string) => {
-  if (value === 'dark') {
-    appStore.setTheme(true)
-  } else if (value === 'light') {
-    appStore.setTheme(false)
-  }
-  // TODO: Implement system theme detection
-}
+// Theme is now handled via computed property with v-model
 
 const browseForEditor = async () => {
   // TODO: Implement file browser for selecting editor
