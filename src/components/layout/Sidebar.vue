@@ -106,6 +106,9 @@
     
     <!-- Clone Dialog -->
     <CloneDialog ref="cloneDialog" @clone-complete="handleCloneComplete" />
+    
+    <!-- Open Repository Dialog -->
+    <OpenRepositoryDialog ref="openRepoDialog" @repository-opened="handleRepositoryOpened" />
   </aside>
 </template>
 
@@ -124,12 +127,14 @@ import { useAppStore } from '../../stores/app.store'
 import { useRepositoryStore } from '../../stores/repository.store'
 import SidebarButton from '../ui/SidebarButton.vue'
 import CloneDialog from '../dialogs/CloneDialog.vue'
+import OpenRepositoryDialog from '../dialogs/OpenRepositoryDialog.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
 const repositoryStore = useRepositoryStore()
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
+const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>()
 
 const isSidebarCollapsed = computed(() => appStore.isSidebarCollapsed)
 const repositories = computed(() => repositoryStore.repositories)
@@ -137,15 +142,8 @@ const currentRepository = computed(() => repositoryStore.currentRepository)
 
 const toggleSidebar = () => appStore.toggleSidebar()
 
-const openRepository = async () => {
-  try {
-    const repo = await repositoryStore.openRepositoryDialog()
-    if (repo) {
-      router.push('/repository')
-    }
-  } catch (error) {
-    console.error('Failed to open repository:', error)
-  }
+const openRepository = () => {
+  openRepoDialog.value?.open()
 }
 
 const cloneRepository = () => {
@@ -162,6 +160,12 @@ const navigateToSettings = () => {
 }
 
 const handleCloneComplete = (path: string) => {
+  // Repository is already added by the dialog
+  // Just navigate to repository view
+  router.push('/repository')
+}
+
+const handleRepositoryOpened = (path: string) => {
   // Repository is already added by the dialog
   // Just navigate to repository view
   router.push('/repository')
