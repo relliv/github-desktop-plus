@@ -95,8 +95,8 @@
         @click="navigateToSettings"
       />
       <SidebarButton
-        :icon="isDark ? Sun : Moon"
-        label="Toggle theme"
+        :icon="themeIcon"
+        :label="themeLabel"
         :collapsed="isSidebarCollapsed"
         @click="toggleTheme"
       />
@@ -115,7 +115,8 @@ import {
   Star,
   Settings,
   Sun,
-  Moon
+  Moon,
+  Monitor
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app.store'
 import { useRepositoryStore } from '../../stores/repository.store'
@@ -129,6 +130,33 @@ const isSidebarCollapsed = computed(() => appStore.isSidebarCollapsed)
 const isDark = computed(() => appStore.isDark)
 const repositories = computed(() => repositoryStore.repositories)
 const currentRepository = computed(() => repositoryStore.currentRepository)
+
+// Theme-related computed properties
+const themeIcon = computed(() => {
+  switch (appStore.theme) {
+    case 'light':
+      return Sun
+    case 'dark':
+      return Moon
+    case 'system':
+      return Monitor
+    default:
+      return Sun
+  }
+})
+
+const themeLabel = computed(() => {
+  switch (appStore.theme) {
+    case 'light':
+      return 'Light theme'
+    case 'dark':
+      return 'Dark theme'
+    case 'system':
+      return 'System theme'
+    default:
+      return 'Toggle theme'
+  }
+})
 
 const toggleSidebar = () => appStore.toggleSidebar()
 const toggleTheme = () => appStore.toggleTheme()
