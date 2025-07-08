@@ -44,7 +44,14 @@ const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'GitHub Desktop Plus',
+    width: 1200,
+    height: 800,
+    minWidth: 900,
+    minHeight: 600,
+    frame: false,
+    titleBarStyle: 'hidden',
+    trafficLightPosition: { x: 20, y: 20 },
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload,
@@ -75,6 +82,11 @@ async function createWindow() {
     if (url.startsWith('https:')) shell.openExternal(url)
     return { action: 'deny' }
   })
+  
+  // Register window handlers after window is created
+  const { registerWindowHandlers } = await import('./ipc/window.handler')
+  registerWindowHandlers(win)
+  
   // win.webContents.on('will-navigate', (event, url) => { }) #344
 }
 
@@ -118,3 +130,8 @@ ipcMain.handle('open-win', (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg })
   }
 })
+
+// Register IPC handlers
+import { registerGitHandlers } from './ipc/git.handler'
+
+registerGitHandlers()
