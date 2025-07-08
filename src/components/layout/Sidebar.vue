@@ -94,12 +94,6 @@
         :collapsed="isSidebarCollapsed"
         @click="navigateToSettings"
       />
-      <SidebarButton
-        :icon="themeIcon"
-        :label="themeLabel"
-        :collapsed="isSidebarCollapsed"
-        @click="toggleTheme"
-      />
     </div>
   </aside>
 </template>
@@ -113,10 +107,7 @@ import {
   Plus, 
   GitBranch, 
   Star,
-  Settings,
-  Sun,
-  Moon,
-  Monitor
+  Settings
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app.store'
 import { useRepositoryStore } from '../../stores/repository.store'
@@ -127,39 +118,10 @@ const appStore = useAppStore()
 const repositoryStore = useRepositoryStore()
 
 const isSidebarCollapsed = computed(() => appStore.isSidebarCollapsed)
-const isDark = computed(() => appStore.isDark)
 const repositories = computed(() => repositoryStore.repositories)
 const currentRepository = computed(() => repositoryStore.currentRepository)
 
-// Theme-related computed properties
-const themeIcon = computed(() => {
-  switch (appStore.theme) {
-    case 'light':
-      return Sun
-    case 'dark':
-      return Moon
-    case 'system':
-      return Monitor
-    default:
-      return Sun
-  }
-})
-
-const themeLabel = computed(() => {
-  switch (appStore.theme) {
-    case 'light':
-      return 'Light theme'
-    case 'dark':
-      return 'Dark theme'
-    case 'system':
-      return 'System theme'
-    default:
-      return 'Toggle theme'
-  }
-})
-
 const toggleSidebar = () => appStore.toggleSidebar()
-const toggleTheme = () => appStore.toggleTheme()
 
 const openRepository = async () => {
   try {
