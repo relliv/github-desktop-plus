@@ -33,5 +33,15 @@ export const api = {
   dialog: {
     openDirectory: () => ipcRenderer.invoke('dialog:open-directory'),
     showMessage: (options: any) => ipcRenderer.invoke('dialog:show-message', options),
+  },
+  
+  repository: {
+    list: () => ipcRenderer.invoke('repository:list'),
+    add: (path: string) => ipcRenderer.invoke('repository:add', path),
+    openDialog: () => ipcRenderer.invoke('repository:open-dialog'),
+    update: (id: number, updates: any) => ipcRenderer.invoke('repository:update', id, updates),
+    toggleFavorite: (id: number) => ipcRenderer.invoke('repository:toggle-favorite', id),
+    delete: (id: number) => ipcRenderer.invoke('repository:delete', id),
+    updateBranch: (id: number, branch: string) => ipcRenderer.invoke('repository:update-branch', id, branch),
   }
 }
