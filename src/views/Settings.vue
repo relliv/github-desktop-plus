@@ -316,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { 
   Settings,
   GitBranch,
@@ -366,8 +366,14 @@ const activeCategory = ref('general')
 
 // General settings
 const theme = computed({
-  get: () => appStore.theme,
-  set: (value: 'light' | 'dark' | 'system') => appStore.setTheme(value)
+  get: () => {
+    console.log('Getting theme:', appStore.theme)
+    return appStore.theme
+  },
+  set: (value: 'light' | 'dark' | 'system') => {
+    console.log('Setting theme to:', value)
+    appStore.setTheme(value)
+  }
 })
 const language = ref('en')
 const autoLaunch = ref(false)
@@ -407,4 +413,9 @@ const checkUpdates = () => {
   // TODO: Implement update check
   console.log('Checking for updates...')
 }
+
+// Debug theme changes
+watch(theme, (newValue) => {
+  console.log('Theme changed to:', newValue)
+})
 </script>
