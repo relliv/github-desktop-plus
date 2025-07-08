@@ -1,5 +1,5 @@
 <template>
-  <component :is="icon" :class="className" />
+  <component :is="icon" :class="className" :stroke-width="1" />
 </template>
 
 <script setup lang="ts">
