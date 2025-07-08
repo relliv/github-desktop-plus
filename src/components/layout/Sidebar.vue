@@ -1,14 +1,14 @@
 <template>
   <aside 
     :class="[
-      'bg-card border-r flex flex-col pt-10 transition-all duration-300',
+      'relative bg-card border-r flex flex-col pt-10 transition-all duration-300',
       isSidebarCollapsed ? 'w-16' : 'w-64'
     ]"
   >
     <!-- Toggle button -->
     <button
       @click="toggleSidebar"
-      class="absolute -right-3 top-16 w-6 h-6 bg-border rounded-full flex items-center justify-center hover:bg-accent transition-colors z-10"
+      class="absolute -right-3 top-12 w-6 h-6 bg-background border rounded-full flex items-center justify-center hover:bg-accent transition-colors z-10 shadow-sm"
     >
       <ChevronLeft 
         :class="[
