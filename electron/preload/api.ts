@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron'
+import type { CloneOptions, CreateRepositoryOptions } from '../../src/shared/types/git.types'
 
 export const api = {
   git: {
@@ -14,7 +15,13 @@ export const api = {
     pull: (path: string) => ipcRenderer.invoke('git:pull', path),
     fetch: (path: string) => ipcRenderer.invoke('git:fetch', path),
     getLog: (path: string, limit?: number) => ipcRenderer.invoke('git:get-log', path, limit),
-    clone: (url: string, path: string) => ipcRenderer.invoke('git:clone', url, path),
+    clone: (options: CloneOptions) => ipcRenderer.invoke('git:clone', options),
+    validate: (path: string) => ipcRenderer.invoke('git:validate', path),
+    create: (options: CreateRepositoryOptions) => ipcRenderer.invoke('git:create', options),
+    onCloneProgress: (callback: (progress: any) => void) => {
+      ipcRenderer.on('git:clone:progress', (_, progress) => callback(progress))
+      return () => ipcRenderer.removeListener('git:clone:progress', callback)
+    },
   },
   
   window: {

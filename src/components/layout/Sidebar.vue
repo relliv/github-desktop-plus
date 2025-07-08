@@ -45,14 +45,22 @@
           >
             {{ isSidebarCollapsed ? 'Repos' : 'Repositories' }}
           </h3>
-          <button
-            v-if="!isSidebarCollapsed"
-            @click="openRepository"
-            class="p-1 hover:bg-accent rounded transition-colors"
-            title="Add repository"
-          >
-            <Plus class="w-4 h-4" :stroke-width="1" />
-          </button>
+          <div v-if="!isSidebarCollapsed" class="flex gap-1">
+            <button
+              @click="cloneRepository"
+              class="p-1 hover:bg-accent rounded transition-colors"
+              title="Clone repository"
+            >
+              <GitBranch class="w-4 h-4" :stroke-width="1" />
+            </button>
+            <button
+              @click="openRepository"
+              class="p-1 hover:bg-accent rounded transition-colors"
+              title="Add repository"
+            >
+              <Plus class="w-4 h-4" :stroke-width="1" />
+            </button>
+          </div>
         </div>
         
         <!-- Repository list -->
@@ -95,11 +103,14 @@
         @click="navigateToSettings"
       />
     </div>
+    
+    <!-- Clone Dialog -->
+    <CloneDialog ref="cloneDialog" @clone-complete="handleCloneComplete" />
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   ChevronLeft, 
@@ -112,10 +123,13 @@ import {
 import { useAppStore } from '../../stores/app.store'
 import { useRepositoryStore } from '../../stores/repository.store'
 import SidebarButton from '../ui/SidebarButton.vue'
+import CloneDialog from '../dialogs/CloneDialog.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
 const repositoryStore = useRepositoryStore()
+
+const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
 
 const isSidebarCollapsed = computed(() => appStore.isSidebarCollapsed)
 const repositories = computed(() => repositoryStore.repositories)
@@ -134,6 +148,10 @@ const openRepository = async () => {
   }
 }
 
+const cloneRepository = () => {
+  cloneDialog.value?.open()
+}
+
 const selectRepository = (repo: any) => {
   repositoryStore.setCurrentRepository(repo)
   router.push('/repository')
@@ -141,5 +159,11 @@ const selectRepository = (repo: any) => {
 
 const navigateToSettings = () => {
   router.push('/settings')
+}
+
+const handleCloneComplete = (path: string) => {
+  // Repository is already added by the dialog
+  // Just navigate to repository view
+  router.push('/repository')
 }
 </script>

@@ -1,7 +1,13 @@
-import { ipcMain } from 'electron'
-import simpleGit, { SimpleGit } from 'simple-git'
+import { ipcMain, IpcMainInvokeEvent } from 'electron'
+import simpleGit, { SimpleGit, SimpleGitProgressEvent } from 'simple-git'
 import path from 'path'
 import fs from 'fs/promises'
+import { 
+  CloneOptions, 
+  CloneProgress,
+  CreateRepositoryOptions,
+  RepositoryValidation
+} from '../../src/shared/types/git.types'
 
 const git: SimpleGit = simpleGit()
 
@@ -182,16 +188,188 @@ export function registerGitHandlers() {
     }
   })
   
-  // Clone repository
-  ipcMain.handle('git:clone', async (_, url: string, targetPath: string) => {
+  // Clone repository with progress
+  ipcMain.handle('git:clone', async (event: IpcMainInvokeEvent, options: CloneOptions) => {
     try {
-      await git.clone(url, targetPath)
-      return { 
+      // Validate directory doesn't exist or is empty
+      try {
+        const files = await fs.readdir(options.directory)
+        if (files.length > 0) {
+          return {
+            success: false,
+            error: 'Directory is not empty'
+          }
+        }
+      } catch {
+        // Directory doesn't exist, which is fine
+      }
+
+      // Create directory if it doesn't exist
+      await fs.mkdir(options.directory, { recursive: true })
+
+      // Parse progress from git output
+      const parseProgress = (data: SimpleGitProgressEvent): CloneProgress => {
+        let stage: CloneProgress['stage'] = 'receiving'
+        
+        if (data.stage.includes('Counting objects')) {
+          stage = 'counting'
+        } else if (data.stage.includes('Compressing objects')) {
+          stage = 'compressing'
+        } else if (data.stage.includes('Receiving objects')) {
+          stage = 'receiving'
+        } else if (data.stage.includes('Resolving deltas')) {
+          stage = 'resolving'
+        }
+
+        return {
+          stage,
+          percent: data.progress,
+          total: data.total || 0,
+          transferred: data.processed || 0,
+          message: data.stage
+        }
+      }
+
+      // Configure git with progress handler
+      const progressGit = simpleGit({
+        progress: (data: SimpleGitProgressEvent) => {
+          const progress = parseProgress(data)
+          event.sender.send('git:clone:progress', progress)
+        }
+      })
+
+      // Build clone options
+      const cloneOptions: string[] = []
+      if (options.branch) {
+        cloneOptions.push('--branch', options.branch)
+      }
+      if (options.depth) {
+        cloneOptions.push('--depth', options.depth.toString())
+      }
+
+      // Handle authentication
+      let cloneUrl = options.url
+      if (options.username && options.password) {
+        // For HTTPS authentication
+        cloneUrl = options.url.replace(
+          /^https:\/\//,
+          `https://${encodeURIComponent(options.username)}:${encodeURIComponent(options.password)}@`
+        )
+      }
+
+      // Clone the repository
+      await progressGit.clone(cloneUrl, options.directory, cloneOptions)
+
+      // Send completion progress
+      event.sender.send('git:clone:progress', {
+        stage: 'complete',
+        percent: 100,
+        total: 100,
+        transferred: 100,
+        message: 'Clone completed successfully'
+      })
+
+      return {
         success: true,
-        path: targetPath
+        path: options.directory
       }
     } catch (error) {
-      throw new Error(`Failed to clone: ${error}`)
+      // Send error progress
+      event.sender.send('git:clone:progress', {
+        stage: 'error',
+        percent: 0,
+        total: 0,
+        transferred: 0,
+        message: error instanceof Error ? error.message : 'Clone failed'
+      })
+
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Clone failed'
+      }
+    }
+  })
+  
+  // Validate repository
+  ipcMain.handle('git:validate', async (_: IpcMainInvokeEvent, repoPath: string): Promise<RepositoryValidation> => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      
+      // Check if it's a git repository
+      const isRepo = await repoGit.checkIsRepo()
+      if (!isRepo) {
+        return {
+          isValid: false,
+          isGitRepository: false,
+          hasRemote: false,
+          error: 'Not a git repository'
+        }
+      }
+
+      // Check for remotes
+      const remotes = await repoGit.getRemotes(true)
+      const hasRemote = remotes.length > 0
+
+      return {
+        isValid: true,
+        isGitRepository: true,
+        hasRemote
+      }
+    } catch (error) {
+      return {
+        isValid: false,
+        isGitRepository: false,
+        hasRemote: false,
+        error: error instanceof Error ? error.message : 'Validation failed'
+      }
+    }
+  })
+  
+  // Create new repository
+  ipcMain.handle('git:create', async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
+    try {
+      // Create directory
+      await fs.mkdir(options.path, { recursive: true })
+
+      // Initialize git repository
+      const repoGit = simpleGit(options.path)
+      await repoGit.init()
+
+      // Create initial files
+      if (options.initializeWithReadme) {
+        const readmePath = path.join(options.path, 'README.md')
+        const readmeContent = `# ${options.name}\n\n${options.description || 'A new repository'}\n`
+        await fs.writeFile(readmePath, readmeContent)
+        await repoGit.add('README.md')
+      }
+
+      if (options.gitignoreTemplate) {
+        const gitignorePath = path.join(options.path, '.gitignore')
+        await fs.writeFile(gitignorePath, options.gitignoreTemplate)
+        await repoGit.add('.gitignore')
+      }
+
+      if (options.license) {
+        const licensePath = path.join(options.path, 'LICENSE')
+        await fs.writeFile(licensePath, options.license)
+        await repoGit.add('LICENSE')
+      }
+
+      // Create initial commit if files were added
+      const status = await repoGit.status()
+      if (status.files.length > 0) {
+        await repoGit.commit('Initial commit')
+      }
+
+      return {
+        success: true,
+        path: options.path
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create repository'
+      }
     }
   })
 }
