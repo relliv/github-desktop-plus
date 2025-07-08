@@ -58,6 +58,10 @@
   }
 }
 
+html {
+  @apply overflow-hidden;
+}
+
 #app {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
