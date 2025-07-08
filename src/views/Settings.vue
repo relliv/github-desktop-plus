@@ -1,7 +1,7 @@
 <template>
   <div class="flex-1 flex flex-col">
     <!-- Header -->
-    <div class="px-6 py-4 border-b">
+    <div class="h-[73px] px-6 border-b flex items-center">
       <h1 class="text-2xl font-semibold">Settings</h1>
     </div>
     

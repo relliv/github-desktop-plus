@@ -9,7 +9,7 @@
     <button
       @click="toggleSidebar"
       class="absolute -right-3 w-6 h-6 bg-background border rounded-full flex items-center justify-center hover:bg-accent transition-colors z-10 shadow-sm"
-      :style="{ top: 'calc(2.5rem + 1.5rem)' }"
+      :style="{ top: 'calc(2.5rem + 36.5px - 12px)' }"
     >
       <ChevronLeft 
         :class="[
@@ -20,7 +20,7 @@
     </button>
     
     <!-- User section -->
-    <div class="px-4 py-4 border-b">
+    <div class="h-[73px] px-4 border-b flex items-center">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
           <User class="w-4 h-4 text-primary-foreground" />
