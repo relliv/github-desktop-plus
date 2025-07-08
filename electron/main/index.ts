@@ -53,6 +53,7 @@ async function createWindow() {
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 20, y: 20 },
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
+    show: false, // Don't show until ready
     webPreferences: {
       preload,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
@@ -62,6 +63,14 @@ async function createWindow() {
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
       // contextIsolation: false,
     },
+  })
+  
+  // Maximize the window
+  win.maximize()
+  
+  // Show window after maximizing
+  win.once('ready-to-show', () => {
+    win.show()
   })
 
   if (VITE_DEV_SERVER_URL) { // #298
