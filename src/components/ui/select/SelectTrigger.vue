@@ -9,7 +9,7 @@
     )"
   >
     <slot />
-    <ChevronDown class="h-4 w-4 opacity-50" />
+    <ChevronDown class="h-4 w-4 opacity-50" :stroke-width="1" />
   </button>
 </template>
 
