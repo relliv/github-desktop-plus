@@ -1,33 +1,42 @@
 <template>
-  <div class="fixed top-0 left-0 right-0 h-10 bg-background border-b flex items-center justify-between z-50 app-drag">
-    <!-- Left side - Repository info -->
-    <div :class="[
-      'flex items-center h-full px-4 app-no-drag min-w-[200px]',
-      isMac ? 'pl-20' : ''
-    ]">
-      <span class="text-sm text-muted-foreground" v-if="currentRepository">
-        <GitBranch class="w-3 h-3 inline mr-1" />
-        {{ currentRepository.name }}
-      </span>
+  <div>
+    <!-- Title Bar -->
+    <div class="fixed top-0 left-0 right-0 h-8 bg-background/95 backdrop-blur-sm border-b flex items-center justify-between z-50 app-drag">
+      <!-- Left side - Repository info and app name -->
+      <div :class="[
+        'flex items-center gap-3 h-full px-3 app-no-drag',
+        isMac ? 'pl-[88px]' : 'pl-3'
+      ]">
+        <span class="text-xs font-semibold text-foreground">GitHub Desktop Plus</span>
+        <span class="text-xs text-muted-foreground/60">•</span>
+        <span class="text-xs text-muted-foreground truncate max-w-[200px]" v-if="currentRepository">
+          <GitBranch class="w-3 h-3 inline mr-1" />
+          {{ currentRepository.name }}
+        </span>
+      </div>
+      
+      <!-- Center - Empty for drag area -->
+      <div class="flex-1 h-full"></div>
+      
+      <!-- Right side - Empty space for window controls -->
+      <div class="w-[140px] h-full" v-if="!isMac"></div>
     </div>
     
-    <!-- Center - App name -->
-    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-      <span class="text-sm font-medium">GitHub Desktop Plus</span>
-    </div>
-    
-    <!-- Right side - Window controls (show on Windows/Linux, hide on Mac due to traffic lights) -->
-    <div class="flex items-center h-full app-no-drag min-w-[200px] justify-end" v-if="!isMac">
+    <!-- Window Controls - Positioned absolutely on the right -->
+    <div 
+      v-if="!isMac"
+      class="fixed top-0 right-0 h-8 flex items-center gap-0.5 pr-1 z-[60] app-no-drag"
+    >
       <button
         @click="minimize"
-        class="h-full px-4 hover:bg-accent transition-colors"
+        class="w-[46px] h-[30px] flex items-center justify-center rounded hover:bg-accent/80 transition-all"
         title="Minimize"
       >
-        <Minus class="w-4 h-4" />
+        <Minus class="w-3 h-3" />
       </button>
       <button
         @click="maximize"
-        class="h-full px-4 hover:bg-accent transition-colors"
+        class="w-[46px] h-[30px] flex items-center justify-center rounded hover:bg-accent/80 transition-all"
         title="Maximize"
       >
         <Square v-if="!isMaximized" class="w-3 h-3" />
@@ -35,10 +44,10 @@
       </button>
       <button
         @click="close"
-        class="h-full px-4 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+        class="w-[46px] h-[30px] flex items-center justify-center rounded hover:bg-destructive hover:text-destructive-foreground transition-all"
         title="Close"
       >
-        <X class="w-4 h-4" />
+        <X class="w-3 h-3" />
       </button>
     </div>
   </div>

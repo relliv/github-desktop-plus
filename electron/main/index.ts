@@ -51,7 +51,7 @@ async function createWindow() {
     minHeight: 600,
     frame: false,
     titleBarStyle: 'hidden',
-    trafficLightPosition: { x: 20, y: 20 },
+    trafficLightPosition: { x: 16, y: 16 },
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     show: false, // Don't show until ready
     webPreferences: {
