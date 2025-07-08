@@ -10,7 +10,7 @@
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card class="p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="openRepository">
+        <Card class="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="openRepository">
           <FolderOpen class="w-12 h-12 mb-4 text-primary" />
           <h3 class="text-lg font-semibold mb-2">Open Repository</h3>
           <p class="text-sm text-muted-foreground">
@@ -18,7 +18,7 @@
           </p>
         </Card>
         
-        <Card class="p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="cloneRepository">
+        <Card class="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="cloneRepository">
           <Download class="w-12 h-12 mb-4 text-primary" />
           <h3 class="text-lg font-semibold mb-2">Clone Repository</h3>
           <p class="text-sm text-muted-foreground">
