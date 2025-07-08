@@ -649,21 +649,16 @@ Claude Flow extends the base coordination with:
 - Issues: <https://github.com/Ejb503/claude-flow/issues>
 - Examples: <https://github.com/Ejb503/claude-flow/tree/main/examples>
 
-# Development Workflow
+# Project Overview
 
-# GitHub Desktop Clone - Comprehensive AI Coding Prompt
-
-```markdown
-# GitHub Desktop Clone Development Specification
-
-## Project Overview
 Create a fully functional GitHub Desktop clone using Electron, Vue 3 (Composition API), Tailwind CSS 3, and shadcn-vue component library. The application must provide complete Git management capabilities with or without GitHub authentication, featuring dark/light mode support and full responsiveness.
 
 ## Technology Stack
+
 - **Frontend Framework**: Vue 3 with Composition API
 - **Desktop Framework**: Electron (latest stable)
 - **Styling**: Tailwind CSS 3
-- **UI Components**: shadcn-vue (https://www.shadcn-vue.com/)
+- **UI Components**: shadcn-vue (<https://www.shadcn-vue.com/>)
 - **State Management**: Pinia
 - **Git Integration**: NodeGit or simple-git
 - **Icons**: Lucide Icons
@@ -673,8 +668,8 @@ Create a fully functional GitHub Desktop clone using Electron, Vue 3 (Compositio
 ## Architecture Requirements
 
 ### Project Structure
-```
 
+```txt
 src/
 ├── main/                    # Electron main process
 │   ├── index.ts
@@ -760,12 +755,12 @@ src/
 │       └── index.ts
 └── preload/
     └── index.ts            # Electron preload script
-
 ```
 
 ## Core Features Implementation
 
 ### 1. Repository Management
+
 - **Clone Repository**: Support HTTPS/SSH URLs with progress tracking
 - **Open Local Repository**: File system browser with validation
 - **Repository List**: Recent repositories with favorites and search
@@ -773,6 +768,7 @@ src/
 - **Submodule Support**: Initialize, update, and manage submodules
 
 ### 2. Branch Operations
+
 - **Branch List**: Local and remote branches with status indicators
 - **Branch Creation**: From current branch or specific commit
 - **Branch Switching**: With uncommitted changes handling
@@ -781,6 +777,7 @@ src/
 - **Branch Search**: Filter by name, author, or date
 
 ### 3. Commit Management
+
 - **Staging Area**: File-by-file or partial staging
 - **Commit Creation**: With message templates and co-authors
 - **Commit History**: Searchable with filters (author, date, message)
@@ -789,6 +786,7 @@ src/
 - **Interactive Rebase**: Visual commit reordering
 
 ### 4. Diff Viewer
+
 - **Syntax Highlighting**: Language-aware highlighting
 - **Side-by-side View**: With synchronized scrolling
 - **Inline Comments**: Add review comments
@@ -796,6 +794,7 @@ src/
 - **Binary File Handling**: Appropriate placeholders
 
 ### 5. Search Functionality
+
 - **Global Search**: Across repositories, branches, and commits
 - **Contextual Search**: Within current view
 - **Search Filters**: By type, date range, author
@@ -803,6 +802,7 @@ src/
 - **Keyboard Shortcuts**: Quick search activation
 
 ### 6. Authentication
+
 - **GitHub OAuth**: Web-based authentication flow
 - **Personal Access Tokens**: Manual token entry
 - **SSH Key Management**: Generate and manage SSH keys
@@ -810,7 +810,8 @@ src/
 - **Credential Storage**: Secure storage with OS keychain
 
 ### 7. UI/UX Features
-- **Theme System**: 
+
+- **Theme System**:
   - Light/Dark mode with system preference detection
   - Custom color themes with theme editor
   - Syntax highlighting themes
@@ -821,6 +822,7 @@ src/
 - **Accessibility**: ARIA labels, keyboard navigation
 
 ### 8. Settings & Preferences
+
 - **Git Configuration**: User name, email, default branch
 - **Editor Integration**: External editor selection
 - **Appearance**: Font size, theme, layout options
@@ -830,6 +832,7 @@ src/
 ## Component Specifications
 
 ### Base Component Structure
+
 ```vue
 <script setup lang="ts">
 import { computed, ref } from 'vue'
