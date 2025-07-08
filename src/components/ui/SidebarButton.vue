@@ -7,7 +7,7 @@
     ]"
     :title="label"
   >
-    <component :is="icon" class="w-4 h-4 flex-shrink-0" />
+    <component :is="icon" class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
     <span v-if="!collapsed" class="text-sm">{{ label }}</span>
   </button>
 </template>
