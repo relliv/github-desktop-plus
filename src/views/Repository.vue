@@ -14,21 +14,22 @@
               'w-5 h-5',
               currentRepository.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''
             ]"
+            :stroke-width="1"
           />
         </button>
       </div>
       
       <div class="flex items-center gap-2">
         <Button variant="ghost" size="sm" @click="fetchChanges">
-          <RefreshCw class="w-4 h-4 mr-2" />
+          <RefreshCw class="w-4 h-4 mr-2" :stroke-width="1" />
           Fetch
         </Button>
         <Button variant="ghost" size="sm" @click="pullChanges" :disabled="!gitStatus?.behind">
-          <Download class="w-4 h-4 mr-2" />
+          <Download class="w-4 h-4 mr-2" :stroke-width="1" />
           Pull {{ gitStatus?.behind ? `(${gitStatus.behind})` : '' }}
         </Button>
         <Button variant="default" size="sm" @click="pushChanges" :disabled="!gitStatus?.ahead">
-          <Upload class="w-4 h-4 mr-2" />
+          <Upload class="w-4 h-4 mr-2" :stroke-width="1" />
           Push {{ gitStatus?.ahead ? `(${gitStatus.ahead})` : '' }}
         </Button>
       </div>
@@ -37,7 +38,7 @@
     <!-- Branch selector -->
     <div class="px-6 py-3 border-b flex items-center gap-4">
       <div class="flex items-center gap-2">
-        <GitBranch class="w-4 h-4 text-muted-foreground" />
+        <GitBranch class="w-4 h-4 text-muted-foreground" :stroke-width="1" />
         <span class="text-sm font-medium">Current branch:</span>
         <BranchSelector />
       </div>
@@ -66,7 +67,7 @@
   <!-- No repository selected -->
   <div v-else class="flex-1 flex items-center justify-center">
     <div class="text-center">
-      <GitBranch class="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+      <GitBranch class="w-16 h-16 mx-auto mb-4 text-muted-foreground" :stroke-width="1" />
       <h2 class="text-xl font-semibold mb-2">No repository selected</h2>
       <p class="text-muted-foreground">
         Select a repository from the sidebar or open a new one
