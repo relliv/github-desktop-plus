@@ -50,8 +50,6 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 600,
     frame: false,
-    titleBarStyle: 'hidden',
-    trafficLightPosition: null,
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     show: false, // Don't show until ready
     titleBarOverlay: false,
