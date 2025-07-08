@@ -1,7 +1,7 @@
 <template>
   <div class="flex-1 flex flex-col" v-if="currentRepository">
     <!-- Repository header -->
-    <div class="h-[73px] px-6 border-b flex items-center justify-between">
+    <div class="h-[50px] px-6 border-b flex items-center justify-between">
       <div class="flex items-center gap-4">
         <h1 class="text-2xl font-bold">{{ currentRepository.name }}</h1>
         <button

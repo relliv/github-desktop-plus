@@ -1,7 +1,7 @@
 <template>
   <aside 
     :class="[
-      'relative bg-card border-r flex flex-col pt-8 transition-all duration-300',
+      'relative bg-card border-r flex flex-col transition-all duration-300',
       isSidebarCollapsed ? 'w-16' : 'w-64'
     ]"
   >
@@ -9,7 +9,7 @@
     <button
       @click="toggleSidebar"
       class="absolute -right-3 w-6 h-6 bg-background border rounded-full flex items-center justify-center hover:bg-accent transition-colors z-10 shadow-sm"
-      :style="{ top: 'calc(2rem + 36.5px - 12px)' }"
+      :style="{ top: 'calc(50px - 12px)' }"
     >
       <ChevronLeft 
         :class="[
@@ -21,7 +21,7 @@
     </button>
     
     <!-- User section -->
-    <div class="h-[73px] px-4 border-b flex items-center">
+    <div class="h-[50px] px-4 border-b flex items-center">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
           <User class="w-4 h-4 text-primary-foreground" :stroke-width="1" />

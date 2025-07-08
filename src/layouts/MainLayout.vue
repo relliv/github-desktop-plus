@@ -9,7 +9,7 @@
         <Sidebar />
         
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col pt-8 overflow-hidden">
+        <main class="flex-1 flex flex-col overflow-hidden">
           <router-view />
         </main>
       </div>
