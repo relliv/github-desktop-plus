@@ -332,10 +332,10 @@ import {
   CardHeader,
   CardTitle 
 } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
+import Label from '@/components/ui/Label.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+import Switch from '@/components/ui/Switch.vue'
 import {
   Select,
   SelectContent,
@@ -347,9 +347,9 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@/components/ui/radio-group'
-import { Separator } from '@/components/ui/separator'
-import { Slider } from '@/components/ui/slider'
-import { Textarea } from '@/components/ui/textarea'
+import Separator from '@/components/ui/Separator.vue'
+import Slider from '@/components/ui/Slider.vue'
+import Textarea from '@/components/ui/Textarea.vue'
 import { useAppStore } from '@/stores/app.store'
 
 const appStore = useAppStore()
