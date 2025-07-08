@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { provide } from 'vue'
+import { provide, computed } from 'vue'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -17,7 +17,7 @@ const props = defineProps<Props>()
 const emit = defineEmits(['update:modelValue'])
 
 provide('radioGroup', {
-  modelValue: props.modelValue,
+  modelValue: computed(() => props.modelValue),
   select: (value: string) => emit('update:modelValue', value)
 })
 </script>

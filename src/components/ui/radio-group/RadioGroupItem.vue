@@ -33,5 +33,5 @@ interface Props {
 const props = defineProps<Props>()
 
 const radioGroup = inject('radioGroup') as any
-const checked = computed(() => radioGroup.modelValue === props.value)
+const checked = computed(() => radioGroup.modelValue.value === props.value)
 </script>
