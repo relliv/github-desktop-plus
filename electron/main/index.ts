@@ -142,5 +142,7 @@ ipcMain.handle('open-win', (_, arg) => {
 
 // Register IPC handlers
 import { registerGitHandlers } from './ipc/git.handler'
+import { registerRepositoryHandlers } from '../../src/main/ipc/repository.handler'
 
 registerGitHandlers()
+registerRepositoryHandlers()

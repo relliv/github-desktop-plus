@@ -66,14 +66,13 @@ const repositoryStore = useRepositoryStore()
 const recentRepositories = computed(() => repositoryStore.recentRepositories)
 
 const openRepository = async () => {
-  const path = await window.api.dialog.openDirectory()
-  if (path) {
-    try {
-      await repositoryStore.addRepository(path)
+  try {
+    const repo = await repositoryStore.openRepositoryDialog()
+    if (repo) {
       router.push('/repository')
-    } catch (error) {
-      console.error('Failed to open repository:', error)
     }
+  } catch (error) {
+    console.error('Failed to open repository:', error)
   }
 }
 
