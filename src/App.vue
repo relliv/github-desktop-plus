@@ -9,6 +9,9 @@ import { useAppStore } from './stores/app.store'
 const appStore = useAppStore()
 
 onMounted(() => {
+  // Initialize theme
+  appStore.initializeTheme()
+  
   // Set up window event listeners
   window.api.window.onMaximized((maximized) => {
     appStore.setMaximized(maximized)
