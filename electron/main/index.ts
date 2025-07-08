@@ -99,7 +99,13 @@ async function createWindow() {
   // win.webContents.on('will-navigate', (event, url) => { }) #344
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(async () => {
+  createWindow()
+  
+  // Register repository handlers after app is ready
+  const { registerRepositoryHandlers } = await import('../../src/main/ipc/repository.handler')
+  registerRepositoryHandlers()
+})
 
 app.on('window-all-closed', () => {
   win = null
@@ -142,7 +148,5 @@ ipcMain.handle('open-win', (_, arg) => {
 
 // Register IPC handlers
 import { registerGitHandlers } from './ipc/git.handler'
-import { registerRepositoryHandlers } from '../../src/main/ipc/repository.handler'
 
 registerGitHandlers()
-registerRepositoryHandlers()
