@@ -89,13 +89,13 @@
     <!-- Bottom actions -->
     <div class="border-t p-2 space-y-1">
       <SidebarButton
-        icon="Settings"
+        :icon="Settings"
         label="Settings"
         :collapsed="isSidebarCollapsed"
         @click="navigateToSettings"
       />
       <SidebarButton
-        :icon="isDark ? 'Sun' : 'Moon'"
+        :icon="isDark ? Sun : Moon"
         label="Toggle theme"
         :collapsed="isSidebarCollapsed"
         @click="toggleTheme"
