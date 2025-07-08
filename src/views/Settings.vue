@@ -20,7 +20,7 @@
               : 'hover:bg-accent/50'
           ]"
         >
-          <component :is="category.icon" class="w-4 h-4" />
+          <component :is="category.icon" class="w-4 h-4" :stroke-width="1" />
           {{ category.label }}
         </button>
       </nav>
@@ -283,7 +283,7 @@
               </CardHeader>
               <CardContent class="space-y-4">
                 <div class="flex items-center gap-4">
-                  <GitBranch class="w-16 h-16 text-primary" />
+                  <GitBranch class="w-16 h-16 text-primary" :stroke-width="1" />
                   <div>
                     <h2 class="text-xl font-semibold">GitHub Desktop Plus</h2>
                     <p class="text-sm text-muted-foreground">Version 1.0.0</p>
@@ -299,7 +299,7 @@
                 
                 <div class="flex gap-2">
                   <Button variant="outline" size="sm" @click="openGithub">
-                    <Github class="w-4 h-4 mr-2" />
+                    <Github class="w-4 h-4 mr-2" :stroke-width="1" />
                     GitHub
                   </Button>
                   <Button variant="outline" size="sm" @click="checkUpdates">
