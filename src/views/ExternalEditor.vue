@@ -317,13 +317,20 @@ const deselectAll = () => {
 
 const testEditor = async (editor: any) => {
   try {
-    // Create a test file path (current directory)
-    const testPath = process.cwd()
-    await openInEditor(testPath, editor)
+    // Test by opening the editor without a specific file
+    // This will open the editor with its default behavior
+    const result = await window.api.editor.openFile({ 
+      editor, 
+      filePath: '' // Empty path to just launch the editor
+    })
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to open editor')
+    }
     
     toast({
       title: 'Editor opened',
-      description: `Successfully opened ${editor.name}`,
+      description: `Successfully launched ${editor.name}`,
     })
   } catch (error) {
     toast({

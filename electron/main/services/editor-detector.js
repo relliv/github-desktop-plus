@@ -156,45 +156,58 @@ export class EditorDetectorService {
   }
 
   async openInEditor(editor, filePath, lineNumber) {
-    let command = `"${editor.executable}" "${filePath}"`
+    let command
     
-    // Add line number support for various editors
-    if (lineNumber) {
-      switch (editor.id) {
-        case 'vscode':
-        case 'vscode-insiders':
-        case 'vscodium':
-        case 'cursor':
-        case 'windsurf':
-          command = `"${editor.executable}" --goto "${filePath}:${lineNumber}"`
-          break
-        case 'sublime':
-          command = `"${editor.executable}" "${filePath}:${lineNumber}"`
-          break
-        case 'atom':
-          command = `"${editor.executable}" "${filePath}:${lineNumber}"`
-          break
-        case 'vim':
-        case 'nvim':
-          command = `"${editor.executable}" "+${lineNumber}" "${filePath}"`
-          break
-        case 'emacs':
-          command = `"${editor.executable}" "+${lineNumber}" "${filePath}"`
-          break
-        // JetBrains IDEs
-        case 'webstorm':
-        case 'intellij':
-        case 'pycharm':
-        case 'goland':
-          command = `"${editor.executable}" --line ${lineNumber} "${filePath}"`
-          break
+    // If no file path provided, just open the editor
+    if (!filePath || filePath === '') {
+      command = `"${editor.executable}"`
+    } else {
+      command = `"${editor.executable}" "${filePath}"`
+      
+      // Add line number support for various editors
+      if (lineNumber) {
+        switch (editor.id) {
+          case 'vscode':
+          case 'vscode-insiders':
+          case 'vscodium':
+          case 'cursor':
+          case 'windsurf':
+            command = `"${editor.executable}" --goto "${filePath}:${lineNumber}"`
+            break
+          case 'sublime':
+            command = `"${editor.executable}" "${filePath}:${lineNumber}"`
+            break
+          case 'atom':
+            command = `"${editor.executable}" "${filePath}:${lineNumber}"`
+            break
+          case 'vim':
+          case 'nvim':
+            command = `"${editor.executable}" "+${lineNumber}" "${filePath}"`
+            break
+          case 'emacs':
+            command = `"${editor.executable}" "+${lineNumber}" "${filePath}"`
+            break
+          // JetBrains IDEs
+          case 'webstorm':
+          case 'intellij':
+          case 'pycharm':
+          case 'goland':
+            command = `"${editor.executable}" --line ${lineNumber} "${filePath}"`
+            break
+        }
       }
     }
 
     const { exec } = await import('child_process')
     return new Promise((resolve, reject) => {
+      // On Windows, we might need to use 'start' for some editors
+      if (process.platform === 'win32' && (!filePath || filePath === '')) {
+        command = `start "" ${command}`
+      }
+      
       exec(command, (error) => {
         if (error) {
+          console.error('Failed to open editor:', error)
           reject(error)
         } else {
           resolve()
