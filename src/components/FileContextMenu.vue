@@ -77,7 +77,8 @@ import {
   Terminal, 
   Zap, 
   Hammer,
-  MousePointer2
+  MousePointer2,
+  Wind
 } from 'lucide-vue-next'
 
 interface Props {
@@ -101,6 +102,7 @@ const getEditorIconComponent = (editor: any) => {
     'Terminal': Terminal,
     'Zap': Zap,
     'Hammer': Hammer,
+    'Wind': Wind,
   }
   
   return iconMap[iconName] || FileText

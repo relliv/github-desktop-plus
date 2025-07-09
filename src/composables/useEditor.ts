@@ -58,6 +58,7 @@ export function useEditor() {
       'vscode-insiders': 'FileCode2',
       'vscodium': 'FileCode2',
       'cursor': 'MousePointer2',
+      'windsurf': 'Wind',
       'sublime': 'FileText',
       'atom': 'FileText',
       'webstorm': 'Globe',

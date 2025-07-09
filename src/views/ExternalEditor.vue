@@ -236,7 +236,8 @@ import {
   Zap, 
   Hammer,
   Atom,
-  Info 
+  Info,
+  Wind 
 } from 'lucide-vue-next'
 
 const { toast } = useToast()
@@ -275,6 +276,7 @@ const getEditorIconComponent = (editor: any) => {
     'Terminal': Terminal,
     'Zap': Zap,
     'Hammer': Hammer,
+    'Wind': Wind,
   }
   
   return iconMap[iconName] || FileText

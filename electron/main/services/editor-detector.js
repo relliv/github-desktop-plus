@@ -15,6 +15,7 @@ export class EditorDetectorService {
         { name: 'Visual Studio Code - Insiders', id: 'vscode-insiders', paths: ['/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/bin/code-insiders'], command: 'code-insiders' },
         { name: 'VSCodium', id: 'vscodium', paths: ['/Applications/VSCodium.app/Contents/Resources/app/bin/codium'], command: 'codium' },
         { name: 'Cursor', id: 'cursor', paths: ['/Applications/Cursor.app/Contents/Resources/app/bin/cursor'], command: 'cursor' },
+        { name: 'Windsurf', id: 'windsurf', paths: ['/Applications/Windsurf.app/Contents/Resources/app/bin/windsurf'], command: 'windsurf' },
         
         // JetBrains IDEs
         { name: 'WebStorm', id: 'webstorm', paths: ['/Applications/WebStorm.app/Contents/MacOS/webstorm'], command: 'webstorm' },
@@ -43,6 +44,7 @@ export class EditorDetectorService {
         { name: 'Visual Studio Code - Insiders', id: 'vscode-insiders', paths: ['%LOCALAPPDATA%\\Programs\\Microsoft VS Code Insiders\\Code - Insiders.exe'], command: 'code-insiders' },
         { name: 'VSCodium', id: 'vscodium', paths: ['%LOCALAPPDATA%\\Programs\\VSCodium\\VSCodium.exe'], command: 'codium' },
         { name: 'Cursor', id: 'cursor', paths: ['%LOCALAPPDATA%\\Programs\\Cursor\\Cursor.exe'], command: 'cursor' },
+        { name: 'Windsurf', id: 'windsurf', paths: ['%LOCALAPPDATA%\\Programs\\Windsurf\\Windsurf.exe'], command: 'windsurf' },
         
         // JetBrains IDEs
         { name: 'WebStorm', id: 'webstorm', paths: ['%PROGRAMFILES%\\JetBrains\\WebStorm*\\bin\\webstorm64.exe'], command: 'webstorm' },
@@ -60,6 +62,7 @@ export class EditorDetectorService {
         { name: 'Visual Studio Code', id: 'vscode', paths: ['/usr/share/code/code', '/snap/bin/code'], command: 'code' },
         { name: 'Visual Studio Code - Insiders', id: 'vscode-insiders', paths: ['/usr/share/code-insiders/code-insiders'], command: 'code-insiders' },
         { name: 'VSCodium', id: 'vscodium', paths: ['/usr/share/codium/codium', '/snap/bin/codium'], command: 'codium' },
+        { name: 'Windsurf', id: 'windsurf', paths: ['/usr/share/windsurf/windsurf', '/snap/bin/windsurf'], command: 'windsurf' },
         
         // JetBrains IDEs
         { name: 'WebStorm', id: 'webstorm', paths: ['/opt/webstorm/bin/webstorm.sh'], command: 'webstorm' },
@@ -162,6 +165,7 @@ export class EditorDetectorService {
         case 'vscode-insiders':
         case 'vscodium':
         case 'cursor':
+        case 'windsurf':
           command = `"${editor.executable}" --goto "${filePath}:${lineNumber}"`
           break
         case 'sublime':
