@@ -14,7 +14,10 @@ interface Window {
     window: any
     dialog: any
     repository: any
-    shell: any
+    shell: {
+      openPath: (path: string) => Promise<{ success: boolean; error?: string }>
+      openTerminal: (path: string) => Promise<{ success: boolean; error?: string }>
+    }
     editor: {
       detect: () => Promise<any[]>
       getAvailable: () => Promise<any[]>

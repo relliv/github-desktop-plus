@@ -72,31 +72,38 @@
         
         <!-- Repository list -->
         <div class="space-y-1">
-          <button
+          <RepositoryContextMenu
             v-for="repo in repositories"
             :key="repo.id"
-            @click="selectRepository(repo)"
-            :class="[
-              'w-full flex items-center gap-2 px-2 py-2 rounded-md transition-colors text-left',
-              currentRepository?.id === repo.id 
-                ? 'bg-accent text-accent-foreground' 
-                : 'hover:bg-accent/50'
-            ]"
-            :title="repo.name"
+            :repository="repo"
+            @select="selectRepository(repo)"
+            @remove="removeRepository(repo)"
+            @toggle-favorite="toggleFavorite(repo)"
           >
-            <GitBranch class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
-            <div v-if="!isSidebarCollapsed" class="flex-1 min-w-0">
-              <div class="text-sm font-medium truncate">{{ repo.name }}</div>
-              <div class="text-xs text-muted-foreground truncate">
-                {{ repo.currentBranch || 'No branch' }}
+            <button
+              @click="selectRepository(repo)"
+              :class="[
+                'w-full flex items-center gap-2 px-2 py-2 rounded-md transition-colors text-left',
+                currentRepository?.id === repo.id 
+                  ? 'bg-accent text-accent-foreground' 
+                  : 'hover:bg-accent/50'
+              ]"
+              :title="repo.name"
+            >
+              <GitBranch class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
+              <div v-if="!isSidebarCollapsed" class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">{{ repo.name }}</div>
+                <div class="text-xs text-muted-foreground truncate">
+                  {{ repo.currentBranch || 'No branch' }}
+                </div>
               </div>
-            </div>
-            <Star 
-              v-if="!isSidebarCollapsed && repo.isFavorite"
-              class="w-3 h-3 text-yellow-500 flex-shrink-0"
-              :stroke-width="1"
-            />
-          </button>
+              <Star 
+                v-if="!isSidebarCollapsed && repo.isFavorite"
+                class="w-3 h-3 text-yellow-500 flex-shrink-0"
+                :stroke-width="1"
+              />
+            </button>
+          </RepositoryContextMenu>
         </div>
       </div>
     </div>
@@ -140,6 +147,7 @@ import SidebarButton from '../ui/SidebarButton.vue'
 import CloneDialog from '../dialogs/CloneDialog.vue'
 import OpenRepositoryDialog from '../dialogs/OpenRepositoryDialog.vue'
 import CreateRepositoryDialog from '../dialogs/CreateRepositoryDialog.vue'
+import RepositoryContextMenu from '../RepositoryContextMenu.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -192,5 +200,13 @@ const handleRepositoryCreated = (path: string) => {
   // Repository is already added by the dialog
   // Just navigate to repository view
   router.push('/repository')
+}
+
+const removeRepository = async (repo: any) => {
+  await repositoryStore.removeRepository(repo.id)
+}
+
+const toggleFavorite = async (repo: any) => {
+  await repositoryStore.toggleFavorite(repo.id)
 }
 </script>
