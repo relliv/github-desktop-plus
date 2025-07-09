@@ -66,8 +66,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select'
-import { Label } from '@/components/ui/Label'
-import { Button } from '@/components/ui/Button'
+import Label from '@/components/ui/Label.vue'
+import Button from '@/components/ui/Button.vue'
 import { 
   RefreshCw, 
   Loader2, 
