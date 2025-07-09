@@ -55,5 +55,15 @@ export const api = {
   
   shell: {
     openPath: (path: string) => ipcRenderer.invoke('shell:open-path', path),
+  },
+  
+  editor: {
+    detect: () => ipcRenderer.invoke('editor:detect'),
+    getAvailable: () => ipcRenderer.invoke('editor:get-available'),
+    getDefault: () => ipcRenderer.invoke('editor:get-default'),
+    openFile: (params: { editor: any; filePath: string; lineNumber?: number }) => 
+      ipcRenderer.invoke('editor:open-file', params),
+    openFileDefault: (params: { filePath: string; lineNumber?: number }) => 
+      ipcRenderer.invoke('editor:open-file-default', params),
   }
 }
