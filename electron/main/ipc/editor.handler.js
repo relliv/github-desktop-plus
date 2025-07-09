@@ -1,9 +1,9 @@
 import { ipcMain } from 'electron'
-import { editorDetector, type Editor } from '../services/editor-detector.service'
+import { editorDetector } from '../services/editor-detector.js'
 
 export function registerEditorHandlers() {
   // Detect all available editors
-  ipcMain.handle('editor:detect', async (): Promise<Editor[]> => {
+  ipcMain.handle('editor:detect', async () => {
     try {
       return await editorDetector.detectEditors()
     } catch (error) {
@@ -13,12 +13,12 @@ export function registerEditorHandlers() {
   })
 
   // Get available editors (cached)
-  ipcMain.handle('editor:get-available', (): Editor[] => {
+  ipcMain.handle('editor:get-available', () => {
     return editorDetector.getAvailableEditors()
   })
 
   // Get default editor
-  ipcMain.handle('editor:get-default', async (): Promise<Editor | null> => {
+  ipcMain.handle('editor:get-default', async () => {
     try {
       return await editorDetector.getDefaultEditor()
     } catch (error) {
@@ -28,11 +28,7 @@ export function registerEditorHandlers() {
   })
 
   // Open file in specific editor
-  ipcMain.handle('editor:open-file', async (_, { editor, filePath, lineNumber }: { 
-    editor: Editor, 
-    filePath: string, 
-    lineNumber?: number 
-  }): Promise<{ success: boolean; error?: string }> => {
+  ipcMain.handle('editor:open-file', async (_, { editor, filePath, lineNumber }) => {
     try {
       await editorDetector.openInEditor(editor, filePath, lineNumber)
       return { success: true }
@@ -45,10 +41,7 @@ export function registerEditorHandlers() {
   })
 
   // Open file in default editor
-  ipcMain.handle('editor:open-file-default', async (_, { filePath, lineNumber }: { 
-    filePath: string, 
-    lineNumber?: number 
-  }): Promise<{ success: boolean; error?: string }> => {
+  ipcMain.handle('editor:open-file-default', async (_, { filePath, lineNumber }) => {
     try {
       const defaultEditor = await editorDetector.getDefaultEditor()
       if (!defaultEditor) {
