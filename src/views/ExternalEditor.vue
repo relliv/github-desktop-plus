@@ -11,31 +11,20 @@
     <!-- Content -->
     <div class="flex-1 overflow-y-auto px-6 py-6">
       <div class="max-w-3xl space-y-6">
-        <!-- Current Editor Selection -->
+        <!-- Editor Selection Info -->
         <Card>
           <CardHeader>
-            <CardTitle>Default Editor</CardTitle>
+            <CardTitle>Editor Selection</CardTitle>
             <CardDescription>
-              Select the editor that will be used when opening files from the application
+              Select multiple editors to appear in context menus. You can quickly switch between your favorite editors.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <EditorSelector 
-              v-model="selectedEditorId"
-              @editor-selected="onEditorSelected"
-            />
-            
-            <div v-if="selectedEditor" class="mt-4 p-3 bg-muted rounded-lg">
-              <div class="flex items-center gap-3">
-                <component 
-                  :is="getEditorIconComponent(selectedEditor)" 
-                  class="w-5 h-5 text-muted-foreground"
-                />
-                <div class="flex-1">
-                  <div class="font-medium">{{ selectedEditor.name }}</div>
-                  <div class="text-sm text-muted-foreground font-mono">{{ selectedEditor.executable }}</div>
-                </div>
-              </div>
+            <div class="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <Info class="w-4 h-4 text-muted-foreground" />
+              <p class="text-sm text-muted-foreground">
+                Selected editors will appear in the "Open in Editor" context menu. Toggle the checkbox next to each editor to add or remove it.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -84,14 +73,44 @@
             </div>
 
             <div v-else class="space-y-3">
+              <div class="mb-4 flex items-center justify-between">
+                <p class="text-sm text-muted-foreground">
+                  {{ selectedEditorIds.length }} of {{ availableEditors.length }} editors selected
+                </p>
+                <div class="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    @click="selectAll"
+                    :disabled="selectedEditorIds.length === availableEditors.length"
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    @click="deselectAll"
+                    :disabled="selectedEditorIds.length === 0"
+                  >
+                    Deselect All
+                  </Button>
+                </div>
+              </div>
+
               <div 
                 v-for="editor in sortedEditors" 
                 :key="editor.id"
                 class="group relative flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
                 :class="{
-                  'border-primary bg-accent': selectedEditor?.id === editor.id
+                  'border-primary bg-accent': isEditorSelected(editor.id)
                 }"
               >
+                <Checkbox
+                  :checked="isEditorSelected(editor.id)"
+                  @update:checked="() => toggleEditor(editor)"
+                  class="ml-1"
+                />
+                
                 <component 
                   :is="getEditorIconComponent(editor)" 
                   class="w-8 h-8 text-muted-foreground"
@@ -100,10 +119,7 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
                     <h3 class="font-semibold">{{ editor.name }}</h3>
-                    <Badge v-if="defaultEditor?.id === editor.id" variant="secondary" class="text-xs">
-                      System Default
-                    </Badge>
-                    <Badge v-if="selectedEditor?.id === editor.id" class="text-xs">
+                    <Badge v-if="isEditorSelected(editor.id)" class="text-xs">
                       Selected
                     </Badge>
                   </div>
@@ -117,18 +133,9 @@
                     size="sm"
                     variant="ghost"
                     @click="testEditor(editor)"
-                    class="opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <PlayCircle class="w-4 h-4 mr-1" />
                     Test
-                  </Button>
-                  <Button
-                    v-if="selectedEditor?.id !== editor.id"
-                    size="sm"
-                    variant="default"
-                    @click="selectEditor(editor)"
-                  >
-                    Select
                   </Button>
                 </div>
               </div>
@@ -211,6 +218,7 @@ import Button from '@/components/ui/Button.vue'
 import { Badge } from '@/components/ui/badge'
 import Separator from '@/components/ui/Separator.vue'
 import EditorSelector from '@/components/EditorSelector.vue'
+import { Checkbox } from '@/components/ui/checkbox'
 import { 
   RefreshCw, 
   Loader2, 
@@ -227,14 +235,14 @@ import {
   Terminal, 
   Zap, 
   Hammer,
-  Atom 
+  Atom,
+  Info 
 } from 'lucide-vue-next'
 
 const { toast } = useToast()
 const settingsStore = useSettingsStore()
 const { 
   availableEditors, 
-  defaultEditor, 
   loading, 
   error, 
   detectEditors, 
@@ -242,17 +250,15 @@ const {
   getEditorIcon 
 } = useEditor()
 
-const selectedEditorId = ref(settingsStore.externalEditor || '')
-const selectedEditor = ref<any>(null)
+const selectedEditorIds = computed(() => settingsStore.selectedEditors)
 
 const sortedEditors = computed(() => {
   return [...availableEditors.value].sort((a, b) => {
-    // Put default editor first
-    if (defaultEditor.value?.id === a.id) return -1
-    if (defaultEditor.value?.id === b.id) return 1
-    // Then selected editor
-    if (selectedEditor.value?.id === a.id) return -1
-    if (selectedEditor.value?.id === b.id) return 1
+    // Put selected editors first
+    const aSelected = isEditorSelected(a.id)
+    const bSelected = isEditorSelected(b.id)
+    if (aSelected && !bSelected) return -1
+    if (!aSelected && bSelected) return 1
     // Then alphabetical
     return a.name.localeCompare(b.name)
   })
@@ -274,19 +280,36 @@ const getEditorIconComponent = (editor: any) => {
   return iconMap[iconName] || FileText
 }
 
-const onEditorSelected = (editor: any) => {
-  selectedEditor.value = editor
-  settingsStore.setExternalEditor(editor.id)
+const isEditorSelected = (editorId: string) => {
+  return settingsStore.isEditorSelected(editorId)
 }
 
-const selectEditor = (editor: any) => {
-  selectedEditorId.value = editor.id
-  selectedEditor.value = editor
-  settingsStore.setExternalEditor(editor.id)
+const toggleEditor = (editor: any) => {
+  settingsStore.toggleEditor(editor.id)
+  
+  const action = isEditorSelected(editor.id) ? 'added to' : 'removed from'
+  toast({
+    title: 'Editor selection updated',
+    description: `${editor.name} ${action} context menu`,
+  })
+}
+
+const selectAll = () => {
+  const allIds = availableEditors.value.map(e => e.id)
+  settingsStore.setSelectedEditors(allIds)
   
   toast({
-    title: 'Editor selected',
-    description: `${editor.name} is now your default editor`,
+    title: 'All editors selected',
+    description: 'All available editors added to context menu',
+  })
+}
+
+const deselectAll = () => {
+  settingsStore.setSelectedEditors([])
+  
+  toast({
+    title: 'All editors deselected',
+    description: 'All editors removed from context menu',
   })
 }
 
@@ -320,18 +343,5 @@ const refreshEditors = async () => {
   }
 }
 
-onMounted(() => {
-  // Set selected editor from settings or default
-  const savedEditorId = settingsStore.externalEditor
-  if (savedEditorId) {
-    const editor = availableEditors.value.find(e => e.id === savedEditorId)
-    if (editor) {
-      selectedEditor.value = editor
-      selectedEditorId.value = savedEditorId
-    }
-  } else if (defaultEditor.value) {
-    selectedEditor.value = defaultEditor.value
-    selectedEditorId.value = defaultEditor.value.id
-  }
-})
+// The selectedEditorIds are automatically loaded from the store
 </script>

@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 export interface Settings {
   theme: 'light' | 'dark' | 'system'
-  externalEditor?: string
+  selectedEditors: string[] // Array of selected editor IDs
   defaultClonePath?: string
   autoFetch: boolean
   autoFetchInterval: number // minutes
@@ -17,7 +17,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // State
   const settings = ref<Settings>({
     theme: 'system',
-    externalEditor: undefined,
+    selectedEditors: [],
     defaultClonePath: undefined,
     autoFetch: true,
     autoFetchInterval: 10,
@@ -29,7 +29,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   // Getters
   const theme = computed(() => settings.value.theme)
-  const externalEditor = computed(() => settings.value.externalEditor)
+  const selectedEditors = computed(() => settings.value.selectedEditors)
   const defaultClonePath = computed(() => settings.value.defaultClonePath)
   const autoFetch = computed(() => settings.value.autoFetch)
   const autoFetchInterval = computed(() => settings.value.autoFetchInterval)
@@ -41,9 +41,23 @@ export const useSettingsStore = defineStore('settings', () => {
     saveSettings()
   }
 
-  function setExternalEditor(editorId: string | undefined) {
-    settings.value.externalEditor = editorId
+  function toggleEditor(editorId: string) {
+    const index = settings.value.selectedEditors.indexOf(editorId)
+    if (index > -1) {
+      settings.value.selectedEditors.splice(index, 1)
+    } else {
+      settings.value.selectedEditors.push(editorId)
+    }
     saveSettings()
+  }
+
+  function setSelectedEditors(editorIds: string[]) {
+    settings.value.selectedEditors = editorIds
+    saveSettings()
+  }
+
+  function isEditorSelected(editorId: string) {
+    return settings.value.selectedEditors.includes(editorId)
   }
 
   function setDefaultClonePath(path: string | undefined) {
@@ -109,13 +123,15 @@ export const useSettingsStore = defineStore('settings', () => {
     settings,
     // Getters
     theme,
-    externalEditor,
+    selectedEditors,
     defaultClonePath,
     autoFetch,
     autoFetchInterval,
     // Actions
     setTheme,
-    setExternalEditor,
+    toggleEditor,
+    setSelectedEditors,
+    isEditorSelected,
     setDefaultClonePath,
     setAutoFetch,
     setAutoFetchInterval,
