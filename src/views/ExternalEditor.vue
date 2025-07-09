@@ -207,9 +207,9 @@ import { useEditor } from '@/composables/useEditor'
 import { useToast } from '@/composables/useToast'
 import { useSettingsStore } from '@/stores/settings.store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button.vue'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/Separator'
+import Separator from '@/components/ui/Separator.vue'
 import EditorSelector from '@/components/EditorSelector.vue'
 import { 
   RefreshCw, 
