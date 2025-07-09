@@ -59,7 +59,7 @@ export function useEditor() {
       'vscodium': 'FileCode2',
       'cursor': 'MousePointer2',
       'sublime': 'FileText',
-      'atom': 'Atom',
+      'atom': 'FileText',
       'webstorm': 'Globe',
       'intellij': 'Lightbulb',
       'vim': 'Terminal',

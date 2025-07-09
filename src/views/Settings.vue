@@ -171,45 +171,35 @@
                 <CardDescription>Configure your preferred external editor</CardDescription>
               </CardHeader>
               <CardContent class="space-y-4">
-                <div class="space-y-2">
-                  <Label>Editor</Label>
-                  <Select v-model="externalEditor">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select editor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="vscode">Visual Studio Code</SelectItem>
-                      <SelectItem value="sublime">Sublime Text</SelectItem>
-                      <SelectItem value="atom">Atom</SelectItem>
-                      <SelectItem value="vim">Vim</SelectItem>
-                      <SelectItem value="emacs">Emacs</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div class="p-4 bg-muted rounded-lg">
+                  <p class="text-sm mb-3">
+                    Manage your external editor preferences and view all detected editors on your system.
+                  </p>
+                  <Button @click="$router.push('/external-editor')" variant="default">
+                    <FileText class="w-4 h-4 mr-2" />
+                    Manage External Editors
+                  </Button>
                 </div>
                 
-                <div v-if="externalEditor === 'custom'" class="space-y-2">
-                  <Label htmlFor="custom-editor">Custom Editor Path</Label>
-                  <div class="flex gap-2">
-                    <Input 
-                      id="custom-editor" 
-                      v-model="customEditorPath" 
-                      placeholder="/usr/local/bin/code"
-                      class="flex-1"
-                    />
-                    <Button variant="outline" size="sm" @click="browseForEditor">
-                      Browse
-                    </Button>
+                <Separator />
+                
+                <div class="space-y-2">
+                  <h3 class="text-sm font-medium">Quick Settings</h3>
+                  <div class="flex items-center justify-between">
+                    <div class="space-y-1">
+                      <Label>Open files in editor tabs</Label>
+                      <p class="text-sm text-muted-foreground">Open multiple files in tabs instead of new windows</p>
+                    </div>
+                    <Switch v-model="openInTabs" />
                   </div>
-                </div>
-                
-                <div class="space-y-2">
-                  <Label htmlFor="editor-args">Additional Arguments</Label>
-                  <Input 
-                    id="editor-args" 
-                    v-model="editorArgs" 
-                    placeholder="--wait --new-window"
-                  />
+                  
+                  <div class="flex items-center justify-between">
+                    <div class="space-y-1">
+                      <Label>Wait for editor to close</Label>
+                      <p class="text-sm text-muted-foreground">Wait for file to be closed before continuing</p>
+                    </div>
+                    <Switch v-model="waitForClose" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -400,9 +390,8 @@ const defaultBranch = ref('main')
 const mergeStrategy = ref('merge')
 
 // Editor settings
-const externalEditor = ref('vscode')
-const customEditorPath = ref('')
-const editorArgs = ref('')
+const openInTabs = ref(true)
+const waitForClose = ref(false)
 
 // Advanced settings
 const gpgSign = ref(false)

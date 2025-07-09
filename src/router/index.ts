@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout.vue'
 import Welcome from '../views/Welcome.vue'
 import Repository from '../views/Repository.vue'
 import Settings from '../views/Settings.vue'
+import ExternalEditor from '../views/ExternalEditor.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -31,6 +32,14 @@ const routes: RouteRecordRaw[] = [
         component: Settings,
         meta: {
           title: 'Settings - GitHub Desktop Plus'
+        }
+      },
+      {
+        path: 'external-editor',
+        name: 'ExternalEditor',
+        component: ExternalEditor,
+        meta: {
+          title: 'External Editor - GitHub Desktop Plus'
         }
       }
     ]
