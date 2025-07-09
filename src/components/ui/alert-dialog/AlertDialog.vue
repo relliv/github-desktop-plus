@@ -5,10 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { AlertDialogRoot, type AlertDialogRootProps, type AlertDialogRootEmits, useForwardPropsEmits } from 'radix-vue'
+import { AlertDialogRoot, type AlertDialogProps, type AlertDialogEmits, useForwardPropsEmits } from 'radix-vue'
 
-const props = defineProps<AlertDialogRootProps>()
-const emits = defineEmits<AlertDialogRootEmits>()
+const props = defineProps<AlertDialogProps>()
+const emits = defineEmits<AlertDialogEmits>()
 
 const forwarded = useForwardPropsEmits(props, emits)
 </script>
