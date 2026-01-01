@@ -191,6 +191,32 @@ export function registerGitHandlers() {
       throw new Error(`Failed to fetch: ${error}`)
     }
   })
+
+  // Stash
+  ipcMain.handle('git:stash', async (_, repoPath: string, message?: string) => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      if (message) {
+        await repoGit.stash(['push', '-m', message])
+      } else {
+        await repoGit.stash(['push'])
+      }
+      return { success: true }
+    } catch (error) {
+      throw new Error(`Failed to stash: ${error}`)
+    }
+  })
+
+  // Stash pop
+  ipcMain.handle('git:stash-pop', async (_, repoPath: string) => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      await repoGit.stash(['pop'])
+      return { success: true }
+    } catch (error) {
+      throw new Error(`Failed to pop stash: ${error}`)
+    }
+  })
   
   // Get commit history
   ipcMain.handle('git:get-log', async (_, repoPath: string, limit: number = 50) => {

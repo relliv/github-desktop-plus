@@ -48,17 +48,20 @@
       <AlertDialogHeader>
         <AlertDialogTitle class="flex items-center gap-2">
           <AlertTriangle class="w-5 h-5 text-yellow-500" />
-          Cannot Switch Branch
+          Uncommitted Changes
         </AlertDialogTitle>
         <AlertDialogDescription class="text-left space-y-3">
           <p>You have uncommitted changes that would be overwritten by switching branches.</p>
           <p class="text-sm text-muted-foreground">
-            Please commit your changes or stash them before switching branches.
+            Would you like to stash your changes and switch to <strong>{{ pendingBranch }}</strong>?
           </p>
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogAction>OK</AlertDialogAction>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction @click="stashAndSwitch">
+          Stash & Switch
+        </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
@@ -71,6 +74,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -85,6 +89,7 @@ const searchQuery = ref("");
 const branches = ref<string[]>([]);
 const currentBranch = ref<string>("");
 const showErrorDialog = ref(false);
+const pendingBranch = ref<string>("");
 
 const currentRepository = computed(() => repositoryStore.currentRepository);
 
@@ -123,10 +128,30 @@ const switchBranch = async (branch: string) => {
     if (errorMessage.includes("overwritten by checkout") ||
         errorMessage.includes("commit your changes") ||
         errorMessage.includes("stash them")) {
+      pendingBranch.value = branch;
       showErrorDialog.value = true;
     } else {
       console.error("Failed to switch branch:", error);
     }
+  }
+};
+
+const stashAndSwitch = async () => {
+  if (!currentRepository.value || !pendingBranch.value) return;
+
+  try {
+    // Stash current changes
+    await window.api.git.stash(currentRepository.value.path, `Auto-stash before switching to ${pendingBranch.value}`);
+
+    // Switch to the target branch
+    await window.api.git.checkout(currentRepository.value.path, pendingBranch.value);
+    currentBranch.value = pendingBranch.value;
+
+    // Clear pending branch and refresh status
+    pendingBranch.value = "";
+    await repositoryStore.fetchGitStatus();
+  } catch (error) {
+    console.error("Failed to stash and switch:", error);
   }
 };
 
