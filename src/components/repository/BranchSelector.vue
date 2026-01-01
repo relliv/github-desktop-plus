@@ -41,12 +41,42 @@
       </div>
     </PopoverContent>
   </Popover>
+
+  <!-- Uncommitted Changes Dialog -->
+  <AlertDialog v-model:open="showErrorDialog">
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle class="flex items-center gap-2">
+          <AlertTriangle class="w-5 h-5 text-yellow-500" />
+          Cannot Switch Branch
+        </AlertDialogTitle>
+        <AlertDialogDescription class="text-left space-y-3">
+          <p>You have uncommitted changes that would be overwritten by switching branches.</p>
+          <p class="text-sm text-muted-foreground">
+            Please commit your changes or stash them before switching branches.
+          </p>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogAction>OK</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { ChevronDown, Check } from "lucide-vue-next";
+import { ChevronDown, Check, AlertTriangle } from "lucide-vue-next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 import Button from "../ui/Button.vue";
 import { useRepositoryStore } from "../../stores/repository.store";
 
@@ -54,6 +84,7 @@ const repositoryStore = useRepositoryStore();
 const searchQuery = ref("");
 const branches = ref<string[]>([]);
 const currentBranch = ref<string>("");
+const showErrorDialog = ref(false);
 
 const currentRepository = computed(() => repositoryStore.currentRepository);
 
@@ -86,7 +117,16 @@ const switchBranch = async (branch: string) => {
     currentBranch.value = branch;
     await repositoryStore.fetchGitStatus();
   } catch (error) {
-    console.error("Failed to switch branch:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Check if error is due to uncommitted changes
+    if (errorMessage.includes("overwritten by checkout") ||
+        errorMessage.includes("commit your changes") ||
+        errorMessage.includes("stash them")) {
+      showErrorDialog.value = true;
+    } else {
+      console.error("Failed to switch branch:", error);
+    }
   }
 };
 
