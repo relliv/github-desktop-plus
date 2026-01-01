@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { ChevronDown, Check, AlertTriangle } from "lucide-vue-next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
@@ -86,12 +86,12 @@ import { useRepositoriesStore } from "@/shared/stores";
 
 const repositoriesStore = useRepositoriesStore();
 const searchQuery = ref("");
-const branches = ref<string[]>([]);
-const currentBranch = ref<string>("");
 const showErrorDialog = ref(false);
 const pendingBranch = ref<string>("");
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
+const branches = computed(() => repositoriesStore.branches?.local || []);
+const currentBranch = computed(() => repositoriesStore.branches?.current || "");
 
 const filteredBranches = computed(() => {
   if (!searchQuery.value) return branches.value;
@@ -100,27 +100,15 @@ const filteredBranches = computed(() => {
   );
 });
 
-const loadBranches = async () => {
-  if (!currentRepository.value) return;
-
-  try {
-    const result = await window.api.git.getBranches(
-      currentRepository.value.path
-    );
-    branches.value = result.local;
-    currentBranch.value = result.current;
-  } catch (error) {
-    console.error("Failed to load branches:", error);
-  }
-};
-
 const switchBranch = async (branch: string) => {
   if (!currentRepository.value || branch === currentBranch.value) return;
 
   try {
     await window.api.git.checkout(currentRepository.value.path, branch);
-    currentBranch.value = branch;
-    await repositoriesStore.fetchGitStatus();
+    await Promise.all([
+      repositoriesStore.fetchGitStatus(),
+      repositoriesStore.fetchBranches(),
+    ]);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -145,17 +133,15 @@ const stashAndSwitch = async () => {
 
     // Switch to the target branch
     await window.api.git.checkout(currentRepository.value.path, pendingBranch.value);
-    currentBranch.value = pendingBranch.value;
 
-    // Clear pending branch and refresh status
+    // Clear pending branch and refresh status + branches
     pendingBranch.value = "";
-    await repositoriesStore.fetchGitStatus();
+    await Promise.all([
+      repositoriesStore.fetchGitStatus(),
+      repositoriesStore.fetchBranches(),
+    ]);
   } catch (error) {
     console.error("Failed to stash and switch:", error);
   }
 };
-
-onMounted(() => {
-  loadBranches();
-});
 </script>

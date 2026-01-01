@@ -13,6 +13,12 @@ export interface GitStatus {
   behind: number
 }
 
+export interface BranchInfo {
+  current: string
+  local: string[]
+  remote: string[]
+}
+
 export const useRepositoriesStore = defineStore('repositories', () => {
   // State
   const repositories = ref<RepositoryInfo[]>([])
@@ -20,6 +26,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const gitStatus = ref<GitStatus | null>(null)
+  const branches = ref<BranchInfo | null>(null)
 
   // Getters
   const favoriteRepositories = computed(() =>
@@ -186,9 +193,10 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     currentRepository.value = repo
     if (repo) {
       await window.api.repository.update(repo.id, { lastOpenedAt: new Date() })
-      await fetchGitStatus()
+      await Promise.all([fetchGitStatus(), fetchBranches()])
     } else {
       gitStatus.value = null
+      branches.value = null
     }
   }
 
@@ -202,6 +210,24 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     } catch (err) {
       console.error('Failed to fetch git status:', err)
       gitStatus.value = null
+    }
+  }
+
+  const fetchBranches = async () => {
+    if (!currentRepository.value) return
+
+    try {
+      const result = await window.api.git.getBranches(
+        currentRepository.value.path
+      )
+      branches.value = {
+        current: result.current,
+        local: result.local,
+        remote: result.remote || [],
+      }
+    } catch (err) {
+      console.error('Failed to fetch branches:', err)
+      branches.value = null
     }
   }
 
@@ -239,6 +265,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     isLoading,
     error,
     gitStatus,
+    branches,
 
     // Getters
     favoriteRepositories,
@@ -254,6 +281,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     toggleFavorite,
     setCurrentRepository,
     fetchGitStatus,
+    fetchBranches,
     updateRepositoryBranch,
     clearError,
   }
