@@ -57,17 +57,17 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { GitBranch, FolderOpen, Download, Star } from 'lucide-vue-next'
-import { useRepositoryStore } from '../stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
 import Card from '../components/ui/Card.vue'
 
 const router = useRouter()
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 
-const recentRepositories = computed(() => repositoryStore.recentRepositories)
+const recentRepositories = computed(() => repositoriesStore.recentRepositories)
 
 const openRepository = async () => {
   try {
-    const repo = await repositoryStore.openRepositoryDialog()
+    const repo = await repositoriesStore.openRepositoryDialog()
     if (repo) {
       router.push('/repository')
     }
@@ -82,7 +82,7 @@ const cloneRepository = () => {
 }
 
 const selectRepository = (repo: any) => {
-  repositoryStore.setCurrentRepository(repo)
+  repositoriesStore.setCurrentRepository(repo)
   router.push('/repository')
 }
 </script>

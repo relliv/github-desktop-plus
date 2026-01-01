@@ -82,16 +82,16 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import Button from "../ui/Button.vue";
-import { useRepositoryStore } from "../../stores/repository.store";
+import { useRepositoriesStore } from "@/shared/stores";
 
-const repositoryStore = useRepositoryStore();
+const repositoriesStore = useRepositoriesStore();
 const searchQuery = ref("");
 const branches = ref<string[]>([]);
 const currentBranch = ref<string>("");
 const showErrorDialog = ref(false);
 const pendingBranch = ref<string>("");
 
-const currentRepository = computed(() => repositoryStore.currentRepository);
+const currentRepository = computed(() => repositoriesStore.currentRepository);
 
 const filteredBranches = computed(() => {
   if (!searchQuery.value) return branches.value;
@@ -120,7 +120,7 @@ const switchBranch = async (branch: string) => {
   try {
     await window.api.git.checkout(currentRepository.value.path, branch);
     currentBranch.value = branch;
-    await repositoryStore.fetchGitStatus();
+    await repositoriesStore.fetchGitStatus();
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -149,7 +149,7 @@ const stashAndSwitch = async () => {
 
     // Clear pending branch and refresh status
     pendingBranch.value = "";
-    await repositoryStore.fetchGitStatus();
+    await repositoriesStore.fetchGitStatus();
   } catch (error) {
     console.error("Failed to stash and switch:", error);
   }

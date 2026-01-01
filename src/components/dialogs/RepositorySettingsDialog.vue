@@ -226,17 +226,17 @@ import Label from '@/components/ui/Label.vue'
 import Switch from '@/components/ui/Switch.vue'
 import Separator from '@/components/ui/Separator.vue'
 import { FolderOpen, Copy, Terminal, FileCode } from 'lucide-vue-next'
-import { useRepositoryStore } from '@/stores/repository.store'
-import type { Repository } from '@/stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
+import type { RepositoryInfo } from '@/shared/types/git.types'
 
 const emit = defineEmits<{
   'repository-removed': []
 }>()
 
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 
 const isOpen = ref(false)
-const repository = ref<Repository | null>(null)
+const repository = ref<RepositoryInfo | null>(null)
 const remoteUrl = ref<string>('')
 const isFavorite = ref(false)
 const showRemoveConfirm = ref(false)
@@ -297,7 +297,7 @@ const updateGitConfig = async () => {
 
 const toggleFavorite = async (value: boolean) => {
   if (repository.value) {
-    await repositoryStore.toggleFavorite(repository.value.id)
+    await repositoriesStore.toggleFavorite(repository.value.id)
   }
 }
 
@@ -321,13 +321,13 @@ const confirmRemove = () => {
 
 const removeRepository = async () => {
   if (repository.value) {
-    await repositoryStore.removeRepository(repository.value.id)
+    await repositoriesStore.removeRepository(repository.value.id)
     emit('repository-removed')
     close()
   }
 }
 
-const open = (repo: Repository) => {
+const open = (repo: RepositoryInfo) => {
   repository.value = repo
   isOpen.value = true
 }

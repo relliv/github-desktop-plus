@@ -103,7 +103,7 @@ import Button from "@/components/ui/Button.vue";
 import Input from "@/components/ui/Input.vue";
 import Label from "@/components/ui/Label.vue";
 import { GitBranch } from "lucide-vue-next";
-import { useRepositoryStore } from "@/stores/repository.store";
+import { useRepositoriesStore } from "@/shared/stores";
 import type { RepositoryValidation } from "@/shared/types/git.types";
 
 interface RepositoryInfo {
@@ -116,7 +116,7 @@ const emit = defineEmits<{
   "repository-opened": [path: string];
 }>();
 
-const repositoryStore = useRepositoryStore();
+const repositoriesStore = useRepositoriesStore();
 
 const isOpen = ref(false);
 const isValidating = ref(false);
@@ -198,7 +198,7 @@ const openRepository = async () => {
   if (!canOpen.value) return;
 
   try {
-    await repositoryStore.addRepository(repositoryPath.value);
+    await repositoriesStore.addRepository(repositoryPath.value);
     emit("repository-opened", repositoryPath.value);
     close();
   } catch (error) {

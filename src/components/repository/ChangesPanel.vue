@@ -71,17 +71,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { FileText } from 'lucide-vue-next'
-import { useRepositoryStore } from '../../stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
 import Button from '../ui/Button.vue'
 import FileItem from './FileItem.vue'
 
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 const commitMessage = ref('')
 const selectedFile = ref<string | null>(null)
 
-const gitStatus = computed(() => repositoryStore.gitStatus)
-const currentRepository = computed(() => repositoryStore.currentRepository)
-const hasChanges = computed(() => repositoryStore.hasChanges)
+const gitStatus = computed(() => repositoriesStore.gitStatus)
+const currentRepository = computed(() => repositoriesStore.currentRepository)
+const hasChanges = computed(() => repositoriesStore.hasChanges)
 
 const stagedFiles = computed(() => gitStatus.value?.staged || [])
 const unstagedFiles = computed(() => {
@@ -104,7 +104,7 @@ const stageFile = async (file: string) => {
   if (!currentRepository.value) return
   try {
     await window.api.git.stage(currentRepository.value.path, [file])
-    await repositoryStore.fetchGitStatus()
+    await repositoriesStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to stage file:', error)
   }
@@ -114,7 +114,7 @@ const unstageFile = async (file: string) => {
   if (!currentRepository.value) return
   try {
     await window.api.git.unstage(currentRepository.value.path, [file])
-    await repositoryStore.fetchGitStatus()
+    await repositoriesStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to unstage file:', error)
   }
@@ -125,7 +125,7 @@ const stageAll = async () => {
   try {
     // Convert reactive array to plain array for IPC serialization
     await window.api.git.stage(currentRepository.value.path, [...unstagedFiles.value])
-    await repositoryStore.fetchGitStatus()
+    await repositoriesStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to stage all:', error)
   }
@@ -136,7 +136,7 @@ const unstageAll = async () => {
   try {
     // Convert reactive array to plain array for IPC serialization
     await window.api.git.unstage(currentRepository.value.path, [...stagedFiles.value])
-    await repositoryStore.fetchGitStatus()
+    await repositoriesStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to unstage all:', error)
   }
@@ -148,7 +148,7 @@ const commit = async () => {
   try {
     await window.api.git.commit(currentRepository.value.path, commitMessage.value)
     commitMessage.value = ''
-    await repositoryStore.fetchGitStatus()
+    await repositoriesStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to commit:', error)
   }

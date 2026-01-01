@@ -193,7 +193,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { GitBranch, Star, RefreshCw, Download, Upload, ChevronRight, FilePlus, FolderOpen, Settings } from 'lucide-vue-next'
-import { useRepositoryStore } from '../stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
 import Button from '../components/ui/Button.vue'
 import BranchSelector from '../components/repository/BranchSelector.vue'
 import ChangesPanel from '../components/repository/ChangesPanel.vue'
@@ -203,21 +203,21 @@ import OpenRepositoryDialog from '../components/dialogs/OpenRepositoryDialog.vue
 import CreateRepositoryDialog from '../components/dialogs/CreateRepositoryDialog.vue'
 import RepositorySettingsDialog from '../components/dialogs/RepositorySettingsDialog.vue'
 
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>()
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>()
 const repoSettingsDialog = ref<InstanceType<typeof RepositorySettingsDialog>>()
 
-const currentRepository = computed(() => repositoryStore.currentRepository)
-const gitStatus = computed(() => repositoryStore.gitStatus)
-const recentRepositories = computed(() => repositoryStore.recentRepositories)
-const favoriteRepositories = computed(() => repositoryStore.favoriteRepositories)
+const currentRepository = computed(() => repositoriesStore.currentRepository)
+const gitStatus = computed(() => repositoriesStore.gitStatus)
+const recentRepositories = computed(() => repositoriesStore.recentRepositories)
+const favoriteRepositories = computed(() => repositoriesStore.favoriteRepositories)
 
 const toggleFavorite = () => {
   if (currentRepository.value) {
-    repositoryStore.toggleFavorite(currentRepository.value.id)
+    repositoriesStore.toggleFavorite(currentRepository.value.id)
   }
 }
 
@@ -225,7 +225,7 @@ const fetchChanges = async () => {
   if (currentRepository.value) {
     try {
       await window.api.git.fetch(currentRepository.value.path)
-      await repositoryStore.fetchGitStatus()
+      await repositoriesStore.fetchGitStatus()
     } catch (error) {
       console.error('Failed to fetch:', error)
     }
@@ -236,7 +236,7 @@ const pullChanges = async () => {
   if (currentRepository.value) {
     try {
       await window.api.git.pull(currentRepository.value.path)
-      await repositoryStore.fetchGitStatus()
+      await repositoriesStore.fetchGitStatus()
     } catch (error) {
       console.error('Failed to pull:', error)
     }
@@ -247,7 +247,7 @@ const pushChanges = async () => {
   if (currentRepository.value) {
     try {
       await window.api.git.push(currentRepository.value.path)
-      await repositoryStore.fetchGitStatus()
+      await repositoriesStore.fetchGitStatus()
     } catch (error) {
       console.error('Failed to push:', error)
     }
@@ -255,7 +255,7 @@ const pushChanges = async () => {
 }
 
 const selectRepository = (repo: any) => {
-  repositoryStore.setCurrentRepository(repo)
+  repositoriesStore.setCurrentRepository(repo)
 }
 
 const createRepository = () => {

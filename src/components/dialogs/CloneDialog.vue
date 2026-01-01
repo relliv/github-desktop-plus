@@ -182,14 +182,14 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs'
 import { ChevronDown } from 'lucide-vue-next'
-import { useRepositoryStore } from '@/stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
 import type { CloneOptions, CloneProgress } from '@/shared/types/git.types'
 
 const emit = defineEmits<{
   'clone-complete': [path: string]
 }>()
 
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 
 const isOpen = ref(false)
 const isCloning = ref(false)
@@ -264,7 +264,7 @@ const startClone = async () => {
     
     if (result.success && result.path) {
       // Add to repository list
-      await repositoryStore.addRepository(result.path)
+      await repositoriesStore.addRepository(result.path)
       emit('clone-complete', result.path)
       
       // Close dialog after short delay

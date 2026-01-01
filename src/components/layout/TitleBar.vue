@@ -21,17 +21,17 @@
 import { computed } from "vue";
 import { Minus, Square, Copy, X, GitBranch } from "lucide-vue-next";
 import { useAppStore } from "../../stores/app.store";
-import { useRepositoryStore } from "../../stores/repository.store";
+import { useRepositoriesStore } from "@/shared/stores";
 import WindowControls from "@/components/ui/WindowControls.vue";
 
 const appStore = useAppStore();
-const repositoryStore = useRepositoryStore();
+const repositoriesStore = useRepositoriesStore();
 
 // Get platform from user agent instead of process
 const isWindows = navigator.userAgent.includes("Windows");
 const isMac = navigator.userAgent.includes("Mac");
 const isMaximized = computed(() => appStore.isMaximized);
-const currentRepository = computed(() => repositoryStore.currentRepository);
+const currentRepository = computed(() => repositoriesStore.currentRepository);
 
 const minimize = () => window.api.window.minimize();
 const maximize = () => window.api.window.maximize();

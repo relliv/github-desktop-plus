@@ -142,7 +142,7 @@ import {
   FilePlus
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app.store'
-import { useRepositoryStore } from '../../stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
 import SidebarButton from '../ui/SidebarButton.vue'
 import CloneDialog from '../dialogs/CloneDialog.vue'
 import OpenRepositoryDialog from '../dialogs/OpenRepositoryDialog.vue'
@@ -151,15 +151,15 @@ import RepositoryContextMenu from '../RepositoryContextMenu.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>()
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>()
 
 const isSidebarCollapsed = computed(() => appStore.isSidebarCollapsed)
-const repositories = computed(() => repositoryStore.repositories)
-const currentRepository = computed(() => repositoryStore.currentRepository)
+const repositories = computed(() => repositoriesStore.repositories)
+const currentRepository = computed(() => repositoriesStore.currentRepository)
 
 const toggleSidebar = () => appStore.toggleSidebar()
 
@@ -176,7 +176,7 @@ const cloneRepository = () => {
 }
 
 const selectRepository = (repo: any) => {
-  repositoryStore.setCurrentRepository(repo)
+  repositoriesStore.setCurrentRepository(repo)
   router.push('/repository')
 }
 
@@ -203,10 +203,10 @@ const handleRepositoryCreated = (path: string) => {
 }
 
 const removeRepository = async (repo: any) => {
-  await repositoryStore.removeRepository(repo.id)
+  await repositoriesStore.removeRepository(repo.id)
 }
 
 const toggleFavorite = async (repo: any) => {
-  await repositoryStore.toggleFavorite(repo.id)
+  await repositoriesStore.toggleFavorite(repo.id)
 }
 </script>

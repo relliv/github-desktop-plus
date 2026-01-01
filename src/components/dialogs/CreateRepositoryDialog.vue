@@ -189,7 +189,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useRepositoryStore } from '@/stores/repository.store'
+import { useRepositoriesStore } from '@/shared/stores'
 import type { CreateRepositoryOptions } from '@/shared/types/git.types'
 import { gitignoreTemplates, licenseTemplates } from '@/utils/templates'
 
@@ -197,7 +197,7 @@ const emit = defineEmits<{
   'repository-created': [path: string]
 }>()
 
-const repositoryStore = useRepositoryStore()
+const repositoriesStore = useRepositoriesStore()
 
 const isOpen = ref(false)
 const isCreating = ref(false)
@@ -270,7 +270,7 @@ const createRepository = async () => {
     
     if (result.success && result.path) {
       // Add to repository list
-      await repositoryStore.addRepository(result.path)
+      await repositoriesStore.addRepository(result.path)
       emit('repository-created', result.path)
       close()
     } else {
