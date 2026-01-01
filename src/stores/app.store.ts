@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 
 export type Theme = "light" | "dark" | "system";
 

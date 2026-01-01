@@ -225,6 +225,23 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         local: result.local,
         remote: result.remote || [],
       }
+
+      // Update current branch in repository if it changed and persist to DB
+      if (currentRepository.value.currentBranch !== result.current) {
+        const repoId = currentRepository.value.id
+        const index = repositories.value.findIndex((r) => r.id === repoId)
+        if (index !== -1) {
+          // Persist to database
+          await window.api.repository.updateBranch(repoId, result.current)
+
+          // Update local state
+          repositories.value[index] = {
+            ...repositories.value[index],
+            currentBranch: result.current,
+          }
+          currentRepository.value = repositories.value[index]
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch branches:', err)
       branches.value = null
