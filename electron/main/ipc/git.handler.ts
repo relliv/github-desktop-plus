@@ -27,15 +27,30 @@ export function registerGitHandlers() {
       const status = await repoGit.status()
       const remotes = await repoGit.getRemotes(true)
       const branches = await repoGit.branchLocal()
-      
-      return {
+
+      // Serialize to plain objects to avoid IPC cloning issues
+      const result = {
         success: true,
         name: path.basename(repoPath),
         path: repoPath,
-        currentBranch: branches.current,
-        remoteUrl: remotes[0]?.refs?.fetch || null,
-        status
+        currentBranch: String(branches.current || ''),
+        remoteUrl: remotes[0]?.refs?.fetch ? String(remotes[0].refs.fetch) : null,
+        status: {
+          modified: [...status.modified],
+          created: [...status.created],
+          deleted: [...status.deleted],
+          renamed: status.renamed.map(r => ({ from: String(r.from), to: String(r.to) })),
+          conflicted: [...status.conflicted],
+          staged: [...status.staged],
+          ahead: Number(status.ahead) || 0,
+          behind: Number(status.behind) || 0,
+          current: status.current ? String(status.current) : null,
+          tracking: status.tracking ? String(status.tracking) : null,
+          isClean: Boolean(status.isClean())
+        }
       }
+
+      return JSON.parse(JSON.stringify(result))
     } catch (error) {
       return {
         success: false,
