@@ -123,7 +123,8 @@ const unstageFile = async (file: string) => {
 const stageAll = async () => {
   if (!currentRepository.value) return
   try {
-    await window.api.git.stage(currentRepository.value.path, unstagedFiles.value)
+    // Convert reactive array to plain array for IPC serialization
+    await window.api.git.stage(currentRepository.value.path, [...unstagedFiles.value])
     await repositoryStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to stage all:', error)
@@ -133,7 +134,8 @@ const stageAll = async () => {
 const unstageAll = async () => {
   if (!currentRepository.value) return
   try {
-    await window.api.git.unstage(currentRepository.value.path, stagedFiles.value)
+    // Convert reactive array to plain array for IPC serialization
+    await window.api.git.unstage(currentRepository.value.path, [...stagedFiles.value])
     await repositoryStore.fetchGitStatus()
   } catch (error) {
     console.error('Failed to unstage all:', error)
