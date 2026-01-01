@@ -11,22 +11,22 @@
     </PopoverTrigger>
     <PopoverContent class="w-[200px] p-0" align="start">
       <div
-        class="max-h-[300px] overflow-y-auto bg-white mt-1 rounded-md shadow-md"
+        class="max-h-[300px] overflow-y-auto bg-white dark:bg-card mt-1 rounded-md shadow-md dark:shadow-lg border border-border"
       >
         <div class="p-2">
           <input
             v-model="searchQuery"
             placeholder="Find a branch..."
-            class="w-full px-2 py-1 text-sm border rounded"
+            class="w-full px-2 py-1 text-sm border rounded bg-background text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
-        <div class="border-t">
+        <div class="border-t border-border">
           <button
             v-for="branch in filteredBranches"
             :key="branch"
             @click="switchBranch(branch)"
             :class="[
-              'w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors flex items-center justify-between',
+              'w-full px-3 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors flex items-center justify-between',
               branch === currentBranch ? 'bg-accent' : '',
             ]"
           >
