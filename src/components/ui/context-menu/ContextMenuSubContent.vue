@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { ContextMenuSubContent, type ContextMenuSubContentProps, type ContextMenuSubContentEmits, useForwardPropsEmits } from 'radix-vue'
+import { ContextMenuSubContent, type ContextMenuSubContentProps, type ContextMenuSubContentEmits, useForwardPropsEmits } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<ContextMenuSubContentProps & {

@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { DialogOverlay, type DialogOverlayProps, useForwardProps } from 'radix-vue'
+import { DialogOverlay, type DialogOverlayProps, useForwardProps } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<DialogOverlayProps & { class?: HTMLAttributes['class'] }>()

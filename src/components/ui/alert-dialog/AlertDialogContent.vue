@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { type HTMLAttributes } from 'vue'
-import { AlertDialogContent, type AlertDialogContentProps, AlertDialogPortal } from 'radix-vue'
+import { AlertDialogContent, type AlertDialogContentProps, AlertDialogPortal } from 'reka-ui'
 import { cn } from '@/lib/utils'
 import AlertDialogOverlay from './AlertDialogOverlay.vue'
 

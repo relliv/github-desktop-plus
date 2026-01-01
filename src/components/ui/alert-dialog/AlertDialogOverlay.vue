@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { type HTMLAttributes } from 'vue'
-import { AlertDialogOverlay, type AlertDialogOverlayProps } from 'radix-vue'
+import { AlertDialogOverlay, type AlertDialogOverlayProps } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<AlertDialogOverlayProps & { class?: HTMLAttributes['class'] }>()

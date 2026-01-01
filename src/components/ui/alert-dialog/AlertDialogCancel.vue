@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { AlertDialogCancel, type AlertDialogCancelProps } from 'radix-vue'
+import { AlertDialogCancel, type AlertDialogCancelProps } from 'reka-ui'
 
 const props = defineProps<AlertDialogCancelProps>()
 </script>

@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { ProgressRoot, ProgressIndicator, type ProgressRootProps, type ProgressRootEmits, useForwardPropsEmits } from 'radix-vue'
+import { ProgressRoot, ProgressIndicator, type ProgressRootProps, type ProgressRootEmits, useForwardPropsEmits } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<ProgressRootProps & { class?: HTMLAttributes['class'] }>()

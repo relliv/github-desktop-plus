@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { useForwardPropsEmits } from 'radix-vue'
-import { TabsRoot, type TabsRootProps, type TabsRootEmits } from 'radix-vue'
+import { useForwardPropsEmits } from 'reka-ui'
+import { TabsRoot, type TabsRootProps, type TabsRootEmits } from 'reka-ui'
 
 const props = defineProps<TabsRootProps>()
 const emits = defineEmits<TabsRootEmits>()

@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { useForwardPropsEmits } from 'radix-vue'
-import { CollapsibleRoot, type CollapsibleRootProps, type CollapsibleRootEmits } from 'radix-vue'
+import { useForwardPropsEmits } from 'reka-ui'
+import { CollapsibleRoot, type CollapsibleRootProps, type CollapsibleRootEmits } from 'reka-ui'
 
 const props = defineProps<CollapsibleRootProps>()
 const emits = defineEmits<CollapsibleRootEmits>()

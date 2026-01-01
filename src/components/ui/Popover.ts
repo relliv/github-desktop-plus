@@ -6,4 +6,4 @@ export {
   PopoverClose,
   PopoverAnchor,
   PopoverPortal,
-} from 'radix-vue'
+} from 'reka-ui'

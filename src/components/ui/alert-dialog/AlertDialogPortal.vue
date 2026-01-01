@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { AlertDialogPortal, type AlertDialogPortalProps } from 'radix-vue'
+import { AlertDialogPortal, type AlertDialogPortalProps } from 'reka-ui'
 
 const props = defineProps<AlertDialogPortalProps>()
 </script>
