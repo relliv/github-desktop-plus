@@ -25,7 +25,7 @@
         <!-- Resize Handle -->
         <SplitterResizeHandle
           id="sidebar-handle"
-          class="w-1 bg-border hover:bg-primary/50 transition-colors data-[state=drag]:bg-primary"
+          class="bg-border hover:bg-primary/50 transition-colors data-[state=drag]:bg-primary"
         />
 
         <!-- Main Content Panel -->
