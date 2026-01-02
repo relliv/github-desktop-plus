@@ -8,7 +8,7 @@ A modern Git client built with Electron, Vue 3, and Tailwind CSS.
 - **Vue 3** - UI framework with Composition API
 - **Vite** - Build tool
 - **Tailwind CSS** - Styling
-- **Reka UI** - Accessible component primitives
+- **[Reka UI](https://reka-ui.com)** - Accessible component primitives
 - **Drizzle ORM** - Database (SQLite)
 - **simple-git** - Git operations
 
