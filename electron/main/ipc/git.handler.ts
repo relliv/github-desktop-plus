@@ -64,10 +64,10 @@ export function registerGitHandlers() {
     try {
       const repoGit = simpleGit(repoPath)
       const status = await repoGit.status()
-      
+
       return {
         modified: status.modified,
-        added: status.created,
+        added: [...status.created, ...status.not_added],
         deleted: status.deleted,
         renamed: status.renamed,
         conflicted: status.conflicted,
