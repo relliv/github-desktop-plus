@@ -7,15 +7,15 @@
       <SplitterGroup
         id="main-layout"
         direction="horizontal"
+        auto-save-id="main-layout-splitter"
         class="flex-1"
-        @layout="onLayoutChange"
       >
         <!-- Sidebar Panel -->
         <SplitterPanel
           id="sidebar"
-          :default-size="appStore.sidebarSize"
-          :min-size="appStore.minSidebarSize"
-          :max-size="appStore.maxSidebarSize"
+          :default-size="20"
+          :min-size="15"
+          :max-size="35"
           :collapsible="false"
           class="bg-card"
         >
@@ -40,21 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import TitleBar from "../components/layout/TitleBar.vue";
 import Sidebar from "../components/layout/Sidebar.vue";
-import { useAppStore } from "../stores/app.store";
-
-const appStore = useAppStore();
-
-const onLayoutChange = (sizes: number[]) => {
-  if (sizes[0] !== undefined) {
-    appStore.setSidebarSize(sizes[0]);
-  }
-};
-
-onMounted(() => {
-  appStore.initializeSidebarSize();
-});
 </script>

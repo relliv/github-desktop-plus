@@ -93,7 +93,8 @@ export const useAppStore = defineStore("app", () => {
   const initializeSidebarSize = () => {
     const savedSize = localStorage.getItem("sidebarSize");
     if (savedSize) {
-      sidebarSize.value = Number(savedSize);
+      const size = Number(savedSize);
+      sidebarSize.value = Math.max(minSidebarSize, Math.min(maxSidebarSize, size));
     }
   };
 
