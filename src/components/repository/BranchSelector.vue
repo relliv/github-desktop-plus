@@ -1,5 +1,5 @@
 <template>
-  <Popover>
+  <Popover v-model:open="popoverOpen">
     <PopoverTrigger as-child>
       <Button variant="outline" size="sm" class="w-[200px] justify-between">
         <span class="truncate">{{ currentBranch || "No branch" }}</span>
@@ -88,6 +88,7 @@ const repositoriesStore = useRepositoriesStore();
 const searchQuery = ref("");
 const showErrorDialog = ref(false);
 const pendingBranch = ref<string>("");
+const popoverOpen = ref(false);
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 const branches = computed(() => repositoriesStore.branches?.local || []);
@@ -101,6 +102,8 @@ const filteredBranches = computed(() => {
 });
 
 const switchBranch = async (branch: string) => {
+  popoverOpen.value = false;
+
   if (!currentRepository.value || branch === currentBranch.value) return;
 
   try {
