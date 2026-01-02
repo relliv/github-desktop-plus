@@ -49,23 +49,27 @@
     </div>
     
     <!-- Main content area -->
-    <div class="flex-1 flex">
+    <SplitterGroup direction="horizontal" auto-save-id="repository-splitter" class="flex-1">
       <!-- Changes panel -->
-      <div class="w-1/3 border-r flex flex-col">
+      <SplitterPanel :default-size="30" :min-size="20" :max-size="50" class="flex flex-col">
         <div class="px-4 py-3 border-b">
           <h2 class="font-semibold">Changes</h2>
         </div>
         <ChangesPanel />
-      </div>
-      
+      </SplitterPanel>
+
+      <SplitterResizeHandle class="w-2 flex items-center justify-center group border-x">
+        <div class="h-8 w-1 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors" />
+      </SplitterResizeHandle>
+
       <!-- Diff viewer -->
-      <div class="flex-1 flex flex-col">
+      <SplitterPanel :default-size="70" :min-size="30" class="flex flex-col">
         <div class="px-4 py-3 border-b">
           <h2 class="font-semibold">Diff</h2>
         </div>
         <DiffViewer />
-      </div>
-    </div>
+      </SplitterPanel>
+    </SplitterGroup>
     
     <!-- Repository Settings Dialog -->
     <RepositorySettingsDialog ref="repoSettingsDialog" @repository-removed="handleRepositoryRemoved" />
@@ -192,6 +196,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { GitBranch, Star, RefreshCw, Download, Upload, ChevronRight, FilePlus, FolderOpen, Settings } from 'lucide-vue-next'
 import { useRepositoriesStore } from '@/shared/stores'
 import Button from '../components/ui/Button.vue'
