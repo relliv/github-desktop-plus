@@ -1,7 +1,7 @@
 <template>
-  <div class="flex-1 flex flex-col" v-if="currentRepository">
+  <div class="flex-1 min-h-0 flex flex-col overflow-hidden" v-if="currentRepository">
     <!-- Repository header -->
-    <div class="h-[50px] px-6 border-b flex items-center justify-between">
+    <div class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between">
       <div class="flex items-center gap-4">
         <h1 class="text-2xl font-bold">{{ currentRepository.name }}</h1>
         <button
@@ -56,7 +56,7 @@
     </div>
 
     <!-- Branch selector -->
-    <div class="px-6 py-3 border-b flex items-center gap-4">
+    <div class="shrink-0 px-6 py-3 border-b flex items-center gap-4">
       <div class="flex items-center gap-2">
         <GitBranch class="w-4 h-4 text-muted-foreground" :stroke-width="1" />
         <span class="text-sm font-medium">Current branch:</span>
@@ -68,17 +68,17 @@
     <SplitterGroup
       direction="horizontal"
       auto-save-id="repository-splitter"
-      class="flex-1"
+      class="flex-1 min-h-0 overflow-hidden"
     >
       <!-- Changes panel -->
       <SplitterPanel
         :default-size="30"
         :min-size="20"
         :max-size="50"
-        class="flex flex-col"
+        class="flex flex-col overflow-hidden"
         :collapsible="false"
       >
-        <div class="px-4 py-3 border-b">
+        <div class="shrink-0 px-4 py-3 border-b">
           <h2 class="font-semibold">Changes</h2>
         </div>
         <ChangesPanel />

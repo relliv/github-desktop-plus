@@ -2,11 +2,11 @@
   <div class="flex-1 flex flex-col overflow-hidden">
     <div
       v-if="hasChanges"
-      class="flex-1 flex flex-col overflow-hidden p-2 space-y-4"
+      class="flex-1 min-h-0 flex flex-col overflow-hidden p-2 space-y-4"
     >
       <!-- Staged changes -->
       <div v-if="stagedFiles.length > 0" class="flex flex-col min-h-0 flex-1">
-        <div class="flex items-center justify-between mb-2">
+        <div class="shrink-0 flex items-center justify-between mb-2">
           <h3 class="text-sm font-medium">
             Staged Changes ({{ stagedFiles.length }})
           </h3>
@@ -14,22 +14,7 @@
             Unstage all
           </Button>
         </div>
-        <RecycleScroller
-          v-if="stagedFiles.length > 10"
-          class="flex-1"
-          :items="stagedFilesWithId"
-          :item-size="40"
-          key-field="id"
-          v-slot="{ item }"
-        >
-          <FileItem
-            :file="item.file"
-            :staged="true"
-            @click="selectFile(item.file)"
-            @unstage="unstageFile(item.file)"
-          />
-        </RecycleScroller>
-        <div v-else class="flex-1 space-y-0.5 overflow-y-auto">
+        <div class="flex-1 min-h-0 space-y-0.5 overflow-y-auto">
           <FileItem
             v-for="file in stagedFiles"
             :key="file"
@@ -43,7 +28,7 @@
 
       <!-- Unstaged changes -->
       <div v-if="unstagedFiles.length > 0" class="flex flex-col min-h-0 flex-1">
-        <div class="flex items-center justify-between mb-2">
+        <div class="shrink-0 flex items-center justify-between mb-2">
           <h3 class="text-sm font-medium">
             Changes ({{ unstagedFiles.length }})
           </h3>
@@ -51,22 +36,7 @@
             Stage all
           </Button>
         </div>
-        <RecycleScroller
-          v-if="unstagedFiles.length > 10"
-          class="flex-1"
-          :items="unstagedFilesWithId"
-          :item-size="40"
-          key-field="id"
-          v-slot="{ item }"
-        >
-          <FileItem
-            :file="item.file"
-            :staged="false"
-            @click="selectFile(item.file)"
-            @stage="stageFile(item.file)"
-          />
-        </RecycleScroller>
-        <div v-else class="flex-1 space-y-1 overflow-y-auto">
+        <div class="flex-1 min-h-0 space-y-1 overflow-y-auto">
           <FileItem
             v-for="file in unstagedFiles"
             :key="file"
@@ -110,7 +80,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { RecycleScroller } from "vue-virtual-scroller";
 import { FileText } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import Button from "../ui/Button.vue";
@@ -133,13 +102,6 @@ const unstagedFiles = computed(() => {
     ...gitStatus.value.deleted,
   ].filter((file) => !stagedFiles.value.includes(file));
 });
-
-const stagedFilesWithId = computed(() =>
-  stagedFiles.value.map((file, index) => ({ id: `staged-${index}`, file }))
-);
-const unstagedFilesWithId = computed(() =>
-  unstagedFiles.value.map((file, index) => ({ id: `unstaged-${index}`, file }))
-);
 
 const currentBranch = computed(
   () => currentRepository.value?.currentBranch || "main"
