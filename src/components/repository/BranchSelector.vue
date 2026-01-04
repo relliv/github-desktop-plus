@@ -93,6 +93,7 @@ const popoverOpen = ref(false);
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 const branches = computed(() => repositoriesStore.branches?.local || []);
 const currentBranch = computed(() => repositoriesStore.branches?.current || "");
+const hasChanges = computed(() => repositoriesStore.hasChanges);
 
 const filteredBranches = computed(() => {
   if (!searchQuery.value) return branches.value;
@@ -106,6 +107,19 @@ const switchBranch = async (branch: string) => {
 
   if (!currentRepository.value || branch === currentBranch.value) return;
 
+  // Proactively warn if there are uncommitted changes
+  if (hasChanges.value) {
+    pendingBranch.value = branch;
+    showErrorDialog.value = true;
+    return;
+  }
+
+  await performCheckout(branch);
+};
+
+const performCheckout = async (branch: string) => {
+  if (!currentRepository.value) return;
+
   try {
     await window.api.git.checkout(currentRepository.value.path, branch);
     await Promise.all([
@@ -113,17 +127,7 @@ const switchBranch = async (branch: string) => {
       repositoriesStore.fetchBranches(),
     ]);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    // Check if error is due to uncommitted changes
-    if (errorMessage.includes("overwritten by checkout") ||
-        errorMessage.includes("commit your changes") ||
-        errorMessage.includes("stash them")) {
-      pendingBranch.value = branch;
-      showErrorDialog.value = true;
-    } else {
-      console.error("Failed to switch branch:", error);
-    }
+    console.error("Failed to switch branch:", error);
   }
 };
 
@@ -135,14 +139,9 @@ const stashAndSwitch = async () => {
     await window.api.git.stash(currentRepository.value.path, `Auto-stash before switching to ${pendingBranch.value}`);
 
     // Switch to the target branch
-    await window.api.git.checkout(currentRepository.value.path, pendingBranch.value);
-
-    // Clear pending branch and refresh status + branches
+    const branch = pendingBranch.value;
     pendingBranch.value = "";
-    await Promise.all([
-      repositoriesStore.fetchGitStatus(),
-      repositoriesStore.fetchBranches(),
-    ]);
+    await performCheckout(branch);
   } catch (error) {
     console.error("Failed to stash and switch:", error);
   }
