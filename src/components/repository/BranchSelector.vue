@@ -21,7 +21,7 @@
     </PopoverTrigger>
     <PopoverContent class="w-[200px] p-0" align="start">
       <div
-        class="max-h-[300px] overflow-y-auto bg-white dark:bg-card mt-1 rounded-md shadow-md dark:shadow-lg border border-border"
+        class="bg-white dark:bg-card mt-1 rounded-md shadow-md dark:shadow-lg border border-border"
       >
         <div class="p-2">
           <input
@@ -30,7 +30,7 @@
             class="w-full px-2 py-1 text-sm border rounded bg-background text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
-        <div class="border-t border-border">
+        <div class="border-t border-border max-h-[300px] overflow-y-auto">
           <button
             v-for="branch in filteredBranches"
             :key="branch"
