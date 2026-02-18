@@ -87,18 +87,21 @@
       <SidebarButton
         :icon="Settings"
         label="Settings"
-        @click="navigateToSettings"
+        @click="openSettings"
       />
     </div>
     
     <!-- Clone Dialog -->
     <CloneDialog ref="cloneDialog" @clone-complete="handleCloneComplete" />
-    
+
     <!-- Open Repository Dialog -->
     <OpenRepositoryDialog ref="openRepoDialog" @repository-opened="handleRepositoryOpened" />
-    
+
     <!-- Create Repository Dialog -->
     <CreateRepositoryDialog ref="createRepoDialog" @repository-created="handleRepositoryCreated" />
+
+    <!-- App Settings Dialog -->
+    <AppSettingsDialog ref="appSettingsDialog" />
   </aside>
 </template>
 
@@ -118,6 +121,7 @@ import SidebarButton from '../ui/SidebarButton.vue'
 import CloneDialog from '../dialogs/CloneDialog.vue'
 import OpenRepositoryDialog from '../dialogs/OpenRepositoryDialog.vue'
 import CreateRepositoryDialog from '../dialogs/CreateRepositoryDialog.vue'
+import AppSettingsDialog from '../dialogs/AppSettingsDialog.vue'
 import RepositoryContextMenu from '../RepositoryContextMenu.vue'
 
 const router = useRouter()
@@ -126,6 +130,7 @@ const repositoriesStore = useRepositoriesStore()
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>()
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>()
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>()
+const appSettingsDialog = ref<InstanceType<typeof AppSettingsDialog>>()
 
 const repositories = computed(() => repositoriesStore.repositories)
 const currentRepository = computed(() => repositoriesStore.currentRepository)
@@ -147,8 +152,8 @@ const selectRepository = (repo: any) => {
   router.push('/repository')
 }
 
-const navigateToSettings = () => {
-  router.push('/settings')
+const openSettings = () => {
+  appSettingsDialog.value?.open()
 }
 
 const handleCloneComplete = () => {
