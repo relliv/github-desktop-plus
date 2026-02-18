@@ -61,32 +61,45 @@
     </div>
 
     <!-- Commit section -->
-    <div v-if="stagedFiles.length > 0" class="shrink-0 border-t p-4">
+    <div v-if="hasChanges" class="shrink-0 border-t p-3 space-y-2">
       <textarea
         v-model="commitMessage"
-        placeholder="Commit message"
-        class="w-full px-3 py-0 text-sm border rounded-md resize-none h-20 bg-background"
+        placeholder="Summary (required)"
+        class="w-full px-3 py-2 text-sm border rounded-md resize-none bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+        rows="1"
+      />
+      <textarea
+        v-model="commitDescription"
+        placeholder="Description"
+        class="w-full px-3 py-2 text-sm border rounded-md resize-none bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+        rows="2"
       />
       <Button
         @click="commit"
-        :disabled="!commitMessage.trim()"
-        class="w-full mt-2"
+        :disabled="!commitMessage.trim() || stagedFiles.length === 0"
+        class="w-full"
+        size="sm"
       >
+        <GitCommit class="w-4 h-4 mr-2" :stroke-width="1.5" />
         Commit to {{ currentBranch }}
       </Button>
+      <p v-if="stagedFiles.length === 0" class="text-xs text-muted-foreground text-center">
+        Stage changes to commit
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { FileText } from "lucide-vue-next";
+import { FileText, GitCommit } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import Button from "../ui/Button.vue";
 import FileItem from "./FileItem.vue";
 
 const repositoriesStore = useRepositoriesStore();
 const commitMessage = ref("");
+const commitDescription = ref("");
 const selectedFile = ref<string | null>(null);
 
 const gitStatus = computed(() => repositoriesStore.gitStatus);
@@ -162,11 +175,14 @@ const commit = async () => {
   if (!currentRepository.value || !commitMessage.value.trim()) return;
 
   try {
-    await window.api.git.commit(
-      currentRepository.value.path,
-      commitMessage.value
-    );
+    // Combine summary and description with blank line separator
+    const fullMessage = commitDescription.value.trim()
+      ? `${commitMessage.value.trim()}\n\n${commitDescription.value.trim()}`
+      : commitMessage.value.trim();
+
+    await window.api.git.commit(currentRepository.value.path, fullMessage);
     commitMessage.value = "";
+    commitDescription.value = "";
     await repositoriesStore.fetchGitStatus();
   } catch (error) {
     console.error("Failed to commit:", error);

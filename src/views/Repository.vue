@@ -41,7 +41,7 @@
 
     <!-- Repository tabs -->
     <Tabs
-      default-value="changes"
+      v-model="activeTab"
       class="flex-1 min-h-0 flex flex-col overflow-hidden"
     >
       <div class="shrink-0 pl-3 pr-6 border-b">
@@ -289,7 +289,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import {
   GitBranch,
@@ -329,7 +329,24 @@ const cloneDialog = ref<InstanceType<typeof CloneDialog>>();
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
 
+const activeTab = ref("changes");
+
 const currentRepository = computed(() => repositoriesStore.currentRepository);
+
+// Rescan changes when window regains focus and changes tab is active
+const handleWindowFocus = () => {
+  if (activeTab.value === "changes" && currentRepository.value) {
+    repositoriesStore.fetchGitStatus();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("focus", handleWindowFocus);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("focus", handleWindowFocus);
+});
 const gitStatus = computed(() => repositoriesStore.gitStatus);
 const recentRepositories = computed(() => repositoriesStore.recentRepositories);
 const favoriteRepositories = computed(
