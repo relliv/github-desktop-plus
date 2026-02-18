@@ -5,7 +5,9 @@
       class="flex flex-row gap-2 h-8 bg-background/95 backdrop-blur-sm border-b items-center justify-between z-40 w-full"
     >
       <!-- Center - Empty for drag area -->
-      <div class="flex flex-row items-center justify-center flex-1 h-full text-center app-drag">
+      <div
+        class="flex flex-row items-center justify-start pl-4 flex-1 h-full text-center app-drag"
+      >
         <span class="text-xs font-semibold text-foreground"
           >GitHub Desktop Plus</span
         >
