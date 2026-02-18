@@ -72,6 +72,12 @@
             Changes
           </TabsTrigger>
           <TabsTrigger
+            value="stats"
+            class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+          >
+            Stats
+          </TabsTrigger>
+          <TabsTrigger
             value="settings"
             class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
@@ -121,6 +127,11 @@
             <DiffViewer />
           </SplitterPanel>
         </SplitterGroup>
+      </TabsContent>
+
+      <!-- Stats tab content -->
+      <TabsContent value="stats" class="flex-1 min-h-0 mt-0 overflow-hidden">
+        <RepositoryStats />
       </TabsContent>
 
       <!-- Settings tab content -->
@@ -306,6 +317,7 @@ import BranchSelector from "../components/repository/BranchSelector.vue";
 import ChangesPanel from "../components/repository/ChangesPanel.vue";
 import DiffViewer from "../components/repository/DiffViewer.vue";
 import RepositorySettings from "../components/repository/RepositorySettings.vue";
+import RepositoryStats from "../components/repository/RepositoryStats.vue";
 import CloneDialog from "../components/dialogs/CloneDialog.vue";
 import OpenRepositoryDialog from "../components/dialogs/OpenRepositoryDialog.vue";
 import CreateRepositoryDialog from "../components/dialogs/CreateRepositoryDialog.vue";
