@@ -23,6 +23,8 @@
             :stroke-width="1"
           />
         </button>
+        <div class="w-px h-6 bg-border" />
+        <BranchSelector />
       </div>
 
       <div class="flex items-center gap-2">
@@ -52,15 +54,6 @@
           <Upload class="w-4 h-4 mr-2" :stroke-width="1" />
           Push {{ gitStatus?.ahead ? `(${gitStatus.ahead})` : "" }}
         </Button>
-      </div>
-    </div>
-
-    <!-- Branch selector -->
-    <div class="shrink-0 px-6 py-3 border-b flex items-center gap-4">
-      <div class="flex items-center gap-2">
-        <GitBranch class="w-4 h-4 text-muted-foreground" :stroke-width="1" />
-        <span class="text-sm font-medium">Current branch:</span>
-        <BranchSelector />
       </div>
     </div>
 

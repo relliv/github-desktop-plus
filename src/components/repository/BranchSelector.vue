@@ -1,8 +1,18 @@
 <template>
   <Popover v-model:open="popoverOpen">
     <PopoverTrigger as-child>
-      <Button variant="outline" size="sm" class="w-[200px] justify-between">
-        <span class="truncate">{{ currentBranch || "No branch" }}</span>
+      <Button
+        variant="outline"
+        size="sm"
+        class="flex flex-row items-center w-[200px] h-[30px]"
+      >
+        <GitBranch
+          class="size-3.5 shrink-0 text-muted-foreground"
+          :stroke-width="1"
+        />
+        <span class="truncate flex-1 text-left ml-2 text-xs">{{
+          currentBranch || "No branch"
+        }}</span>
         <ChevronDown
           class="ml-2 h-4 w-4 shrink-0 opacity-50"
           :stroke-width="1"
@@ -51,9 +61,14 @@
           Uncommitted Changes
         </AlertDialogTitle>
         <AlertDialogDescription class="text-left space-y-3">
-          <p>You have uncommitted changes that would be overwritten by switching branches.</p>
+          <p>
+            You have uncommitted changes that would be overwritten by switching
+            branches.
+          </p>
           <p class="text-sm text-muted-foreground">
-            Would you like to stash your changes and switch to <strong>{{ pendingBranch }}</strong>?
+            Would you like to stash your changes and switch to
+            <strong>{{ pendingBranch }}</strong
+            >?
           </p>
         </AlertDialogDescription>
       </AlertDialogHeader>
@@ -69,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { ChevronDown, Check, AlertTriangle } from "lucide-vue-next";
+import { ChevronDown, Check, AlertTriangle, GitBranch } from "lucide-vue-next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
   AlertDialog,
@@ -98,7 +113,7 @@ const hasChanges = computed(() => repositoriesStore.hasChanges);
 const filteredBranches = computed(() => {
   if (!searchQuery.value) return branches.value;
   return branches.value.filter((branch) =>
-    branch.toLowerCase().includes(searchQuery.value.toLowerCase())
+    branch.toLowerCase().includes(searchQuery.value.toLowerCase()),
   );
 });
 
@@ -136,7 +151,10 @@ const stashAndSwitch = async () => {
 
   try {
     // Stash current changes
-    await window.api.git.stash(currentRepository.value.path, `Auto-stash before switching to ${pendingBranch.value}`);
+    await window.api.git.stash(
+      currentRepository.value.path,
+      `Auto-stash before switching to ${pendingBranch.value}`,
+    );
 
     // Switch to the target branch
     const branch = pendingBranch.value;
