@@ -126,18 +126,6 @@
         <CardContent class="space-y-3">
           <div class="flex items-center justify-between">
             <div class="space-y-0.5">
-              <Label>Favorite</Label>
-              <p class="text-sm text-muted-foreground">
-                Mark this repository as a favorite
-              </p>
-            </div>
-            <Switch v-model="isFavorite" @update:model-value="toggleFavorite" />
-          </div>
-
-          <Separator />
-
-          <div class="flex items-center justify-between">
-            <div class="space-y-0.5">
               <Label>Open in Terminal</Label>
               <p class="text-sm text-muted-foreground">
                 Open terminal in repository directory
@@ -228,7 +216,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Button from "@/components/ui/Button.vue";
 import Input from "@/components/ui/Input.vue";
 import Label from "@/components/ui/Label.vue";
-import Switch from "@/components/ui/Switch.vue";
 import Separator from "@/components/ui/Separator.vue";
 import {
   Select,
@@ -245,7 +232,6 @@ const repositoriesStore = useRepositoriesStore();
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 const branches = computed(() => repositoriesStore.branches?.local || []);
 const remoteUrl = ref<string>("");
-const isFavorite = ref(false);
 const showRemoveConfirm = ref(false);
 const defaultBranch = ref<string>("");
 
@@ -271,8 +257,6 @@ watch(
   currentRepository,
   async (newRepo) => {
     if (newRepo) {
-      isFavorite.value = newRepo.isFavorite;
-
       // Get remote URL
       try {
         remoteUrl.value =
@@ -307,12 +291,6 @@ const updateGitConfig = async () => {
     // TODO: Update git config for this repository
     console.log("Update git config:", gitConfig.value);
     originalGitConfig.value = { ...gitConfig.value };
-  }
-};
-
-const toggleFavorite = async () => {
-  if (currentRepository.value) {
-    await repositoriesStore.toggleFavorite(currentRepository.value.id);
   }
 };
 
