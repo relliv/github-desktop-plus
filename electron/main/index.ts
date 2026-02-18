@@ -1,8 +1,9 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, screen } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
+import { settingsService, WindowBounds } from '../../src/main/services/settings.service'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -42,11 +43,44 @@ let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
+function getDefaultWindowBounds(): WindowBounds {
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize
+
+  const width = Math.round(screenWidth / 2)
+  const height = Math.round(screenHeight / 2)
+  const x = Math.round((screenWidth - width) / 2)
+  const y = Math.round((screenHeight - height) / 2)
+
+  return { x, y, width, height, isMaximized: false }
+}
+
+function saveWindowBounds() {
+  if (!win) return
+
+  const isMaximized = win.isMaximized()
+  const bounds = win.getBounds()
+
+  settingsService.saveWindowBounds({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    isMaximized,
+  })
+}
+
 async function createWindow() {
+  // Load saved bounds or use defaults
+  const savedBounds = await settingsService.getWindowBounds()
+  const bounds = savedBounds ?? getDefaultWindowBounds()
+
   win = new BrowserWindow({
     title: 'GitHub Desktop Plus',
-    width: 1200,
-    height: 800,
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
     minWidth: 900,
     minHeight: 600,
     frame: false,
@@ -64,14 +98,21 @@ async function createWindow() {
       // contextIsolation: false,
     },
   })
-  
-  // Maximize the window
-  win.maximize()
-  
-  // Show window after maximizing
+
+  // Restore maximized state if it was maximized
+  if (savedBounds?.isMaximized) {
+    win.maximize()
+  }
+
+  // Show window when ready
   win.once('ready-to-show', () => {
-    win.show()
+    win?.show()
   })
+
+  // Save bounds when window is moved, resized, or closed
+  win.on('resize', saveWindowBounds)
+  win.on('move', saveWindowBounds)
+  win.on('close', saveWindowBounds)
 
   if (VITE_DEV_SERVER_URL) { // #298
     win.loadURL(VITE_DEV_SERVER_URL)

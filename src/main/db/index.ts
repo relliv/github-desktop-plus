@@ -31,7 +31,14 @@ sqlite.exec(`
     last_opened_at INTEGER DEFAULT CURRENT_TIMESTAMP,
     created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
-  )
+  );
+
+  CREATE TABLE IF NOT EXISTS app_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL UNIQUE,
+    value TEXT NOT NULL,
+    updated_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
+  );
 `)
 
 // Close database connection when app quits
