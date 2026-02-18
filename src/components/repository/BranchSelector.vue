@@ -30,7 +30,7 @@
             class="w-full px-2 py-1 text-sm border rounded bg-background text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
-        <div class="border-t border-border max-h-[300px] overflow-y-auto">
+        <div class="border-t border-border max-h-[300px] overflow-y-auto mr-1">
           <button
             v-for="branch in filteredBranches"
             :key="branch"
