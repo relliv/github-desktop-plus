@@ -1,9 +1,14 @@
 <template>
-  <div class="flex-1 min-h-0 flex flex-col overflow-hidden" v-if="currentRepository">
+  <div
+    class="flex-1 min-h-0 flex flex-col overflow-hidden"
+    v-if="currentRepository"
+  >
     <!-- Repository header -->
-    <div class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between">
+    <div
+      class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between"
+    >
       <div class="flex items-center gap-4">
-        <h1 class="text-2xl font-bold">{{ currentRepository.name }}</h1>
+        <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
         <button
           @click="toggleFavorite"
           class="p-1 hover:bg-accent rounded transition-colors"
@@ -15,7 +20,7 @@
         >
           <Star
             :class="[
-              'w-5 h-5',
+              'size-4',
               currentRepository.isFavorite
                 ? 'fill-yellow-500 text-yellow-500'
                 : '',
@@ -28,10 +33,6 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" @click="openRepositorySettings">
-          <Settings class="w-4 h-4" :stroke-width="1" />
-        </Button>
-        <div class="w-px h-6 bg-border" />
         <Button variant="ghost" size="sm" @click="fetchChanges">
           <RefreshCw class="w-4 h-4 mr-2" :stroke-width="1" />
           Fetch
@@ -57,48 +58,76 @@
       </div>
     </div>
 
-    <!-- Main content area -->
-    <SplitterGroup
-      direction="horizontal"
-      auto-save-id="repository-splitter"
-      class="flex-1 min-h-0 overflow-hidden"
+    <!-- Repository tabs -->
+    <Tabs
+      default-value="changes"
+      class="flex-1 min-h-0 flex flex-col overflow-hidden"
     >
-      <!-- Changes panel -->
-      <SplitterPanel
-        :default-size="30"
-        :min-size="20"
-        :max-size="50"
-        class="flex flex-col overflow-hidden"
-        :collapsible="false"
-      >
-        <div class="shrink-0 px-4 py-3 border-b">
-          <h2 class="font-semibold">Changes</h2>
-        </div>
-        <ChangesPanel />
-      </SplitterPanel>
+      <div class="shrink-0 px-6 border-b">
+        <TabsList class="h-9 bg-transparent p-0 rounded-none">
+          <TabsTrigger
+            value="changes"
+            class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+          >
+            Changes
+          </TabsTrigger>
+          <TabsTrigger
+            value="settings"
+            class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+          >
+            Settings
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
-      <SplitterResizeHandle
-        class="flex items-center justify-center group border-x"
-      >
-        <div
-          class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
-        />
-      </SplitterResizeHandle>
+      <!-- Changes tab content -->
+      <TabsContent value="changes" class="flex-1 min-h-0 mt-0 overflow-hidden">
+        <SplitterGroup
+          direction="horizontal"
+          auto-save-id="repository-splitter"
+          class="h-full"
+        >
+          <!-- Changes panel -->
+          <SplitterPanel
+            :default-size="30"
+            :min-size="20"
+            :max-size="50"
+            class="flex flex-col overflow-hidden"
+            :collapsible="false"
+          >
+            <div class="shrink-0 px-4 py-3 border-b">
+              <h2 class="font-semibold">Changes</h2>
+            </div>
+            <ChangesPanel />
+          </SplitterPanel>
 
-      <!-- Diff viewer -->
-      <SplitterPanel :default-size="70" :min-size="30" class="flex flex-col">
-        <div class="px-4 py-3 border-b">
-          <h2 class="font-semibold">Diff</h2>
-        </div>
-        <DiffViewer />
-      </SplitterPanel>
-    </SplitterGroup>
+          <SplitterResizeHandle
+            class="flex items-center justify-center group border-x"
+          >
+            <div
+              class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
+            />
+          </SplitterResizeHandle>
 
-    <!-- Repository Settings Dialog -->
-    <RepositorySettingsDialog
-      ref="repoSettingsDialog"
-      @repository-removed="handleRepositoryRemoved"
-    />
+          <!-- Diff viewer -->
+          <SplitterPanel
+            :default-size="70"
+            :min-size="30"
+            class="flex flex-col"
+          >
+            <div class="px-4 py-3 border-b">
+              <h2 class="font-semibold">Diff</h2>
+            </div>
+            <DiffViewer />
+          </SplitterPanel>
+        </SplitterGroup>
+      </TabsContent>
+
+      <!-- Settings tab content -->
+      <TabsContent value="settings" class="flex-1 min-h-0 mt-0 overflow-hidden">
+        <RepositorySettings />
+      </TabsContent>
+    </Tabs>
   </div>
 
   <!-- No repository selected -->
@@ -261,30 +290,34 @@ import {
   ChevronRight,
   FilePlus,
   FolderOpen,
-  Settings,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import Button from "../components/ui/Button.vue";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "../components/ui/tabs";
 import BranchSelector from "../components/repository/BranchSelector.vue";
 import ChangesPanel from "../components/repository/ChangesPanel.vue";
 import DiffViewer from "../components/repository/DiffViewer.vue";
+import RepositorySettings from "../components/repository/RepositorySettings.vue";
 import CloneDialog from "../components/dialogs/CloneDialog.vue";
 import OpenRepositoryDialog from "../components/dialogs/OpenRepositoryDialog.vue";
 import CreateRepositoryDialog from "../components/dialogs/CreateRepositoryDialog.vue";
-import RepositorySettingsDialog from "../components/dialogs/RepositorySettingsDialog.vue";
 
 const repositoriesStore = useRepositoriesStore();
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>();
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
-const repoSettingsDialog = ref<InstanceType<typeof RepositorySettingsDialog>>();
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 const gitStatus = computed(() => repositoriesStore.gitStatus);
 const recentRepositories = computed(() => repositoriesStore.recentRepositories);
 const favoriteRepositories = computed(
-  () => repositoriesStore.favoriteRepositories
+  () => repositoriesStore.favoriteRepositories,
 );
 
 const toggleFavorite = () => {
@@ -356,19 +389,8 @@ const formatDate = (date: Date) => {
   return "Just now";
 };
 
-const handleRepositoryAction = (path: string) => {
+const handleRepositoryAction = () => {
   // Repository is already added and set as current by the dialog
   // The view will automatically update via computed properties
-};
-
-const openRepositorySettings = () => {
-  if (currentRepository.value) {
-    repoSettingsDialog.value?.open(currentRepository.value);
-  }
-};
-
-const handleRepositoryRemoved = () => {
-  // Repository has been removed, current repository will be null
-  // The view will automatically show the welcome screen
 };
 </script>
