@@ -8,25 +8,6 @@
       class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between"
     >
       <div class="flex items-center gap-4">
-        <button
-          @click="toggleFavorite"
-          class="p-1 hover:bg-accent rounded transition-colors"
-          :title="
-            currentRepository.isFavorite
-              ? 'Remove from favorites'
-              : 'Add to favorites'
-          "
-        >
-          <Star
-            :class="[
-              'size-4',
-              currentRepository.isFavorite
-                ? 'fill-yellow-500 text-yellow-500'
-                : '',
-            ]"
-            :stroke-width="1"
-          />
-        </button>
         <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
         <div class="w-px h-6 bg-border" />
         <BranchSelector />
@@ -63,24 +44,27 @@
       default-value="changes"
       class="flex-1 min-h-0 flex flex-col overflow-hidden"
     >
-      <div class="shrink-0 px-6 border-b">
+      <div class="shrink-0 pl-3 pr-6 border-b">
         <TabsList class="h-9 bg-transparent p-0 rounded-none">
           <TabsTrigger
             value="changes"
-            class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            class="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
+            <FileDiff class="size-4" :stroke-width="1.5" />
             Changes
           </TabsTrigger>
           <TabsTrigger
             value="stats"
-            class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            class="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
+            <BarChart2 class="size-4" :stroke-width="1.5" />
             Stats
           </TabsTrigger>
           <TabsTrigger
             value="settings"
-            class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            class="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
+            <Settings class="size-4" :stroke-width="1.5" />
             Settings
           </TabsTrigger>
         </TabsList>
@@ -304,6 +288,9 @@ import {
   ChevronRight,
   FilePlus,
   FolderOpen,
+  FileDiff,
+  BarChart2,
+  Settings,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import Button from "../components/ui/Button.vue";
