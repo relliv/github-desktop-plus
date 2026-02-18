@@ -8,7 +8,6 @@
       class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between"
     >
       <div class="flex items-center gap-4">
-        <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
         <button
           @click="toggleFavorite"
           class="p-1 hover:bg-accent rounded transition-colors"
@@ -28,6 +27,7 @@
             :stroke-width="1"
           />
         </button>
+        <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
         <div class="w-px h-6 bg-border" />
         <BranchSelector />
       </div>
@@ -124,7 +124,10 @@
       </TabsContent>
 
       <!-- Settings tab content -->
-      <TabsContent value="settings" class="flex-1 min-h-0 mt-0 overflow-hidden">
+      <TabsContent
+        value="settings"
+        class="flex-1 min-h-0 mt-0 overflow-hidden py-2 pr-2"
+      >
         <RepositorySettings />
       </TabsContent>
     </Tabs>
