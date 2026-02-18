@@ -16,6 +16,7 @@ export const repositories = sqliteTable('repositories', {
   path: text('path').notNull().unique(),
   name: text('name').notNull(),
   currentBranch: text('current_branch'),
+  remoteUrl: text('remote_url'),
   isFavorite: integer('is_favorite', { mode: 'boolean' }).default(false).notNull(),
   lastOpenedAt: integer('last_opened_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),

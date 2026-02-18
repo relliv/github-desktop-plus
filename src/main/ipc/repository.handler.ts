@@ -2,6 +2,9 @@ import { ipcMain, dialog } from 'electron'
 import { repositoryService } from '../services/repository.service'
 
 export function registerRepositoryHandlers() {
+  // Refresh remote URLs on startup (for existing repositories)
+  repositoryService.refreshRemoteUrls().catch(console.error)
+
   // Get all repositories
   ipcMain.handle('repository:list', async () => {
     try {
@@ -9,7 +12,7 @@ export function registerRepositoryHandlers() {
       return { success: true, data: repositories }
     } catch (error) {
       console.error('Error in repository:list:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 
@@ -20,7 +23,7 @@ export function registerRepositoryHandlers() {
       return { success: true, data: repository }
     } catch (error) {
       console.error('Error in repository:add:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 
@@ -40,7 +43,7 @@ export function registerRepositoryHandlers() {
       return { success: true, data: repository }
     } catch (error) {
       console.error('Error in repository:open-dialog:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 
@@ -51,7 +54,7 @@ export function registerRepositoryHandlers() {
       return { success: true, data: repository }
     } catch (error) {
       console.error('Error in repository:update:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 
@@ -62,7 +65,7 @@ export function registerRepositoryHandlers() {
       return { success: true, data: repository }
     } catch (error) {
       console.error('Error in repository:toggle-favorite:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 
@@ -73,7 +76,7 @@ export function registerRepositoryHandlers() {
       return { success: true }
     } catch (error) {
       console.error('Error in repository:delete:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 
@@ -84,7 +87,7 @@ export function registerRepositoryHandlers() {
       return { success: true, data: repository }
     } catch (error) {
       console.error('Error in repository:update-branch:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   })
 }

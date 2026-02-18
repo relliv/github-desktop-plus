@@ -27,6 +27,7 @@ sqlite.exec(`
     path TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     current_branch TEXT,
+    remote_url TEXT,
     is_favorite INTEGER DEFAULT 0 NOT NULL,
     last_opened_at INTEGER DEFAULT CURRENT_TIMESTAMP,
     created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -40,6 +41,13 @@ sqlite.exec(`
     updated_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
   );
 `)
+
+// Migration: Add remote_url column if it doesn't exist
+try {
+  sqlite.exec(`ALTER TABLE repositories ADD COLUMN remote_url TEXT`)
+} catch {
+  // Column already exists, ignore error
+}
 
 // Close database connection when app quits
 app.on('before-quit', () => {

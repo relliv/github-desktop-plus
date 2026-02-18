@@ -38,6 +38,16 @@ export class RepositoryService {
       const status = await git.status()
       const repoName = path.basename(repoPath)
 
+      // Get remote URL (origin)
+      let remoteUrl: string | null = null
+      try {
+        const remotes = await git.getRemotes(true)
+        const origin = remotes.find(r => r.name === 'origin')
+        remoteUrl = origin?.refs?.fetch || origin?.refs?.push || null
+      } catch {
+        // No remote configured
+      }
+
       // Check if repository already exists
       const existing = await db
         .select()
@@ -46,17 +56,19 @@ export class RepositoryService {
         .limit(1)
 
       if (existing.length > 0) {
-        // Update last opened timestamp
-        await db
+        // Update last opened timestamp and remote URL
+        const [updated] = await db
           .update(schema.repositories)
-          .set({ 
+          .set({
             lastOpenedAt: new Date(),
             currentBranch: status.current || null,
+            remoteUrl: remoteUrl,
             updatedAt: new Date()
           })
           .where(eq(schema.repositories.path, repoPath))
-        
-        return existing[0]
+          .returning()
+
+        return updated
       }
 
       // Insert new repository
@@ -66,6 +78,7 @@ export class RepositoryService {
           path: repoPath,
           name: repoName,
           currentBranch: status.current || null,
+          remoteUrl: remoteUrl,
           isFavorite: false,
           lastOpenedAt: new Date(),
           createdAt: new Date(),
@@ -158,6 +171,36 @@ export class RepositoryService {
     } catch (error) {
       console.error('Error updating repository branch:', error)
       throw error
+    }
+  }
+
+  // Refresh remote URLs for all repositories
+  async refreshRemoteUrls() {
+    try {
+      const repos = await this.getAllRepositories()
+
+      for (const repo of repos) {
+        try {
+          const git = simpleGit(repo.path)
+          const remotes = await git.getRemotes(true)
+          const origin = remotes.find(r => r.name === 'origin')
+          const remoteUrl = origin?.refs?.fetch || origin?.refs?.push || null
+
+          if (remoteUrl !== repo.remoteUrl) {
+            await db
+              .update(schema.repositories)
+              .set({
+                remoteUrl: remoteUrl,
+                updatedAt: new Date()
+              })
+              .where(eq(schema.repositories.id, repo.id))
+          }
+        } catch {
+          // Repository may no longer exist or have git issues
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing remote URLs:', error)
     }
   }
 }
