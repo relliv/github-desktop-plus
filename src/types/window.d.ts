@@ -1,3 +1,5 @@
+import type { CommitsAPI } from '../preload/api.d'
+
 declare global {
   interface Window {
     api: {
@@ -13,8 +15,14 @@ declare global {
         push: (path: string) => Promise<any>
         pull: (path: string) => Promise<any>
         fetch: (path: string) => Promise<any>
+        stash: (path: string, message?: string) => Promise<any>
+        stashPop: (path: string) => Promise<any>
         getLog: (path: string, limit?: number) => Promise<any>
-        clone: (url: string, path: string) => Promise<any>
+        clone: (options: any) => Promise<any>
+        validate: (path: string) => Promise<any>
+        create: (options: any) => Promise<any>
+        getRemoteUrl: (path: string) => Promise<any>
+        onCloneProgress: (callback: (progress: any) => void) => () => void
       }
       window: {
         minimize: () => Promise<void>
@@ -27,6 +35,27 @@ declare global {
       dialog: {
         openDirectory: () => Promise<string | null>
         showMessage: (options: any) => Promise<any>
+      }
+      repository: {
+        list: () => Promise<any>
+        add: (path: string) => Promise<any>
+        openDialog: () => Promise<any>
+        update: (id: number, updates: any) => Promise<any>
+        toggleFavorite: (id: number) => Promise<any>
+        delete: (id: number) => Promise<any>
+        updateBranch: (id: number, branch: string) => Promise<any>
+      }
+      commits: CommitsAPI
+      shell: {
+        openPath: (path: string) => Promise<any>
+        openTerminal: (path: string) => Promise<any>
+      }
+      editor: {
+        detect: () => Promise<any>
+        getAvailable: () => Promise<any>
+        getDefault: () => Promise<any>
+        openFile: (params: { editor: any; filePath: string; lineNumber?: number }) => Promise<any>
+        openFileDefault: (params: { filePath: string; lineNumber?: number }) => Promise<any>
       }
     }
   }

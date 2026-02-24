@@ -25,3 +25,19 @@ export const repositories = sqliteTable('repositories', {
 
 export type Repository = typeof repositories.$inferSelect
 export type NewRepository = typeof repositories.$inferInsert
+
+export const commits = sqliteTable('commits', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  repositoryId: integer('repository_id').notNull().references(() => repositories.id, { onDelete: 'cascade' }),
+  hash: text('hash').notNull(),
+  abbreviatedHash: text('abbreviated_hash').notNull(),
+  authorName: text('author_name').notNull(),
+  authorEmail: text('author_email').notNull(),
+  date: integer('date', { mode: 'timestamp' }).notNull(),
+  message: text('message').notNull(),
+  body: text('body'),
+  parentHashes: text('parent_hashes'),
+})
+
+export type Commit = typeof commits.$inferSelect
+export type NewCommit = typeof commits.$inferInsert

@@ -40,6 +40,22 @@ sqlite.exec(`
     value TEXT NOT NULL,
     updated_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS commits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repository_id INTEGER NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
+    hash TEXT NOT NULL,
+    abbreviated_hash TEXT NOT NULL,
+    author_name TEXT NOT NULL,
+    author_email TEXT NOT NULL,
+    date INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    body TEXT,
+    parent_hashes TEXT
+  );
+
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_commits_repo_hash ON commits(repository_id, hash);
+  CREATE INDEX IF NOT EXISTS idx_commits_repo_date ON commits(repository_id, date DESC);
 `)
 
 // Migration: Add remote_url column if it doesn't exist

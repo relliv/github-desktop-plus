@@ -146,6 +146,10 @@ app.whenReady().then(async () => {
   // Register repository handlers after app is ready
   const { registerRepositoryHandlers } = await import('../../src/main/ipc/repository.handler')
   registerRepositoryHandlers()
+
+  // Register commit history handlers
+  const { registerCommitHistoryHandlers } = await import('../../src/main/ipc/commit-history.handler')
+  registerCommitHistoryHandlers()
 })
 
 app.on('window-all-closed', () => {

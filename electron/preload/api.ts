@@ -60,6 +60,23 @@ export const api = {
     openTerminal: (path: string) => ipcRenderer.invoke('shell:open-terminal', path),
   },
   
+  commits: {
+    scan: (repositoryId: number, repoPath: string) => ipcRenderer.invoke('commits:scan', repositoryId, repoPath),
+    fullScan: (repositoryId: number, repoPath: string) => ipcRenderer.invoke('commits:full-scan', repositoryId, repoPath),
+    list: (repositoryId: number, offset?: number, limit?: number) => ipcRenderer.invoke('commits:list', repositoryId, offset, limit),
+    count: (repositoryId: number) => ipcRenderer.invoke('commits:count', repositoryId),
+    files: (repoPath: string, commitHash: string) => ipcRenderer.invoke('commits:files', repoPath, commitHash),
+    fileDiff: (repoPath: string, commitHash: string, filePath: string) => ipcRenderer.invoke('commits:file-diff', repoPath, commitHash, filePath),
+    onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => {
+      ipcRenderer.on('commits:scan-progress', (_, data) => callback(data))
+      return () => ipcRenderer.removeListener('commits:scan-progress', callback)
+    },
+    onScanComplete: (callback: (data: { repositoryId: number; added: number }) => void) => {
+      ipcRenderer.on('commits:scan-complete', (_, data) => callback(data))
+      return () => ipcRenderer.removeListener('commits:scan-complete', callback)
+    },
+  },
+
   editor: {
     detect: () => ipcRenderer.invoke('editor:detect'),
     getAvailable: () => ipcRenderer.invoke('editor:get-available'),

@@ -4,22 +4,24 @@ export interface EditorAPI {
   detect: () => Promise<Editor[]>
   getAvailable: () => Promise<Editor[]>
   getDefault: () => Promise<Editor | null>
-  openFile: (params: { 
+  openFile: (params: {
     editor: Editor
     filePath: string
-    lineNumber?: number 
+    lineNumber?: number
   }) => Promise<{ success: boolean; error?: string }>
-  openFileDefault: (params: { 
+  openFileDefault: (params: {
     filePath: string
-    lineNumber?: number 
+    lineNumber?: number
   }) => Promise<{ success: boolean; error?: string }>
 }
 
-declare global {
-  interface Window {
-    api: {
-      editor: EditorAPI
-      // Add other API namespaces here
-    }
-  }
+export interface CommitsAPI {
+  scan: (repositoryId: number, repoPath: string) => Promise<any>
+  fullScan: (repositoryId: number, repoPath: string) => Promise<any>
+  list: (repositoryId: number, offset?: number, limit?: number) => Promise<any>
+  count: (repositoryId: number) => Promise<any>
+  files: (repoPath: string, commitHash: string) => Promise<any>
+  fileDiff: (repoPath: string, commitHash: string, filePath: string) => Promise<any>
+  onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => () => void
+  onScanComplete: (callback: (data: { repositoryId: number; added: number }) => void) => () => void
 }

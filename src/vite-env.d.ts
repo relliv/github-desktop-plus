@@ -30,6 +30,16 @@ interface Window {
     window: any
     dialog: any
     repository: any
+    commits: {
+      scan: (repositoryId: number, repoPath: string) => Promise<any>
+      fullScan: (repositoryId: number, repoPath: string) => Promise<any>
+      list: (repositoryId: number, offset?: number, limit?: number) => Promise<any>
+      count: (repositoryId: number) => Promise<any>
+      files: (repoPath: string, commitHash: string) => Promise<any>
+      fileDiff: (repoPath: string, commitHash: string, filePath: string) => Promise<any>
+      onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => () => void
+      onScanComplete: (callback: (data: { repositoryId: number; added: number }) => void) => () => void
+    }
     shell: {
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
       openTerminal: (path: string) => Promise<{ success: boolean; error?: string }>

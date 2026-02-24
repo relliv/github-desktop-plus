@@ -194,6 +194,8 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     if (repo) {
       await window.api.repository.update(repo.id, { lastOpenedAt: new Date() })
       await Promise.all([fetchGitStatus(), fetchBranches()])
+      // Trigger background commit scan (non-blocking)
+      window.api.commits.scan(repo.id, repo.path).catch(console.error)
     } else {
       gitStatus.value = null
       branches.value = null
