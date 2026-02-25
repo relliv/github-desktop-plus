@@ -63,12 +63,14 @@
         >
           <!-- List view -->
           <TooltipProvider v-if="viewMode === 'list'" :delay-duration="400">
-            <TooltipRoot v-for="commit in commits" :key="commit.hash">
-              <TooltipTrigger as-child>
-                <button
-                  @click="selectCommit(commit)"
-                  class="group/commit w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
-                  :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
+            <ContextMenu v-for="commit in commits" :key="commit.hash">
+              <ContextMenuTrigger as-child>
+                <TooltipRoot>
+                  <TooltipTrigger as-child>
+                    <button
+                      @click="selectCommit(commit)"
+                      class="group/commit w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
+                      :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
                 >
                   <div class="flex items-start gap-2">
                     <div class="flex-1 min-w-0">
@@ -127,24 +129,32 @@
                     </div>
                   </div>
                 </button>
-              </TooltipTrigger>
-              <TooltipPortal>
-                <TooltipContent
-                  side="right"
-                  :side-offset="8"
-                  class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
-                >
-                  <p class="text-sm font-medium">{{ commit.message }}</p>
-                  <p
-                    v-if="commit.body"
-                    class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
-                  >
-                    {{ commit.body }}
-                  </p>
-                  <TooltipArrow class="fill-popover" />
-                </TooltipContent>
-              </TooltipPortal>
-            </TooltipRoot>
+                  </TooltipTrigger>
+                  <TooltipPortal v-if="!isScrolling">
+                    <TooltipContent
+                      side="right"
+                      :side-offset="8"
+                      class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
+                    >
+                      <p class="text-sm font-medium">{{ commit.message }}</p>
+                      <p
+                        v-if="commit.body"
+                        class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
+                      >
+                        {{ commit.body }}
+                      </p>
+                      <TooltipArrow class="fill-popover" />
+                    </TooltipContent>
+                  </TooltipPortal>
+                </TooltipRoot>
+              </ContextMenuTrigger>
+              <ContextMenuContent class="w-56">
+                <ContextMenuItem @click="copyHash(commit.hash)">
+                  <Copy class="w-4 h-4 mr-2" :stroke-width="1.5" />
+                  Copy Commit Hash
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           </TooltipProvider>
 
           <!-- Timeline view -->
@@ -198,81 +208,91 @@
                       />
                     </div>
 
-                    <!-- Commit content with tooltip -->
-                    <TooltipRoot>
-                      <TooltipTrigger as-child>
-                        <button
-                          @click="selectCommit(commit)"
-                          class="group/commit w-full text-left rounded-lg px-3 py-2 -mx-1 hover:bg-accent/50 transition-colors"
-                          :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
-                        >
-                          <p class="text-sm font-medium leading-snug">{{ commit.message }}</p>
-                          <div class="flex items-center gap-2 mt-1.5">
-                            <!-- Author avatar(s) -->
-                            <div class="shrink-0 flex items-center" :class="getAuthors(commit).length > 1 ? '-space-x-1' : ''">
-                              <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
-                                <TooltipTrigger as-child>
-                                  <div
-                                    class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125 overflow-hidden"
-                                    :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
+                    <!-- Commit content with tooltip + context menu -->
+                    <ContextMenu>
+                      <ContextMenuTrigger as-child>
+                        <TooltipRoot>
+                          <TooltipTrigger as-child>
+                            <button
+                              @click="selectCommit(commit)"
+                              class="group/commit w-full text-left rounded-lg px-3 py-2 -mx-1 hover:bg-accent/50 transition-colors"
+                              :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
+                            >
+                              <p class="text-sm font-medium leading-snug">{{ commit.message }}</p>
+                              <div class="flex items-center gap-2 mt-1.5">
+                                <!-- Author avatar(s) -->
+                                <div class="shrink-0 flex items-center" :class="getAuthors(commit).length > 1 ? '-space-x-1' : ''">
+                                  <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
+                                    <TooltipTrigger as-child>
+                                      <div
+                                        class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125 overflow-hidden"
+                                        :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
+                                      >
+                                        <img
+                                          v-if="avatarMap[author.email.toLowerCase()]"
+                                          :src="avatarMap[author.email.toLowerCase()]!"
+                                          :alt="author.name"
+                                          class="size-full object-cover"
+                                        />
+                                        <span v-else>{{ getInitials(author.name) }}</span>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                      <TooltipContent
+                                        side="top"
+                                        :side-offset="6"
+                                        class="z-[60] rounded-md bg-popover px-2.5 py-1.5 text-popover-foreground shadow-md border"
+                                      >
+                                        <p class="text-xs font-medium">{{ author.name }}</p>
+                                        <p class="text-[11px] text-muted-foreground">{{ author.email }}</p>
+                                        <TooltipArrow class="fill-popover" />
+                                      </TooltipContent>
+                                    </TooltipPortal>
+                                  </TooltipRoot>
+                                </div>
+                                <span class="text-xs text-muted-foreground truncate">{{ commit.authorName }}</span>
+                                <span class="text-xs text-muted-foreground shrink-0">{{ formatDate(commit.date) }}</span>
+                                <div class="flex items-center gap-1 ml-auto shrink-0 opacity-0 group-hover/commit:opacity-100 transition-opacity">
+                                  <button
+                                    class="p-0.5 rounded hover:bg-accent transition-all"
+                                    @click.stop="copyHash(commit.hash)"
+                                    title="Copy full hash"
                                   >
-                                    <img
-                                      v-if="avatarMap[author.email.toLowerCase()]"
-                                      :src="avatarMap[author.email.toLowerCase()]!"
-                                      :alt="author.name"
-                                      class="size-full object-cover"
-                                    />
-                                    <span v-else>{{ getInitials(author.name) }}</span>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipPortal>
-                                  <TooltipContent
-                                    side="top"
-                                    :side-offset="6"
-                                    class="z-[60] rounded-md bg-popover px-2.5 py-1.5 text-popover-foreground shadow-md border"
-                                  >
-                                    <p class="text-xs font-medium">{{ author.name }}</p>
-                                    <p class="text-[11px] text-muted-foreground">{{ author.email }}</p>
-                                    <TooltipArrow class="fill-popover" />
-                                  </TooltipContent>
-                                </TooltipPortal>
-                              </TooltipRoot>
-                            </div>
-                            <span class="text-xs text-muted-foreground truncate">{{ commit.authorName }}</span>
-                            <span class="text-xs text-muted-foreground shrink-0">{{ formatDate(commit.date) }}</span>
-                            <div class="flex items-center gap-1 ml-auto shrink-0 opacity-0 group-hover/commit:opacity-100 transition-opacity">
-                              <button
-                                class="p-0.5 rounded hover:bg-accent transition-all"
-                                @click.stop="copyHash(commit.hash)"
-                                title="Copy full hash"
+                                    <Check v-if="copiedHash === commit.hash" class="size-3 text-green-500" :stroke-width="2" />
+                                    <Copy v-else class="size-3 text-muted-foreground" :stroke-width="1.5" />
+                                  </button>
+                                  <code class="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded">
+                                    {{ commit.abbreviatedHash }}
+                                  </code>
+                                </div>
+                              </div>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipPortal v-if="!isScrolling">
+                            <TooltipContent
+                              side="right"
+                              :side-offset="8"
+                              class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
+                            >
+                              <p class="text-sm font-medium">{{ commit.message }}</p>
+                              <p
+                                v-if="commit.body"
+                                class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
                               >
-                                <Check v-if="copiedHash === commit.hash" class="size-3 text-green-500" :stroke-width="2" />
-                                <Copy v-else class="size-3 text-muted-foreground" :stroke-width="1.5" />
-                              </button>
-                              <code class="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded">
-                                {{ commit.abbreviatedHash }}
-                              </code>
-                            </div>
-                          </div>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipPortal>
-                        <TooltipContent
-                          side="right"
-                          :side-offset="8"
-                          class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
-                        >
-                          <p class="text-sm font-medium">{{ commit.message }}</p>
-                          <p
-                            v-if="commit.body"
-                            class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
-                          >
-                            {{ commit.body }}
-                          </p>
-                          <TooltipArrow class="fill-popover" />
-                        </TooltipContent>
-                      </TooltipPortal>
-                    </TooltipRoot>
+                                {{ commit.body }}
+                              </p>
+                              <TooltipArrow class="fill-popover" />
+                            </TooltipContent>
+                          </TooltipPortal>
+                        </TooltipRoot>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent class="w-56">
+                        <ContextMenuItem @click="copyHash(commit.hash)">
+                          <Copy class="w-4 h-4 mr-2" :stroke-width="1.5" />
+                          Copy Commit Hash
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   </div>
                 </template>
               </div>
@@ -434,6 +454,12 @@ import {
   CalendarDays,
 } from "lucide-vue-next";
 import NumberFlow from "@number-flow/vue";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@/components/ui/context-menu";
 import { useRepositoriesStore } from "@/shared/stores";
 
 interface CommitRecord {
@@ -481,6 +507,10 @@ const commitListRef = ref<HTMLElement | null>(null);
 const avatarMap = ref<Record<string, string | null>>({});
 
 const copiedHash = ref<string | null>(null);
+
+// Dismiss tooltips on scroll
+const isScrolling = ref(false);
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Sticky date label detection
 const stuckLabels = ref(new Set<number>());
@@ -734,6 +764,13 @@ async function rescan() {
 function handleScroll(event: Event) {
   const target = event.target as HTMLElement;
   const { scrollTop, scrollHeight, clientHeight } = target;
+
+  // Dismiss tooltips while scrolling
+  isScrolling.value = true;
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    isScrolling.value = false;
+  }, 150);
 
   // Load more when scrolled near bottom
   if (scrollHeight - scrollTop - clientHeight < 200 && hasMore && !isLoadingMore.value) {
