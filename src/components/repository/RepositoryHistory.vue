@@ -50,7 +50,19 @@
                   class="w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
                   :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
                 >
-                  <div class="flex items-start gap-2">
+                  <div class="flex items-start gap-3">
+                    <!-- Author avatar(s) -->
+                    <div class="shrink-0 flex items-center mt-0.5" :class="getAuthors(commit).length > 1 ? '-space-x-1.5' : ''">
+                      <div
+                        v-for="(author, i) in getAuthors(commit)"
+                        :key="i"
+                        class="size-6 rounded-full flex items-center justify-center text-[10px] font-medium text-white ring-2 ring-background"
+                        :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
+                        :title="author.name"
+                      >
+                        {{ getInitials(author.name) }}
+                      </div>
+                    </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium truncate">{{ commit.message }}</p>
                       <div class="flex items-center gap-2 mt-1">
@@ -501,5 +513,51 @@ function getFilePath(filePath: string): string {
   const parts = filePath.split("/");
   if (parts.length <= 1) return "";
   return parts.slice(0, -1).join("/");
+}
+
+interface Author {
+  name: string;
+  email: string;
+}
+
+const coAuthorRegex = /^Co-authored-by:\s*(.+?)\s*<([^>]+)>/gim;
+
+function getAuthors(commit: CommitRecord): Author[] {
+  const authors: Author[] = [{ name: commit.authorName, email: commit.authorEmail }];
+  if (!commit.body) return authors;
+
+  let match: RegExpExecArray | null;
+  coAuthorRegex.lastIndex = 0;
+  while ((match = coAuthorRegex.exec(commit.body)) !== null) {
+    const name = match[1].trim();
+    const email = match[2].trim();
+    if (!authors.some((a) => a.email === email)) {
+      authors.push({ name, email });
+    }
+  }
+  return authors;
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+const avatarColors = [
+  "#e11d48", "#db2777", "#c026d3", "#9333ea",
+  "#7c3aed", "#4f46e5", "#2563eb", "#0284c7",
+  "#0891b2", "#0d9488", "#059669", "#16a34a",
+  "#ca8a04", "#ea580c", "#dc2626", "#6d28d9",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length];
 }
 </script>
