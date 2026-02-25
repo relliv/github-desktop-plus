@@ -329,7 +329,7 @@ const cloneDialog = ref<InstanceType<typeof CloneDialog>>();
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
 
-const activeTab = ref("changes");
+const activeTab = ref("history");
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 
