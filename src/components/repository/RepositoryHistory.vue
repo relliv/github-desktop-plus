@@ -42,30 +42,50 @@
           @scroll="handleScroll"
           ref="commitListRef"
         >
-          <button
-            v-for="commit in commits"
-            :key="commit.hash"
-            @click="selectCommit(commit)"
-            class="w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
-            :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
-          >
-            <div class="flex items-start gap-2">
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium truncate">{{ commit.message }}</p>
-                <div class="flex items-center gap-2 mt-1">
-                  <span class="text-xs text-muted-foreground truncate">
-                    {{ commit.authorName }}
-                  </span>
-                  <span class="text-xs text-muted-foreground shrink-0">
-                    {{ formatDate(commit.date) }}
-                  </span>
-                </div>
-              </div>
-              <code class="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded shrink-0">
-                {{ commit.abbreviatedHash }}
-              </code>
-            </div>
-          </button>
+          <TooltipProvider :delay-duration="400">
+            <TooltipRoot v-for="commit in commits" :key="commit.hash">
+              <TooltipTrigger as-child>
+                <button
+                  @click="selectCommit(commit)"
+                  class="w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
+                  :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
+                >
+                  <div class="flex items-start gap-2">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium truncate">{{ commit.message }}</p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-muted-foreground truncate">
+                          {{ commit.authorName }}
+                        </span>
+                        <span class="text-xs text-muted-foreground shrink-0">
+                          {{ formatDate(commit.date) }}
+                        </span>
+                      </div>
+                    </div>
+                    <code class="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded shrink-0">
+                      {{ commit.abbreviatedHash }}
+                    </code>
+                  </div>
+                </button>
+              </TooltipTrigger>
+              <TooltipPortal>
+                <TooltipContent
+                  side="right"
+                  :side-offset="8"
+                  class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
+                >
+                  <p class="text-sm font-medium">{{ commit.message }}</p>
+                  <p
+                    v-if="commit.body"
+                    class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
+                  >
+                    {{ commit.body }}
+                  </p>
+                  <TooltipArrow class="fill-popover" />
+                </TooltipContent>
+              </TooltipPortal>
+            </TooltipRoot>
+          </TooltipProvider>
 
           <div v-if="isLoadingMore" class="py-3 text-center">
             <span class="text-xs text-muted-foreground">Loading more...</span>
@@ -200,7 +220,17 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
+import {
+  SplitterGroup,
+  SplitterPanel,
+  SplitterResizeHandle,
+  TooltipArrow,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+} from "reka-ui";
 import {
   RefreshCw,
   GitCommitVertical,
