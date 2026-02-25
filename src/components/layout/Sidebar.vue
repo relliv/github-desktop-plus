@@ -86,7 +86,7 @@
                   ]"
                   :title="repo.name"
                 >
-                  <GitBranch class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
+                  <Folder class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
                   <div class="flex-1 min-w-0">
                     <div class="text-sm font-medium truncate">{{ repo.name }}</div>
                     <div class="text-xs text-muted-foreground truncate">
@@ -136,6 +136,7 @@ import {
   User,
   Plus,
   GitBranch,
+  Folder,
   Star,
   Settings,
   FilePlus,
