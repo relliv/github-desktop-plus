@@ -15,8 +15,8 @@
         <div class="shrink-0 px-4 py-3 border-b flex items-center justify-between">
           <h2 class="font-semibold text-sm">
             Commits
-            <span v-if="totalCommits > 0" class="text-muted-foreground font-normal">
-              ({{ totalCommits }})
+            <span class="text-muted-foreground font-normal">
+              (<NumberFlow :value="totalCommits" :animated="true" :transformTiming="{ duration: 500, easing: 'ease-out' }" :spinTiming="{ duration: 500, easing: 'ease-out' }" trend="decreasing" />)
             </span>
           </h2>
           <div class="flex items-center gap-2">
@@ -430,6 +430,7 @@ import {
   List,
   CalendarDays,
 } from "lucide-vue-next";
+import NumberFlow from "@number-flow/vue";
 import { useRepositoriesStore } from "@/shared/stores";
 
 interface CommitRecord {
