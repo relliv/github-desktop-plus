@@ -172,6 +172,9 @@
                     <div class="text-xs font-bold text-foreground tracking-wide flex items-center gap-1.5">
                       <CalendarDays class="size-3 text-muted-foreground" :stroke-width="2" />
                       {{ getDateLabel(commit.date) }}
+                      <span class="text-[10px] font-medium text-muted-foreground/70">
+                        {{ getDateCommitCount(getDateLabel(commit.date)) }} {{ getDateCommitCount(getDateLabel(commit.date)) === 1 ? 'commit' : 'commits' }}
+                      </span>
                       <span class="ml-auto text-[10px] font-normal text-muted-foreground">
                         {{ getDaysAgo(commit.date) }}
                       </span>
@@ -778,6 +781,14 @@ function getDateLabel(date: string | Date): string {
     day: "numeric",
     year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
+}
+
+function getDateCommitCount(dateLabel: string): number {
+  let count = 0;
+  for (const c of commits.value) {
+    if (getDateLabel(c.date) === dateLabel) count++;
+  }
+  return count;
 }
 
 function getDaysAgo(date: string | Date): string {
