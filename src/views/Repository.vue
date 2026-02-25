@@ -61,6 +61,13 @@
             Changes
           </TabsTrigger>
           <TabsTrigger
+            value="activity"
+            class="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+          >
+            <CalendarDays class="size-4" :stroke-width="1.5" />
+            Activity
+          </TabsTrigger>
+          <TabsTrigger
             value="stats"
             class="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
@@ -123,6 +130,11 @@
             <DiffViewer />
           </SplitterPanel>
         </SplitterGroup>
+      </TabsContent>
+
+      <!-- Activity tab content -->
+      <TabsContent value="activity" class="flex-1 min-h-0 mt-0 overflow-hidden">
+        <ActivityCalendar />
       </TabsContent>
 
       <!-- Stats tab content -->
@@ -302,6 +314,7 @@ import {
   FolderOpen,
   FileDiff,
   BarChart2,
+  CalendarDays,
   Settings,
   History,
 } from "lucide-vue-next";
@@ -319,6 +332,7 @@ import DiffViewer from "../components/repository/DiffViewer.vue";
 import RepositorySettings from "../components/repository/RepositorySettings.vue";
 import RepositoryStats from "../components/repository/RepositoryStats.vue";
 import RepositoryHistory from "../components/repository/RepositoryHistory.vue";
+import ActivityCalendar from "../components/repository/ActivityCalendar.vue";
 import CloneDialog from "../components/dialogs/CloneDialog.vue";
 import OpenRepositoryDialog from "../components/dialogs/OpenRepositoryDialog.vue";
 import CreateRepositoryDialog from "../components/dialogs/CreateRepositoryDialog.vue";
