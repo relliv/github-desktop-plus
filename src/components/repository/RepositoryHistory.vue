@@ -50,22 +50,34 @@
                   class="w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
                   :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
                 >
-                  <div class="flex items-start gap-3">
-                    <!-- Author avatar(s) -->
-                    <div class="shrink-0 flex items-center mt-0.5" :class="getAuthors(commit).length > 1 ? '-space-x-1.5' : ''">
-                      <div
-                        v-for="(author, i) in getAuthors(commit)"
-                        :key="i"
-                        class="size-6 rounded-full flex items-center justify-center text-[10px] font-medium text-white ring-2 ring-background"
-                        :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
-                        :title="author.name"
-                      >
-                        {{ getInitials(author.name) }}
-                      </div>
-                    </div>
+                  <div class="flex items-start gap-2">
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium truncate">{{ commit.message }}</p>
                       <div class="flex items-center gap-2 mt-1">
+                        <!-- Author avatar(s) -->
+                        <div class="shrink-0 flex items-center" :class="getAuthors(commit).length > 1 ? '-space-x-1' : ''">
+                          <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
+                            <TooltipTrigger as-child>
+                              <div
+                                class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125"
+                                :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
+                              >
+                                {{ getInitials(author.name) }}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipPortal>
+                              <TooltipContent
+                                side="top"
+                                :side-offset="6"
+                                class="z-[60] rounded-md bg-popover px-2.5 py-1.5 text-popover-foreground shadow-md border"
+                              >
+                                <p class="text-xs font-medium">{{ author.name }}</p>
+                                <p class="text-[11px] text-muted-foreground">{{ author.email }}</p>
+                                <TooltipArrow class="fill-popover" />
+                              </TooltipContent>
+                            </TooltipPortal>
+                          </TooltipRoot>
+                        </div>
                         <span class="text-xs text-muted-foreground truncate">
                           {{ commit.authorName }}
                         </span>
