@@ -47,7 +47,7 @@
               <TooltipTrigger as-child>
                 <button
                   @click="selectCommit(commit)"
-                  class="w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
+                  class="group/commit w-full text-left px-4 py-2.5 border-b hover:bg-accent/50 transition-colors"
                   :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
                 >
                   <div class="flex items-start gap-2">
@@ -92,9 +92,19 @@
                         </span>
                       </div>
                     </div>
-                    <code class="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded shrink-0">
-                      {{ commit.abbreviatedHash }}
-                    </code>
+                    <div class="shrink-0 flex items-center gap-1">
+                      <button
+                        class="p-0.5 rounded opacity-0 group-hover/commit:opacity-100 hover:bg-accent transition-all"
+                        @click.stop="copyHash(commit.hash)"
+                        title="Copy full hash"
+                      >
+                        <Check v-if="copiedHash === commit.hash" class="size-3 text-green-500" :stroke-width="2" />
+                        <Copy v-else class="size-3 text-muted-foreground" :stroke-width="1.5" />
+                      </button>
+                      <code class="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
+                        {{ commit.abbreviatedHash }}
+                      </code>
+                    </div>
                   </div>
                 </button>
               </TooltipTrigger>
@@ -266,6 +276,8 @@ import {
   GitCommitVertical,
   FileText,
   Code,
+  Copy,
+  Check,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 
@@ -306,6 +318,18 @@ const commitListRef = ref<HTMLElement | null>(null);
 
 // Avatar cache: email -> avatar URL
 const avatarMap = ref<Record<string, string | null>>({});
+
+const copiedHash = ref<string | null>(null);
+let copiedTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function copyHash(hash: string) {
+  navigator.clipboard.writeText(hash);
+  copiedHash.value = hash;
+  if (copiedTimeout) clearTimeout(copiedTimeout);
+  copiedTimeout = setTimeout(() => {
+    copiedHash.value = null;
+  }, 2000);
+}
 
 const PAGE_SIZE = 50;
 let currentOffset = 0;
