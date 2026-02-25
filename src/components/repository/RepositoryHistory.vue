@@ -156,16 +156,28 @@
 
                 <!-- Date separators + commit items -->
                 <template v-for="(commit, idx) in commits" :key="commit.hash">
-                  <!-- Date separator (outside the commit row) -->
-                  <div
-                    v-if="idx === 0 || getDateLabel(commit.date) !== getDateLabel(commits[idx - 1].date)"
-                    class="pl-8 pb-1"
-                    :class="idx > 0 ? 'pt-2' : ''"
-                  >
-                    <div class="text-xs font-bold text-foreground tracking-wide">
+                  <!-- Sticky date separator -->
+                  <template v-if="idx === 0 || getDateLabel(commit.date) !== getDateLabel(commits[idx - 1].date)">
+                    <!-- Sentinel to detect stuck state -->
+                    <div :ref="(el) => registerSentinel(el as HTMLElement, idx)" class="h-0" />
+                    <div
+                      class="sticky top-0 z-10 pl-8 py-2.5 -mx-4 px-4 bg-background/80 backdrop-blur-md transition-shadow duration-150"
+                      :class="[
+                        idx > 0 ? 'mt-2' : '',
+                        stuckLabels.has(idx)
+                          ? 'shadow-[0_2px_6px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_-2px_rgba(160,160,160,0.12)]'
+                          : 'shadow-none'
+                      ]"
+                    >
+                    <div class="text-xs font-bold text-foreground tracking-wide flex items-center gap-1.5">
+                      <CalendarDays class="size-3 text-muted-foreground" :stroke-width="2" />
                       {{ getDateLabel(commit.date) }}
+                      <span class="ml-auto text-[10px] font-normal text-muted-foreground">
+                        {{ getDaysAgo(commit.date) }}
+                      </span>
                     </div>
                   </div>
+                  </template>
 
                   <!-- Commit row with dot -->
                   <div class="relative pl-8 pb-4 last:pb-0">
@@ -416,6 +428,7 @@ import {
   Copy,
   Check,
   List,
+  CalendarDays,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 
@@ -464,6 +477,20 @@ const commitListRef = ref<HTMLElement | null>(null);
 const avatarMap = ref<Record<string, string | null>>({});
 
 const copiedHash = ref<string | null>(null);
+
+// Sticky date label detection
+const stuckLabels = ref(new Set<number>());
+const sentinelMap = new Map<number, HTMLElement>();
+let stickyObserver: IntersectionObserver | null = null;
+
+function registerSentinel(el: HTMLElement | null, idx: number) {
+  if (!el) {
+    sentinelMap.delete(idx);
+    return;
+  }
+  sentinelMap.set(idx, el);
+  if (stickyObserver) stickyObserver.observe(el);
+}
 let copiedTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function copyHash(hash: string) {
@@ -484,6 +511,26 @@ let cleanupProgress: (() => void) | null = null;
 let cleanupComplete: (() => void) | null = null;
 
 onMounted(() => {
+  // Set up IntersectionObserver for sticky date labels
+  stickyObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const idx = [...sentinelMap.entries()].find(([, el]) => el === entry.target)?.[0];
+        if (idx === undefined) continue;
+        if (!entry.isIntersecting) {
+          stuckLabels.value.add(idx);
+        } else {
+          stuckLabels.value.delete(idx);
+        }
+        stuckLabels.value = new Set(stuckLabels.value);
+      }
+    },
+    { threshold: 0 }
+  );
+  for (const el of sentinelMap.values()) {
+    stickyObserver.observe(el);
+  }
+
   // Listen for scan progress
   cleanupProgress = window.api.commits.onScanProgress((data) => {
     if (currentRepository.value && data.repositoryId === currentRepository.value.id) {
@@ -512,6 +559,8 @@ onMounted(() => {
 onUnmounted(() => {
   cleanupProgress?.();
   cleanupComplete?.();
+  stickyObserver?.disconnect();
+  stickyObserver = null;
 });
 
 // Watch for repository changes
@@ -728,6 +777,24 @@ function getDateLabel(date: string | Date): string {
     day: "numeric",
     year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
+}
+
+function getDaysAgo(date: string | Date): string {
+  const d = new Date(date);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const commitDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.floor((today.getTime() - commitDay.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 30) return `${diffDays} days ago`;
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return months === 1 ? "1 month ago" : `${months} months ago`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return years === 1 ? "1 year ago" : `${years} years ago`;
 }
 
 function fileStatusClass(status: string): string {
