@@ -19,13 +19,32 @@
               ({{ totalCommits }})
             </span>
           </h2>
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-2">
             <span
               v-if="isScanning"
               class="text-xs text-muted-foreground animate-pulse"
             >
               Scanning...
             </span>
+            <!-- View toggle -->
+            <div class="flex items-center rounded-md border bg-muted/50 p-0.5">
+              <button
+                @click="viewMode = 'timeline'"
+                class="p-1 rounded-sm transition-colors"
+                :class="viewMode === 'timeline' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
+                title="Timeline view"
+              >
+                <GitCommitVertical class="size-3.5" :stroke-width="1.5" />
+              </button>
+              <button
+                @click="viewMode = 'list'"
+                class="p-1 rounded-sm transition-colors"
+                :class="viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
+                title="List view"
+              >
+                <List class="size-3.5" :stroke-width="1.5" />
+              </button>
+            </div>
             <button
               @click="rescan"
               class="p-1 rounded hover:bg-accent transition-colors"
@@ -42,7 +61,8 @@
           @scroll="handleScroll"
           ref="commitListRef"
         >
-          <TooltipProvider :delay-duration="400">
+          <!-- List view -->
+          <TooltipProvider v-if="viewMode === 'list'" :delay-duration="400">
             <TooltipRoot v-for="commit in commits" :key="commit.hash">
               <TooltipTrigger as-child>
                 <button
@@ -126,6 +146,123 @@
               </TooltipPortal>
             </TooltipRoot>
           </TooltipProvider>
+
+          <!-- Timeline view -->
+          <div v-else class="px-4 py-3">
+            <TooltipProvider :delay-duration="400">
+              <div class="relative">
+                <!-- Timeline line -->
+                <div class="absolute left-[11px] top-0 bottom-0 w-px bg-border" />
+
+                <!-- Date separators + commit items -->
+                <template v-for="(commit, idx) in commits" :key="commit.hash">
+                  <!-- Date separator (outside the commit row) -->
+                  <div
+                    v-if="idx === 0 || getDateLabel(commit.date) !== getDateLabel(commits[idx - 1].date)"
+                    class="pl-8 pb-1"
+                    :class="idx > 0 ? 'pt-2' : ''"
+                  >
+                    <div class="text-xs font-bold text-foreground tracking-wide">
+                      {{ getDateLabel(commit.date) }}
+                    </div>
+                  </div>
+
+                  <!-- Commit row with dot -->
+                  <div class="relative pl-8 pb-4 last:pb-0">
+                    <!-- Timeline node — aligned to commit content -->
+                    <div
+                      class="absolute left-[2px] top-2.5 size-[18px] rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors"
+                      :class="selectedCommit?.hash === commit.hash
+                        ? 'bg-primary border-primary'
+                        : 'bg-background border-muted-foreground/30 hover:border-primary/60'"
+                      @click="selectCommit(commit)"
+                    >
+                      <div
+                        class="size-2 rounded-full"
+                        :class="selectedCommit?.hash === commit.hash ? 'bg-primary-foreground' : 'bg-muted-foreground/50'"
+                      />
+                    </div>
+
+                    <!-- Commit content with tooltip -->
+                    <TooltipRoot>
+                      <TooltipTrigger as-child>
+                        <button
+                          @click="selectCommit(commit)"
+                          class="group/commit w-full text-left rounded-lg px-3 py-2 -mx-1 hover:bg-accent/50 transition-colors"
+                          :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
+                        >
+                          <p class="text-sm font-medium leading-snug">{{ commit.message }}</p>
+                          <div class="flex items-center gap-2 mt-1.5">
+                            <!-- Author avatar(s) -->
+                            <div class="shrink-0 flex items-center" :class="getAuthors(commit).length > 1 ? '-space-x-1' : ''">
+                              <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
+                                <TooltipTrigger as-child>
+                                  <div
+                                    class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125 overflow-hidden"
+                                    :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
+                                  >
+                                    <img
+                                      v-if="avatarMap[author.email.toLowerCase()]"
+                                      :src="avatarMap[author.email.toLowerCase()]!"
+                                      :alt="author.name"
+                                      class="size-full object-cover"
+                                    />
+                                    <span v-else>{{ getInitials(author.name) }}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipPortal>
+                                  <TooltipContent
+                                    side="top"
+                                    :side-offset="6"
+                                    class="z-[60] rounded-md bg-popover px-2.5 py-1.5 text-popover-foreground shadow-md border"
+                                  >
+                                    <p class="text-xs font-medium">{{ author.name }}</p>
+                                    <p class="text-[11px] text-muted-foreground">{{ author.email }}</p>
+                                    <TooltipArrow class="fill-popover" />
+                                  </TooltipContent>
+                                </TooltipPortal>
+                              </TooltipRoot>
+                            </div>
+                            <span class="text-xs text-muted-foreground truncate">{{ commit.authorName }}</span>
+                            <span class="text-xs text-muted-foreground shrink-0">{{ formatDate(commit.date) }}</span>
+                            <div class="flex items-center gap-1 ml-auto shrink-0 opacity-0 group-hover/commit:opacity-100 transition-opacity">
+                              <button
+                                class="p-0.5 rounded hover:bg-accent transition-all"
+                                @click.stop="copyHash(commit.hash)"
+                                title="Copy full hash"
+                              >
+                                <Check v-if="copiedHash === commit.hash" class="size-3 text-green-500" :stroke-width="2" />
+                                <Copy v-else class="size-3 text-muted-foreground" :stroke-width="1.5" />
+                              </button>
+                              <code class="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded">
+                                {{ commit.abbreviatedHash }}
+                              </code>
+                            </div>
+                          </div>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipPortal>
+                        <TooltipContent
+                          side="right"
+                          :side-offset="8"
+                          class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
+                        >
+                          <p class="text-sm font-medium">{{ commit.message }}</p>
+                          <p
+                            v-if="commit.body"
+                            class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
+                          >
+                            {{ commit.body }}
+                          </p>
+                          <TooltipArrow class="fill-popover" />
+                        </TooltipContent>
+                      </TooltipPortal>
+                    </TooltipRoot>
+                  </div>
+                </template>
+              </div>
+            </TooltipProvider>
+          </div>
 
           <div v-if="isLoadingMore" class="py-3 text-center">
             <span class="text-xs text-muted-foreground">Loading more...</span>
@@ -278,6 +415,7 @@ import {
   Code,
   Copy,
   Check,
+  List,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 
@@ -308,6 +446,12 @@ const selectedCommit = ref<CommitRecord | null>(null);
 const commitFiles = ref<CommitFile[]>([]);
 const selectedFile = ref<CommitFile | null>(null);
 const fileDiff = ref<string>("");
+
+const VIEW_MODE_KEY = "repository-history-view-mode";
+const viewMode = ref<"list" | "timeline">(
+  (localStorage.getItem(VIEW_MODE_KEY) as "list" | "timeline") || "list"
+);
+watch(viewMode, (v) => localStorage.setItem(VIEW_MODE_KEY, v));
 
 const isScanning = ref(false);
 const isLoadingMore = ref(false);
@@ -564,6 +708,23 @@ function formatDate(date: string | Date): string {
 
   return d.toLocaleDateString("en-US", {
     month: "short",
+    day: "numeric",
+    year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
+}
+
+function getDateLabel(date: string | Date): string {
+  const d = new Date(date);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const commitDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.floor((today.getTime() - commitDay.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return d.toLocaleDateString("en-US", { weekday: "long" });
+  return d.toLocaleDateString("en-US", {
+    month: "long",
     day: "numeric",
     year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
