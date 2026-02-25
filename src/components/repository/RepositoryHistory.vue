@@ -59,10 +59,16 @@
                           <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
                             <TooltipTrigger as-child>
                               <div
-                                class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125"
+                                class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125 overflow-hidden"
                                 :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
                               >
-                                {{ getInitials(author.name) }}
+                                <img
+                                  v-if="avatarMap[author.email.toLowerCase()]"
+                                  :src="avatarMap[author.email.toLowerCase()]!"
+                                  :alt="author.name"
+                                  class="size-full object-cover"
+                                />
+                                <span v-else>{{ getInitials(author.name) }}</span>
                               </div>
                             </TooltipTrigger>
                             <TooltipPortal>
@@ -298,6 +304,9 @@ const isLoadingDiff = ref(false);
 const scanProgress = ref<{ scanned: number; total: number } | null>(null);
 const commitListRef = ref<HTMLElement | null>(null);
 
+// Avatar cache: email -> avatar URL
+const avatarMap = ref<Record<string, string | null>>({});
+
 const PAGE_SIZE = 50;
 let currentOffset = 0;
 let hasMore = true;
@@ -390,6 +399,9 @@ async function loadCommits(reset = false) {
       }
       currentOffset += listResult.data.length;
       hasMore = listResult.data.length === PAGE_SIZE;
+
+      // Fetch avatars for new commits in background
+      fetchAvatars(listResult.data);
     }
 
     if (countResult?.success) {
@@ -399,6 +411,39 @@ async function loadCommits(reset = false) {
     console.error("Failed to load commits:", error);
   } finally {
     isLoadingMore.value = false;
+  }
+}
+
+async function fetchAvatars(newCommits: CommitRecord[]) {
+  // Collect unique emails not already in the map
+  const emails = new Set<string>();
+  for (const commit of newCommits) {
+    const email = commit.authorEmail.toLowerCase();
+    if (!(email in avatarMap.value)) {
+      emails.add(email);
+    }
+    // Also check co-authors
+    if (commit.body) {
+      const coAuthorRegex = /Co-authored-by:\s*.+?\s*<([^>]+)>/gi;
+      let match: RegExpExecArray | null;
+      while ((match = coAuthorRegex.exec(commit.body)) !== null) {
+        const coEmail = match[1].trim().toLowerCase();
+        if (!(coEmail in avatarMap.value)) {
+          emails.add(coEmail);
+        }
+      }
+    }
+  }
+
+  if (emails.size === 0) return;
+
+  try {
+    const result = await window.api.avatar.getBatch([...emails]);
+    if (result.success && result.data) {
+      avatarMap.value = { ...avatarMap.value, ...result.data };
+    }
+  } catch (error) {
+    console.error("Failed to fetch avatars:", error);
   }
 }
 

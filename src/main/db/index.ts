@@ -56,6 +56,13 @@ sqlite.exec(`
 
   CREATE UNIQUE INDEX IF NOT EXISTS idx_commits_repo_hash ON commits(repository_id, hash);
   CREATE INDEX IF NOT EXISTS idx_commits_repo_date ON commits(repository_id, date DESC);
+
+  CREATE TABLE IF NOT EXISTS avatar_cache (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    avatar_url TEXT,
+    fetched_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
+  );
 `)
 
 // Migration: Add remote_url column if it doesn't exist

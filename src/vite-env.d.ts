@@ -40,6 +40,10 @@ interface Window {
       onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => () => void
       onScanComplete: (callback: (data: { repositoryId: number; added: number }) => void) => () => void
     }
+    avatar: {
+      get: (email: string) => Promise<{ success: boolean; data: string | null }>
+      getBatch: (emails: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+    }
     shell: {
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
       openTerminal: (path: string) => Promise<{ success: boolean; error?: string }>

@@ -77,6 +77,11 @@ export const api = {
     },
   },
 
+  avatar: {
+    get: (email: string) => ipcRenderer.invoke('avatar:get', email),
+    getBatch: (emails: string[]) => ipcRenderer.invoke('avatar:get-batch', emails),
+  },
+
   editor: {
     detect: () => ipcRenderer.invoke('editor:detect'),
     getAvailable: () => ipcRenderer.invoke('editor:get-available'),

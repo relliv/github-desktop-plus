@@ -41,3 +41,13 @@ export const commits = sqliteTable('commits', {
 
 export type Commit = typeof commits.$inferSelect
 export type NewCommit = typeof commits.$inferInsert
+
+export const avatarCache = sqliteTable('avatar_cache', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  email: text('email').notNull().unique(),
+  avatarUrl: text('avatar_url'),
+  fetchedAt: integer('fetched_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+})
+
+export type AvatarCache = typeof avatarCache.$inferSelect
+export type NewAvatarCache = typeof avatarCache.$inferInsert

@@ -46,6 +46,10 @@ declare global {
         updateBranch: (id: number, branch: string) => Promise<any>
       }
       commits: CommitsAPI
+      avatar: {
+        get: (email: string) => Promise<{ success: boolean; data: string | null }>
+        getBatch: (emails: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+      }
       shell: {
         openPath: (path: string) => Promise<any>
         openTerminal: (path: string) => Promise<any>

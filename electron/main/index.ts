@@ -150,6 +150,10 @@ app.whenReady().then(async () => {
   // Register commit history handlers
   const { registerCommitHistoryHandlers } = await import('../../src/main/ipc/commit-history.handler')
   registerCommitHistoryHandlers()
+
+  // Register avatar handlers
+  const { registerAvatarHandlers } = await import('../../src/main/ipc/avatar.handler')
+  registerAvatarHandlers()
 })
 
 app.on('window-all-closed', () => {
