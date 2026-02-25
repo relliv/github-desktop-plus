@@ -59,6 +59,12 @@
           >
             <FileDiff class="size-4" :stroke-width="1.5" />
             Changes
+            <span
+              v-if="changeCount > 0"
+              class="ml-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground flex items-center justify-center"
+            >
+              {{ changeCount > 99 ? '99+' : changeCount }}
+            </span>
           </TabsTrigger>
           <TabsTrigger
             value="activity"
@@ -301,7 +307,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import {
   GitBranch,
@@ -356,12 +362,29 @@ const handleWindowFocus = () => {
 
 onMounted(() => {
   window.addEventListener("focus", handleWindowFocus);
+  if (currentRepository.value) {
+    repositoriesStore.fetchGitStatus();
+  }
 });
+
+watch(
+  () => currentRepository.value?.id,
+  (newId) => {
+    if (newId) {
+      repositoriesStore.fetchGitStatus();
+    }
+  }
+);
 
 onUnmounted(() => {
   window.removeEventListener("focus", handleWindowFocus);
 });
 const gitStatus = computed(() => repositoriesStore.gitStatus);
+const changeCount = computed(() => {
+  const s = gitStatus.value;
+  if (!s) return 0;
+  return s.modified.length + s.added.length + s.deleted.length + s.renamed.length + s.conflicted.length;
+});
 const recentRepositories = computed(() => repositoriesStore.recentRepositories);
 const favoriteRepositories = computed(
   () => repositoriesStore.favoriteRepositories,
