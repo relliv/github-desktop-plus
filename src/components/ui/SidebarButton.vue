@@ -13,12 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import * as icons from 'lucide-vue-next'
+import type { Component } from 'vue'
 
 interface Props {
-  icon: string
+  icon: string | Component
   label: string
-  collapsed: boolean
+  collapsed?: boolean
 }
 
 defineProps<Props>()
