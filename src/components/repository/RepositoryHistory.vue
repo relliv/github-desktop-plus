@@ -460,6 +460,7 @@ import {
 } from "lucide-vue-next";
 import NumberFlow from "@number-flow/vue";
 import { useRepositoriesStore } from "@/shared/stores";
+import { useToast } from "@/composables/useToast";
 
 interface CommitRecord {
   id: number;
@@ -480,6 +481,7 @@ interface CommitFile {
 }
 
 const repositoriesStore = useRepositoriesStore();
+const { toast } = useToast();
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 
 const commits = ref<CommitRecord[]>([]);
@@ -549,6 +551,11 @@ function copyHash(hash: string) {
   copiedTimeout = setTimeout(() => {
     copiedHash.value = null;
   }, 2000);
+  toast({
+    title: 'Commit hash copied',
+    description: hash.slice(0, 7),
+    duration: 3000,
+  });
 }
 
 const PAGE_SIZE = 50;

@@ -1,10 +1,12 @@
 <template>
   <router-view />
+  <Toaster />
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useAppStore } from './stores/app.store'
+import { Toaster } from '@/components/ui/toast'
 
 const appStore = useAppStore()
 
