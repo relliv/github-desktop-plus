@@ -13,19 +13,26 @@
         class="flex flex-col overflow-hidden"
       >
         <div class="shrink-0 px-4 py-3 border-b flex items-center justify-between">
-          <h2 class="font-semibold text-sm">
+          <h2 class="font-semibold text-sm flex items-center gap-1.5">
             Commits
             <span class="text-muted-foreground font-normal">
               (<NumberFlow :value="totalCommits" :animated="true" :transformTiming="{ duration: 500, easing: 'ease-out' }" :spinTiming="{ duration: 500, easing: 'ease-out' }" trend="decreasing" />)
             </span>
-          </h2>
-          <div class="flex items-center gap-2">
+            <button
+              @click="rescan"
+              class="p-1 rounded hover:bg-accent transition-colors"
+              title="Rescan commits"
+            >
+              <RefreshCw class="size-3.5 text-muted-foreground" :stroke-width="1.5" />
+            </button>
             <span
               v-if="isScanning"
-              class="text-xs text-muted-foreground animate-pulse"
+              class="text-xs text-muted-foreground font-normal animate-pulse"
             >
               Scanning...
             </span>
+          </h2>
+          <div class="flex items-center gap-2">
             <!-- View toggle -->
             <div class="flex items-center rounded-md border bg-muted/50 p-0.5">
               <button
@@ -45,13 +52,6 @@
                 <List class="size-3.5" :stroke-width="1.5" />
               </button>
             </div>
-            <button
-              @click="rescan"
-              class="p-1 rounded hover:bg-accent transition-colors"
-              title="Rescan commits"
-            >
-              <RefreshCw class="size-3.5 text-muted-foreground" :stroke-width="1.5" />
-            </button>
           </div>
         </div>
 
