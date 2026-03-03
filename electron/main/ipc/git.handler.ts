@@ -366,6 +366,29 @@ export function registerGitHandlers() {
     }
   })
   
+  // Get current branch
+  ipcMain.handle('git:getCurrentBranch', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      const branches = await repoGit.branchLocal()
+      return branches.current || null
+    } catch {
+      return null
+    }
+  })
+
+  // Get remote URL
+  ipcMain.handle('git:getRemoteUrl', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | undefined> => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      const remotes = await repoGit.getRemotes(true)
+      const origin = remotes.find(r => r.name === 'origin') ?? remotes[0]
+      return origin?.refs?.fetch ?? undefined
+    } catch {
+      return undefined
+    }
+  })
+
   // Create new repository
   ipcMain.handle('git:create', async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
     try {

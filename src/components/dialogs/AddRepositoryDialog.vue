@@ -192,8 +192,11 @@
                 id="clone-url"
                 v-model="cloneOptions.url"
                 placeholder="https://github.com/user/repository.git"
+                :class="cloneUrlError ? 'border-destructive' : ''"
               />
-              <p class="text-xs text-muted-foreground">HTTPS or SSH URL for the repository</p>
+              <p v-if="cloneUrlError" class="text-xs text-destructive">{{ cloneUrlError }}</p>
+              <p v-else-if="cloneRepoName" class="text-xs text-muted-foreground">Will clone <span class="font-medium text-foreground">{{ cloneRepoName }}</span></p>
+              <p v-else class="text-xs text-muted-foreground">HTTPS or SSH URL for the repository</p>
             </div>
 
             <div class="space-y-2">
@@ -506,6 +509,52 @@ const cloneProgress = ref<CloneProgress>({
   transferred: 0,
 })
 
+const cloneUrlError = ref('')
+const cloneRepoName = ref('')
+
+const parseRepoNameFromUrl = (url: string): string => {
+  const cleaned = url.trim().replace(/\.git$/, '')
+  // SSH: git@github.com:owner/repo
+  const sshMatch = cleaned.match(/git@[^:]+:(?:[^/]+\/)?(.+)$/)
+  if (sshMatch) return sshMatch[1]
+  // HTTPS: https://github.com/owner/repo
+  try {
+    const u = new URL(cleaned)
+    const parts = u.pathname.split('/').filter(Boolean)
+    if (parts.length >= 2) return parts[parts.length - 1]
+  } catch {}
+  return ''
+}
+
+const isValidRepoUrl = (url: string): boolean => {
+  const t = url.trim()
+  if (!t) return false
+  if (/^git@[^:]+:.+\/.+/.test(t)) return true
+  try {
+    const u = new URL(t)
+    return (u.protocol === 'https:' || u.protocol === 'http:') &&
+      u.pathname.split('/').filter(Boolean).length >= 2
+  } catch {
+    return false
+  }
+}
+
+let cloneUrlDebounce: ReturnType<typeof setTimeout> | null = null
+watch(() => cloneOptions.value.url, (url) => {
+  cloneRepoName.value = ''
+  cloneUrlError.value = ''
+  if (cloneUrlDebounce) clearTimeout(cloneUrlDebounce)
+  if (!url.trim()) return
+  cloneUrlDebounce = setTimeout(() => {
+    if (!isValidRepoUrl(url)) {
+      cloneUrlError.value = 'Invalid repository URL'
+      return
+    }
+    const name = parseRepoNameFromUrl(url)
+    cloneRepoName.value = name
+  }, 400)
+})
+
 const progressStageText = computed(() => {
   switch (cloneProgress.value.stage) {
     case 'counting': return 'Counting objects...'
@@ -600,11 +649,14 @@ const close = () => {
     authType.value = 'none'
     cloneOptions.value = { url: '', directory: '', branch: undefined, depth: undefined, username: undefined, password: undefined }
     cloneProgress.value = { stage: 'counting', percent: 0, total: 0, transferred: 0 }
+    cloneRepoName.value = ''
+    cloneUrlError.value = ''
   }, 300)
 }
 
 onUnmounted(() => {
   if (validationTimeout) clearTimeout(validationTimeout)
+  if (cloneUrlDebounce) clearTimeout(cloneUrlDebounce)
 })
 
 defineExpose({ open, close })
