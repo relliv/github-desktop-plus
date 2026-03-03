@@ -65,7 +65,7 @@ export function registerGitHandlers() {
       const repoGit = simpleGit(repoPath)
       const status = await repoGit.status()
 
-      return {
+      return JSON.parse(JSON.stringify({
         modified: status.modified,
         added: [...status.created, ...status.not_added],
         deleted: status.deleted,
@@ -74,7 +74,7 @@ export function registerGitHandlers() {
         staged: status.staged,
         ahead: status.ahead,
         behind: status.behind
-      }
+      }))
     } catch (error) {
       throw new Error(`Failed to get status: ${error}`)
     }
@@ -87,11 +87,11 @@ export function registerGitHandlers() {
       const localBranches = await repoGit.branchLocal()
       const remoteBranches = await repoGit.branch(['-r'])
       
-      return {
+      return JSON.parse(JSON.stringify({
         current: localBranches.current,
         local: localBranches.all,
         remote: remoteBranches.all.filter(b => !b.includes('HEAD'))
-      }
+      }))
     } catch (error) {
       throw new Error(`Failed to get branches: ${error}`)
     }
@@ -223,7 +223,7 @@ export function registerGitHandlers() {
     try {
       const repoGit = simpleGit(repoPath)
       const log = await repoGit.log(['-n', limit.toString()])
-      return log.all
+      return JSON.parse(JSON.stringify(log.all))
     } catch (error) {
       throw new Error(`Failed to get log: ${error}`)
     }
