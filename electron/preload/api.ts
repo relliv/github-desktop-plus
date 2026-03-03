@@ -88,9 +88,14 @@ export const api = {
     detect: () => ipcRenderer.invoke('editor:detect'),
     getAvailable: () => ipcRenderer.invoke('editor:get-available'),
     getDefault: () => ipcRenderer.invoke('editor:get-default'),
-    openFile: (params: { editor: any; filePath: string; lineNumber?: number }) => 
+    openFile: (params: { editor: any; filePath: string; lineNumber?: number }) =>
       ipcRenderer.invoke('editor:open-file', params),
-    openFileDefault: (params: { filePath: string; lineNumber?: number }) => 
+    openFileDefault: (params: { filePath: string; lineNumber?: number }) =>
       ipcRenderer.invoke('editor:open-file-default', params),
+  },
+
+  settings: {
+    get: (key: string) => ipcRenderer.invoke('settings:get', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),
   }
 }

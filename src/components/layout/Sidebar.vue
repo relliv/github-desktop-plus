@@ -149,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
   User,
@@ -255,6 +255,24 @@ watch(
 
 // Track collapsed state for each owner group
 const collapsedGroups = ref<Set<string>>(new Set());
+const COLLAPSED_GROUPS_KEY = "sidebar_collapsed_groups";
+
+onMounted(async () => {
+  try {
+    const result = await window.api.settings.get(COLLAPSED_GROUPS_KEY);
+    if (result.success && result.data) {
+      const parsed: string[] = JSON.parse(result.data);
+      collapsedGroups.value = new Set(parsed);
+    }
+  } catch (error) {
+    console.error("Failed to load collapsed groups:", error);
+  }
+});
+
+const saveCollapsedGroups = () => {
+  const serialized = JSON.stringify([...collapsedGroups.value]);
+  window.api.settings.set(COLLAPSED_GROUPS_KEY, serialized).catch(console.error);
+};
 
 const toggleGroup = (owner: string) => {
   if (collapsedGroups.value.has(owner)) {
@@ -262,6 +280,7 @@ const toggleGroup = (owner: string) => {
   } else {
     collapsedGroups.value.add(owner);
   }
+  saveCollapsedGroups();
 };
 
 const openRepository = () => {

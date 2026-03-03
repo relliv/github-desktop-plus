@@ -154,6 +154,10 @@ app.whenReady().then(async () => {
   // Register avatar handlers
   const { registerAvatarHandlers } = await import('../../src/main/ipc/avatar.handler')
   registerAvatarHandlers()
+
+  // Register settings handlers
+  const { registerSettingsHandlers } = await import('../../src/main/ipc/settings.handler')
+  registerSettingsHandlers()
 })
 
 app.on('window-all-closed', () => {
