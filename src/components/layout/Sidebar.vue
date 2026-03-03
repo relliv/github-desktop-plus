@@ -40,7 +40,7 @@
             <OwnerContextMenu :owner="group.owner" :repos="group.repos">
               <button
                 @click="toggleGroup(group.owner)"
-                class="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                class="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-2"
               >
                 <ChevronDown
                   v-if="!collapsedGroups.has(group.owner)"
