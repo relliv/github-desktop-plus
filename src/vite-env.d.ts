@@ -49,6 +49,7 @@ interface Window {
     shell: {
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
       openTerminal: (path: string) => Promise<{ success: boolean; error?: string }>
+      openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
     }
     editor: {
       detect: () => Promise<any[]>

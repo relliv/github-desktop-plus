@@ -16,6 +16,19 @@ export function registerShellHandlers() {
     }
   })
 
+  // Open URL in default browser
+  ipcMain.handle('shell:open-external', async (_, url: string) => {
+    try {
+      await shell.openExternal(url)
+      return { success: true }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to open URL'
+      }
+    }
+  })
+
   // Open terminal at path
   ipcMain.handle('shell:open-terminal', async (_, path: string) => {
     try {

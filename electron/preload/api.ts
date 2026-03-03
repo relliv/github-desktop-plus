@@ -58,6 +58,7 @@ export const api = {
   shell: {
     openPath: (path: string) => ipcRenderer.invoke('shell:open-path', path),
     openTerminal: (path: string) => ipcRenderer.invoke('shell:open-terminal', path),
+    openExternal: (url: string) => ipcRenderer.invoke('shell:open-external', url),
   },
   
   commits: {

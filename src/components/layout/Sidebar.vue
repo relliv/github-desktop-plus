@@ -53,30 +53,32 @@
         <div class="space-y-2">
           <div v-for="group in repositoriesByOwner" :key="group.owner">
             <!-- Owner header -->
-            <button
-              @click="toggleGroup(group.owner)"
-              class="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ChevronDown
-                v-if="!collapsedGroups.has(group.owner)"
-                class="w-3 h-3 flex-shrink-0"
-                :stroke-width="1.5"
-              />
-              <ChevronRight
-                v-else
-                class="w-3 h-3 flex-shrink-0"
-                :stroke-width="1.5"
-              />
-              <Avatar
-                :name="group.owner"
-                :image-url="ownerAvatars[group.owner.toLowerCase()]"
-                size="xs"
-              />
-              <span class="truncate">{{ group.owner }}</span>
-              <span class="ml-auto text-[10px] opacity-60">{{
-                group.repos.length
-              }}</span>
-            </button>
+            <OwnerContextMenu :owner="group.owner" :repos="group.repos">
+              <button
+                @click="toggleGroup(group.owner)"
+                class="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronDown
+                  v-if="!collapsedGroups.has(group.owner)"
+                  class="w-3 h-3 flex-shrink-0"
+                  :stroke-width="1.5"
+                />
+                <ChevronRight
+                  v-else
+                  class="w-3 h-3 flex-shrink-0"
+                  :stroke-width="1.5"
+                />
+                <Avatar
+                  :name="group.owner"
+                  :image-url="ownerAvatars[group.owner.toLowerCase()]"
+                  size="xs"
+                />
+                <span class="truncate">{{ group.owner }}</span>
+                <span class="ml-auto text-[10px] opacity-60">{{
+                  group.repos.length
+                }}</span>
+              </button>
+            </OwnerContextMenu>
 
             <!-- Repositories in group -->
             <div
@@ -169,6 +171,7 @@ import OpenRepositoryDialog from "../dialogs/OpenRepositoryDialog.vue";
 import CreateRepositoryDialog from "../dialogs/CreateRepositoryDialog.vue";
 import AppSettingsDialog from "../dialogs/AppSettingsDialog.vue";
 import RepositoryContextMenu from "../RepositoryContextMenu.vue";
+import OwnerContextMenu from "../OwnerContextMenu.vue";
 import Avatar from "../ui/Avatar.vue";
 
 const router = useRouter();
