@@ -274,8 +274,13 @@ export function registerGitHandlers() {
       // Configure git with progress handler
       const progressGit = simpleGit({
         progress: (data: SimpleGitProgressEvent) => {
-          const progress = parseProgress(data)
-          event.sender.send('git:clone:progress', progress)
+          try {
+            const progress = parseProgress(data)
+            // JSON round-trip to ensure plain serializable object
+            event.sender.send('git:clone:progress', JSON.parse(JSON.stringify(progress)))
+          } catch {
+            // Ignore progress send failures
+          }
         }
       })
 

@@ -591,7 +591,8 @@ const startClone = async () => {
   })
 
   try {
-    const result = await window.api.git.clone(cloneOptions.value)
+    // Spread to plain object — Vue reactive Proxy can't pass through contextBridge
+    const result = await window.api.git.clone({ ...cloneOptions.value })
     if (result.success && result.path) {
       await repositoriesStore.addRepository(result.path)
       emit('clone-complete', result.path)
