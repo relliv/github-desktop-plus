@@ -19,6 +19,26 @@
       </div>
     </div>
 
+    <!-- Search -->
+    <div class="px-3 py-2 border-b">
+      <div class="relative">
+        <Search class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" :stroke-width="1.5" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search..."
+          class="w-full bg-accent/50 text-sm pl-7 pr-7 py-1.5 rounded-md outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+        />
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <X class="w-3.5 h-3.5" :stroke-width="1.5" />
+        </button>
+      </div>
+    </div>
+
     <!-- Repository section -->
     <div class="flex-1 overflow-y-auto">
       <div class="px-2 py-4">
@@ -33,9 +53,14 @@
           </button>
         </div>
 
+        <!-- No results -->
+        <div v-if="filteredRepositoriesByOwner.length === 0 && searchQuery" class="px-2 py-6 text-center text-sm text-muted-foreground">
+          No results for "{{ searchQuery }}"
+        </div>
+
         <!-- Repository list grouped by owner -->
         <div class="space-y-2">
-          <div v-for="group in repositoriesByOwner" :key="group.owner">
+          <div v-for="group in filteredRepositoriesByOwner" :key="group.owner">
             <!-- Owner header -->
             <OwnerContextMenu :owner="group.owner" :repos="group.repos">
               <button
@@ -43,7 +68,7 @@
                 class="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-2"
               >
                 <ChevronDown
-                  v-if="!collapsedGroups.has(group.owner)"
+                  v-if="!collapsedGroups.has(group.owner) || searchQuery"
                   class="w-3 h-3 flex-shrink-0"
                   :stroke-width="1.5"
                 />
@@ -66,7 +91,7 @@
 
             <!-- Repositories in group -->
             <div
-              v-if="!collapsedGroups.has(group.owner)"
+              v-if="!collapsedGroups.has(group.owner) || searchQuery"
               class="space-y-0.5 ml-2"
             >
               <RepositoryContextMenu
@@ -138,6 +163,8 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  Search,
+  X,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import SidebarButton from "../ui/SidebarButton.vue";
@@ -207,6 +234,23 @@ const repositoriesByOwner = computed(() => {
   }
 
   return sortedGroups.sort((a, b) => a.owner.localeCompare(b.owner));
+});
+
+const searchQuery = ref("");
+
+const filteredRepositoriesByOwner = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return repositoriesByOwner.value;
+
+  return repositoriesByOwner.value
+    .map((group) => {
+      const ownerMatches = group.owner.toLowerCase().includes(q);
+      const filteredRepos = ownerMatches
+        ? group.repos
+        : group.repos.filter((repo) => repo.name.toLowerCase().includes(q));
+      return { ...group, repos: filteredRepos };
+    })
+    .filter((group) => group.repos.length > 0);
 });
 
 // Owner avatar cache: lowercase owner -> avatar URL
