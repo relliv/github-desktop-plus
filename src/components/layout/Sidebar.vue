@@ -22,31 +22,15 @@
     <!-- Repository section -->
     <div class="flex-1 overflow-y-auto">
       <div class="px-2 py-4">
-        <div class="flex items-center justify-between px-2 mb-2">
+        <div class="flex items-center justify-between pl-2 mb-2">
           <h3 class="font-medium text-sm">Repositories</h3>
-          <div class="flex gap-1">
-            <button
-              @click="createRepository"
-              class="p-1 hover:bg-accent rounded transition-colors"
-              title="Create new repository"
-            >
-              <FilePlus class="w-4 h-4" :stroke-width="1" />
-            </button>
-            <button
-              @click="cloneRepository"
-              class="p-1 hover:bg-accent rounded transition-colors"
-              title="Clone repository"
-            >
-              <GitBranch class="w-4 h-4" :stroke-width="1" />
-            </button>
-            <button
-              @click="openRepository"
-              class="p-1 hover:bg-accent rounded transition-colors"
-              title="Add repository"
-            >
-              <Plus class="w-4 h-4" :stroke-width="1" />
-            </button>
-          </div>
+          <button
+            @click="openAddRepository"
+            class="p-1 hover:bg-accent rounded transition-colors"
+            title="Add repository"
+          >
+            <Plus class="w-4 h-4" :stroke-width="1" />
+          </button>
         </div>
 
         <!-- Repository list grouped by owner -->
@@ -130,18 +114,11 @@
       <SidebarButton :icon="Settings" label="Settings" @click="openSettings" />
     </div>
 
-    <!-- Clone Dialog -->
-    <CloneDialog ref="cloneDialog" @clone-complete="handleCloneComplete" />
-
-    <!-- Open Repository Dialog -->
-    <OpenRepositoryDialog
-      ref="openRepoDialog"
+    <!-- Add / Create / Clone Dialog -->
+    <AddRepositoryDialog
+      ref="addRepoDialog"
+      @clone-complete="handleCloneComplete"
       @repository-opened="handleRepositoryOpened"
-    />
-
-    <!-- Create Repository Dialog -->
-    <CreateRepositoryDialog
-      ref="createRepoDialog"
       @repository-created="handleRepositoryCreated"
     />
 
@@ -156,19 +133,15 @@ import { useRouter } from "vue-router";
 import {
   User,
   Plus,
-  GitBranch,
   Folder,
   Star,
   Settings,
-  FilePlus,
   ChevronDown,
   ChevronRight,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import SidebarButton from "../ui/SidebarButton.vue";
-import CloneDialog from "../dialogs/CloneDialog.vue";
-import OpenRepositoryDialog from "../dialogs/OpenRepositoryDialog.vue";
-import CreateRepositoryDialog from "../dialogs/CreateRepositoryDialog.vue";
+import AddRepositoryDialog from "../dialogs/AddRepositoryDialog.vue";
 import AppSettingsDialog from "../dialogs/AppSettingsDialog.vue";
 import RepositoryContextMenu from "../RepositoryContextMenu.vue";
 import OwnerContextMenu from "../OwnerContextMenu.vue";
@@ -177,9 +150,7 @@ import Avatar from "../ui/Avatar.vue";
 const router = useRouter();
 const repositoriesStore = useRepositoriesStore();
 
-const cloneDialog = ref<InstanceType<typeof CloneDialog>>();
-const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
-const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
+const addRepoDialog = ref<InstanceType<typeof AddRepositoryDialog>>();
 const appSettingsDialog = ref<InstanceType<typeof AppSettingsDialog>>();
 
 const repositories = computed(() => repositoriesStore.repositories);
@@ -274,7 +245,9 @@ onMounted(async () => {
 
 const saveCollapsedGroups = () => {
   const serialized = JSON.stringify([...collapsedGroups.value]);
-  window.api.settings.set(COLLAPSED_GROUPS_KEY, serialized).catch(console.error);
+  window.api.settings
+    .set(COLLAPSED_GROUPS_KEY, serialized)
+    .catch(console.error);
 };
 
 const toggleGroup = (owner: string) => {
@@ -286,16 +259,8 @@ const toggleGroup = (owner: string) => {
   saveCollapsedGroups();
 };
 
-const openRepository = () => {
-  openRepoDialog.value?.open();
-};
-
-const createRepository = () => {
-  createRepoDialog.value?.open();
-};
-
-const cloneRepository = () => {
-  cloneDialog.value?.open();
+const openAddRepository = () => {
+  addRepoDialog.value?.open();
 };
 
 const selectRepository = (repo: any) => {
