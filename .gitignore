@@ -27,3 +27,4 @@ release
 # lockfile
 package-lock.json
 yarn.lock
+docs
