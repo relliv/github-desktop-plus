@@ -156,6 +156,15 @@ const appSettingsDialog = ref<InstanceType<typeof AppSettingsDialog>>();
 const repositories = computed(() => repositoriesStore.repositories);
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 
+watch(currentRepository, (repo) => {
+  if (!repo) return;
+  const owner = getOwner(repo.remoteUrl);
+  if (collapsedGroups.value.has(owner)) {
+    collapsedGroups.value.delete(owner);
+    saveCollapsedGroups();
+  }
+});
+
 // Extract owner from repository remote URL
 const getOwner = (remoteUrl?: string): string => {
   if (!remoteUrl) return "Local";
