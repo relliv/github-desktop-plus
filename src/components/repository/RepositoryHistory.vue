@@ -12,18 +12,29 @@
         :max-size="60"
         class="flex flex-col overflow-hidden"
       >
-        <div class="shrink-0 px-4 py-3 border-b flex items-center justify-between">
+        <div
+          class="shrink-0 px-4 py-3 border-b flex items-center justify-between h-[55px]"
+        >
           <h2 class="font-semibold text-sm flex items-center gap-1.5">
             Commits
             <span class="text-muted-foreground font-normal">
-              (<NumberFlow :value="totalCommits" :animated="true" :transformTiming="{ duration: 500, easing: 'ease-out' }" :spinTiming="{ duration: 500, easing: 'ease-out' }" trend="decreasing" />)
+              (<NumberFlow
+                :value="totalCommits"
+                :animated="true"
+                :transformTiming="{ duration: 500, easing: 'ease-out' }"
+                :spinTiming="{ duration: 500, easing: 'ease-out' }"
+                trend="decreasing"
+              />)
             </span>
             <button
               @click="rescan"
               class="p-1 rounded hover:bg-accent transition-colors"
               title="Rescan commits"
             >
-              <RefreshCw class="size-3.5 text-muted-foreground" :stroke-width="1.5" />
+              <RefreshCw
+                class="size-3.5 text-muted-foreground"
+                :stroke-width="1.5"
+              />
             </button>
             <span
               v-if="isScanning"
@@ -38,7 +49,11 @@
               <button
                 @click="viewMode = 'timeline'"
                 class="p-1 rounded-sm transition-colors"
-                :class="viewMode === 'timeline' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
+                :class="
+                  viewMode === 'timeline'
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                "
                 title="Timeline view"
               >
                 <GitCommitVertical class="size-3.5" :stroke-width="1.5" />
@@ -46,7 +61,11 @@
               <button
                 @click="viewMode = 'list'"
                 class="p-1 rounded-sm transition-colors"
-                :class="viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
+                :class="
+                  viewMode === 'list'
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                "
                 title="List view"
               >
                 <List class="size-3.5" :stroke-width="1.5" />
@@ -73,7 +92,9 @@
                 >
                   <div class="flex items-start gap-2">
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium truncate">{{ commit.message }}</p>
+                      <p class="text-sm font-medium truncate">
+                        {{ commit.message }}
+                      </p>
                       <div class="flex items-center gap-2 mt-1">
                         <!-- Author avatar(s) -->
                         <AvatarStack :authors="getAvatarAuthors(commit)" />
@@ -91,10 +112,20 @@
                         @click.stop="copyHash(commit.hash)"
                         title="Copy full hash"
                       >
-                        <Check v-if="copiedHash === commit.hash" class="size-3 text-green-500" :stroke-width="2" />
-                        <Copy v-else class="size-3 text-muted-foreground" :stroke-width="1.5" />
+                        <Check
+                          v-if="copiedHash === commit.hash"
+                          class="size-3 text-green-500"
+                          :stroke-width="2"
+                        />
+                        <Copy
+                          v-else
+                          class="size-3 text-muted-foreground"
+                          :stroke-width="1.5"
+                        />
                       </button>
-                      <code class="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
+                      <code
+                        class="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded"
+                      >
                         {{ commit.abbreviatedHash }}
                       </code>
                     </div>
@@ -125,34 +156,59 @@
             <TooltipProvider :delay-duration="400">
               <div class="relative">
                 <!-- Timeline line -->
-                <div class="absolute left-[11px] top-0 bottom-0 w-px bg-border" />
+                <div
+                  class="absolute left-[11px] top-0 bottom-0 w-px bg-border"
+                />
 
                 <!-- Date separators + commit items -->
                 <template v-for="(commit, idx) in commits" :key="commit.hash">
                   <!-- Sticky date separator -->
-                  <template v-if="idx === 0 || getDateLabel(commit.date) !== getDateLabel(commits[idx - 1].date)">
+                  <template
+                    v-if="
+                      idx === 0 ||
+                      getDateLabel(commit.date) !==
+                        getDateLabel(commits[idx - 1].date)
+                    "
+                  >
                     <!-- Sentinel to detect stuck state -->
-                    <div :ref="(el) => registerSentinel(el as HTMLElement, idx)" class="h-0" />
+                    <div
+                      :ref="(el) => registerSentinel(el as HTMLElement, idx)"
+                      class="h-0"
+                    />
                     <div
                       class="sticky top-0 z-10 pl-8 py-2.5 -mx-4 px-4 bg-background/80 backdrop-blur-md transition-shadow duration-150"
                       :class="[
                         idx > 0 ? 'mt-2' : '',
                         stuckLabels.has(idx)
                           ? 'shadow-[0_2px_6px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_-2px_rgba(160,160,160,0.12)]'
-                          : 'shadow-none'
+                          : 'shadow-none',
                       ]"
                     >
-                    <div class="text-xs font-bold text-foreground tracking-wide flex items-center gap-1.5">
-                      <CalendarDays class="size-3 text-muted-foreground" :stroke-width="2" />
-                      {{ getDateLabel(commit.date) }}
-                      <span class="text-[10px] font-medium text-muted-foreground/70">
-                        {{ getDateCommitCount(getDateLabel(commit.date)) }} {{ getDateCommitCount(getDateLabel(commit.date)) === 1 ? 'commit' : 'commits' }}
-                      </span>
-                      <span class="ml-auto text-[10px] font-normal text-muted-foreground">
-                        {{ getDaysAgo(commit.date) }}
-                      </span>
+                      <div
+                        class="text-xs font-bold text-foreground tracking-wide flex items-center gap-1.5"
+                      >
+                        <CalendarDays
+                          class="size-3 text-muted-foreground"
+                          :stroke-width="2"
+                        />
+                        {{ getDateLabel(commit.date) }}
+                        <span
+                          class="text-[10px] font-medium text-muted-foreground/70"
+                        >
+                          {{ getDateCommitCount(getDateLabel(commit.date)) }}
+                          {{
+                            getDateCommitCount(getDateLabel(commit.date)) === 1
+                              ? "commit"
+                              : "commits"
+                          }}
+                        </span>
+                        <span
+                          class="ml-auto text-[10px] font-normal text-muted-foreground"
+                        >
+                          {{ getDaysAgo(commit.date) }}
+                        </span>
+                      </div>
                     </div>
-                  </div>
                   </template>
 
                   <!-- Commit row with dot -->
@@ -160,14 +216,20 @@
                     <!-- Timeline node — aligned to commit content -->
                     <div
                       class="absolute left-[2px] top-2.5 size-[18px] rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors"
-                      :class="selectedCommit?.hash === commit.hash
-                        ? 'bg-primary border-primary'
-                        : 'bg-background border-muted-foreground/30 hover:border-primary/60'"
+                      :class="
+                        selectedCommit?.hash === commit.hash
+                          ? 'bg-primary border-primary'
+                          : 'bg-background border-muted-foreground/30 hover:border-primary/60'
+                      "
                       @click="selectCommit(commit)"
                     >
                       <div
                         class="size-2 rounded-full"
-                        :class="selectedCommit?.hash === commit.hash ? 'bg-primary-foreground' : 'bg-muted-foreground/50'"
+                        :class="
+                          selectedCommit?.hash === commit.hash
+                            ? 'bg-primary-foreground'
+                            : 'bg-muted-foreground/50'
+                        "
                       />
                     </div>
 
@@ -178,24 +240,46 @@
                           @click="selectCommit(commit)"
                           @contextmenu.prevent="openContextMenu($event, commit)"
                           class="group/commit w-full text-left rounded-lg px-3 py-2 -mx-1 hover:bg-accent/50 transition-colors"
-                          :class="{ 'bg-accent': selectedCommit?.hash === commit.hash }"
+                          :class="{
+                            'bg-accent': selectedCommit?.hash === commit.hash,
+                          }"
                         >
-                          <p class="text-sm font-medium leading-snug">{{ commit.message }}</p>
+                          <p class="text-sm font-medium leading-snug">
+                            {{ commit.message }}
+                          </p>
                           <div class="flex items-center gap-2 mt-1.5">
                             <!-- Author avatar(s) -->
                             <AvatarStack :authors="getAvatarAuthors(commit)" />
-                            <span class="text-xs text-muted-foreground truncate">{{ commit.authorName }}</span>
-                            <span class="text-xs text-muted-foreground shrink-0">{{ formatDate(commit.date) }}</span>
-                            <div class="flex items-center gap-1 ml-auto shrink-0 opacity-0 group-hover/commit:opacity-100 transition-opacity">
+                            <span
+                              class="text-xs text-muted-foreground truncate"
+                              >{{ commit.authorName }}</span
+                            >
+                            <span
+                              class="text-xs text-muted-foreground shrink-0"
+                              >{{ formatDate(commit.date) }}</span
+                            >
+                            <div
+                              class="flex items-center gap-1 ml-auto shrink-0 opacity-0 group-hover/commit:opacity-100 transition-opacity"
+                            >
                               <button
                                 class="p-0.5 rounded hover:bg-accent transition-all"
                                 @click.stop="copyHash(commit.hash)"
                                 title="Copy full hash"
                               >
-                                <Check v-if="copiedHash === commit.hash" class="size-3 text-green-500" :stroke-width="2" />
-                                <Copy v-else class="size-3 text-muted-foreground" :stroke-width="1.5" />
+                                <Check
+                                  v-if="copiedHash === commit.hash"
+                                  class="size-3 text-green-500"
+                                  :stroke-width="2"
+                                />
+                                <Copy
+                                  v-else
+                                  class="size-3 text-muted-foreground"
+                                  :stroke-width="1.5"
+                                />
                               </button>
-                              <code class="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded">
+                              <code
+                                class="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded"
+                              >
                                 {{ commit.abbreviatedHash }}
                               </code>
                             </div>
@@ -208,7 +292,9 @@
                           :side-offset="8"
                           class="z-50 max-w-sm rounded-md bg-popover px-3 py-2 text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
                         >
-                          <p class="text-sm font-medium">{{ commit.message }}</p>
+                          <p class="text-sm font-medium">
+                            {{ commit.message }}
+                          </p>
                           <p
                             v-if="commit.body"
                             class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
@@ -230,9 +316,15 @@
           </div>
         </div>
 
-        <div v-else-if="isScanning" class="flex-1 flex items-center justify-center">
+        <div
+          v-else-if="isScanning"
+          class="flex-1 flex items-center justify-center"
+        >
           <div class="text-center">
-            <RefreshCw class="size-8 mx-auto mb-3 text-muted-foreground animate-spin" :stroke-width="1" />
+            <RefreshCw
+              class="size-8 mx-auto mb-3 text-muted-foreground animate-spin"
+              :stroke-width="1"
+            />
             <p class="text-sm text-muted-foreground">Scanning commits...</p>
             <p v-if="scanProgress" class="text-xs text-muted-foreground mt-1">
               {{ scanProgress.scanned }} / {{ scanProgress.total }}
@@ -242,14 +334,21 @@
 
         <div v-else class="flex-1 flex items-center justify-center">
           <div class="text-center">
-            <GitCommitVertical class="size-8 mx-auto mb-3 text-muted-foreground" :stroke-width="1" />
+            <GitCommitVertical
+              class="size-8 mx-auto mb-3 text-muted-foreground"
+              :stroke-width="1"
+            />
             <p class="text-sm text-muted-foreground">No commits found</p>
           </div>
         </div>
       </SplitterPanel>
 
-      <SplitterResizeHandle class="flex items-center justify-center group border-x">
-        <div class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors" />
+      <SplitterResizeHandle
+        class="flex items-center justify-center group border-x"
+      >
+        <div
+          class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
+        />
       </SplitterResizeHandle>
 
       <!-- Column 2: Changed files -->
@@ -259,16 +358,24 @@
         :max-size="40"
         class="flex flex-col overflow-hidden"
       >
-        <div class="shrink-0 px-4 py-3 border-b">
+        <div
+          class="flex flex-row gap-2 justify-between items-center shrink-0 px-4 py-3 border-b h-[55px]"
+        >
           <h2 class="font-semibold text-sm">
             Changed Files
-            <span v-if="commitFiles.length > 0" class="text-muted-foreground font-normal">
+            <span
+              v-if="commitFiles.length > 0"
+              class="text-muted-foreground font-normal"
+            >
               ({{ commitFiles.length }})
             </span>
           </h2>
         </div>
 
-        <div v-if="isLoadingFiles" class="flex-1 flex items-center justify-center">
+        <div
+          v-if="isLoadingFiles"
+          class="flex-1 flex items-center justify-center"
+        >
           <span class="text-xs text-muted-foreground">Loading files...</span>
         </div>
 
@@ -301,20 +408,32 @@
           </button>
         </div>
 
-        <div v-else-if="selectedCommit" class="flex-1 flex items-center justify-center">
+        <div
+          v-else-if="selectedCommit"
+          class="flex-1 flex items-center justify-center"
+        >
           <p class="text-sm text-muted-foreground">No files changed</p>
         </div>
 
         <div v-else class="flex-1 flex items-center justify-center">
           <div class="text-center">
-            <FileText class="size-8 mx-auto mb-3 text-muted-foreground" :stroke-width="1" />
-            <p class="text-sm text-muted-foreground">Select a commit to view changes</p>
+            <FileText
+              class="size-8 mx-auto mb-3 text-muted-foreground"
+              :stroke-width="1"
+            />
+            <p class="text-sm text-muted-foreground">
+              Select a commit to view changes
+            </p>
           </div>
         </div>
       </SplitterPanel>
 
-      <SplitterResizeHandle class="flex items-center justify-center group border-x">
-        <div class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors" />
+      <SplitterResizeHandle
+        class="flex items-center justify-center group border-x"
+      >
+        <div
+          class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
+        />
       </SplitterResizeHandle>
 
       <!-- Column 3: Diff preview -->
@@ -323,13 +442,18 @@
         :min-size="20"
         class="flex flex-col overflow-hidden"
       >
-        <div class="shrink-0 px-4 py-3 border-b">
+        <div
+          class="flex flex-row gap-2 justify-between items-center shrink-0 px-4 py-3 border-b h-[55px]"
+        >
           <h2 class="font-semibold text-sm truncate">
-            {{ selectedFile ? selectedFile.file : 'Diff' }}
+            {{ selectedFile ? selectedFile.file : "Diff" }}
           </h2>
         </div>
 
-        <div v-if="isLoadingDiff" class="flex-1 flex items-center justify-center">
+        <div
+          v-if="isLoadingDiff"
+          class="flex-1 flex items-center justify-center"
+        >
           <span class="text-xs text-muted-foreground">Loading diff...</span>
         </div>
 
@@ -337,14 +461,23 @@
           v-else-if="fileDiff"
           class="flex-1 min-h-0 overflow-auto bg-muted/30"
         >
-          <pre class="text-xs font-mono p-4 leading-relaxed"><code>{{ fileDiff }}</code></pre>
+          <pre
+            class="text-xs font-mono p-4 leading-relaxed"
+          ><code>{{ fileDiff }}</code></pre>
         </div>
 
         <div v-else class="flex-1 flex items-center justify-center">
           <div class="text-center">
-            <Code class="size-8 mx-auto mb-3 text-muted-foreground" :stroke-width="1" />
+            <Code
+              class="size-8 mx-auto mb-3 text-muted-foreground"
+              :stroke-width="1"
+            />
             <p class="text-sm text-muted-foreground">
-              {{ selectedCommit ? 'Select a file to view diff' : 'Select a commit to get started' }}
+              {{
+                selectedCommit
+                  ? "Select a file to view diff"
+                  : "Select a commit to get started"
+              }}
             </p>
             <p class="text-xs text-muted-foreground mt-1">
               Code diff viewer coming soon
@@ -439,7 +572,7 @@ const fileDiff = ref<string>("");
 
 const VIEW_MODE_KEY = "repository-history-view-mode";
 const viewMode = ref<"list" | "timeline">(
-  (localStorage.getItem(VIEW_MODE_KEY) as "list" | "timeline") || "list"
+  (localStorage.getItem(VIEW_MODE_KEY) as "list" | "timeline") || "list",
 );
 watch(viewMode, (v) => localStorage.setItem(VIEW_MODE_KEY, v));
 
@@ -498,7 +631,7 @@ function copyHash(hash: string) {
     copiedHash.value = null;
   }, 2000);
   toast({
-    title: 'Commit hash copied',
+    title: "Commit hash copied",
     description: hash.slice(0, 7),
     duration: 3000,
   });
@@ -517,7 +650,9 @@ onMounted(() => {
   stickyObserver = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        const idx = [...sentinelMap.entries()].find(([, el]) => el === entry.target)?.[0];
+        const idx = [...sentinelMap.entries()].find(
+          ([, el]) => el === entry.target,
+        )?.[0];
         if (idx === undefined) continue;
         if (!entry.isIntersecting) {
           stuckLabels.value.add(idx);
@@ -527,7 +662,7 @@ onMounted(() => {
         stuckLabels.value = new Set(stuckLabels.value);
       }
     },
-    { threshold: 0 }
+    { threshold: 0 },
   );
   for (const el of sentinelMap.values()) {
     stickyObserver.observe(el);
@@ -535,7 +670,10 @@ onMounted(() => {
 
   // Listen for scan progress
   cleanupProgress = window.api.commits.onScanProgress((data) => {
-    if (currentRepository.value && data.repositoryId === currentRepository.value.id) {
+    if (
+      currentRepository.value &&
+      data.repositoryId === currentRepository.value.id
+    ) {
       isScanning.value = true;
       scanProgress.value = { scanned: data.scanned, total: data.total };
     }
@@ -543,7 +681,10 @@ onMounted(() => {
 
   // Listen for scan completion
   cleanupComplete = window.api.commits.onScanComplete((data) => {
-    if (currentRepository.value && data.repositoryId === currentRepository.value.id) {
+    if (
+      currentRepository.value &&
+      data.repositoryId === currentRepository.value.id
+    ) {
       isScanning.value = false;
       scanProgress.value = null;
       if (data.added > 0) {
@@ -573,7 +714,7 @@ watch(
       resetState();
       loadCommits(true);
     }
-  }
+  },
 );
 
 function resetState() {
@@ -604,7 +745,11 @@ async function loadCommits(reset = false) {
 
   try {
     const [listResult, countResult] = await Promise.all([
-      window.api.commits.list(currentRepository.value.id, currentOffset, PAGE_SIZE),
+      window.api.commits.list(
+        currentRepository.value.id,
+        currentOffset,
+        PAGE_SIZE,
+      ),
       isInitialLoad
         ? window.api.commits.count(currentRepository.value.id)
         : Promise.resolve(null),
@@ -678,7 +823,7 @@ async function selectCommit(commit: CommitRecord) {
   try {
     const result = await window.api.commits.files(
       currentRepository.value.path,
-      commit.hash
+      commit.hash,
     );
     if (result.success && result.data) {
       commitFiles.value = result.data;
@@ -701,7 +846,7 @@ async function selectFile(file: CommitFile) {
     const result = await window.api.commits.fileDiff(
       currentRepository.value.path,
       selectedCommit.value.hash,
-      file.file
+      file.file,
     );
     if (result.success && result.data) {
       fileDiff.value = result.data;
@@ -721,7 +866,7 @@ async function rescan() {
   try {
     await window.api.commits.fullScan(
       currentRepository.value.id,
-      currentRepository.value.path
+      currentRepository.value.path,
     );
   } catch (error) {
     console.error("Failed to rescan:", error);
@@ -744,7 +889,11 @@ function handleScroll(event: Event) {
   closeContextMenu();
 
   // Load more when scrolled near bottom
-  if (scrollHeight - scrollTop - clientHeight < 200 && hasMore && !isLoadingMore.value) {
+  if (
+    scrollHeight - scrollTop - clientHeight < 200 &&
+    hasMore &&
+    !isLoadingMore.value
+  ) {
     loadCommits(false);
   }
 }
@@ -779,7 +928,9 @@ function getDateLabel(date: string | Date): string {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const commitDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diffDays = Math.floor((today.getTime() - commitDay.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(
+    (today.getTime() - commitDay.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
@@ -804,7 +955,9 @@ function getDaysAgo(date: string | Date): string {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const commitDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diffDays = Math.floor((today.getTime() - commitDay.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(
+    (today.getTime() - commitDay.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   if (diffDays === 0) return "today";
   if (diffDays === 1) return "1 day ago";
@@ -852,7 +1005,9 @@ interface Author {
 const coAuthorRegex = /^Co-authored-by:\s*(.+?)\s*<([^>]+)>/gim;
 
 function getAuthors(commit: CommitRecord): Author[] {
-  const authors: Author[] = [{ name: commit.authorName, email: commit.authorEmail }];
+  const authors: Author[] = [
+    { name: commit.authorName, email: commit.authorEmail },
+  ];
   if (!commit.body) return authors;
 
   let match: RegExpExecArray | null;

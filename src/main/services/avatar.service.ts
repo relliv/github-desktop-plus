@@ -98,6 +98,97 @@ export class AvatarService {
     return avatarUrl
   }
 
+  async getOwnerAvatar(owner: string): Promise<string | null> {
+    const cacheKey = `owner:${owner.toLowerCase()}`
+    const cached = await this.getCached(cacheKey)
+
+    if (cached !== undefined) {
+      return cached
+    }
+
+    return this.fetchAndCacheOwner(owner, cacheKey)
+  }
+
+  async getOwnerAvatars(owners: string[]): Promise<Record<string, string | null>> {
+    const unique = [...new Set(owners.map((o) => o.toLowerCase()))]
+    const result: Record<string, string | null> = {}
+
+    for (const owner of unique) {
+      result[owner] = await this.getOwnerAvatar(owner)
+    }
+
+    return result
+  }
+
+  private async fetchAndCacheOwner(owner: string, cacheKey: string): Promise<string | null> {
+    let avatarUrl: string | null = null
+
+    try {
+      avatarUrl = await this.fetchGitHubOwnerAvatar(owner)
+    } catch {
+      return null
+    }
+
+    await db
+      .insert(schema.avatarCache)
+      .values({
+        email: cacheKey,
+        avatarUrl,
+        fetchedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: schema.avatarCache.email,
+        set: {
+          avatarUrl,
+          fetchedAt: new Date(),
+        },
+      })
+
+    return avatarUrl
+  }
+
+  private fetchGitHubOwnerAvatar(owner: string): Promise<string | null> {
+    return new Promise((resolve, reject) => {
+      const url = `https://api.github.com/users/${encodeURIComponent(owner)}`
+
+      const request = net.request(url)
+      request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
+      request.setHeader('Accept', 'application/vnd.github.v3+json')
+
+      let body = ''
+
+      request.on('response', (response) => {
+        if (response.statusCode !== 200) {
+          resolve(null)
+          return
+        }
+
+        response.on('data', (chunk) => {
+          body += chunk.toString()
+        })
+
+        response.on('end', () => {
+          try {
+            const data = JSON.parse(body)
+            if (data.avatar_url) {
+              resolve(data.avatar_url + '&size=64')
+            } else {
+              resolve(null)
+            }
+          } catch {
+            resolve(null)
+          }
+        })
+      })
+
+      request.on('error', (err) => {
+        reject(err)
+      })
+
+      request.end()
+    })
+  }
+
   private fetchGitHubAvatar(email: string): Promise<string | null> {
     return new Promise((resolve, reject) => {
       const url = `https://api.github.com/search/users?q=${encodeURIComponent(email)}+in:email&per_page=1`

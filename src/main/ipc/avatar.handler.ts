@@ -19,4 +19,22 @@ export function registerAvatarHandlers() {
       return { success: false, error: (error as Error).message }
     }
   })
+
+  ipcMain.handle('avatar:get-owner', async (_, owner: string) => {
+    try {
+      const avatarUrl = await avatarService.getOwnerAvatar(owner)
+      return { success: true, data: avatarUrl }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  ipcMain.handle('avatar:get-owners', async (_, owners: string[]) => {
+    try {
+      const avatars = await avatarService.getOwnerAvatars(owners)
+      return { success: true, data: avatars }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  })
 }

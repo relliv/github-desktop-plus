@@ -43,6 +43,8 @@ interface Window {
     avatar: {
       get: (email: string) => Promise<{ success: boolean; data: string | null }>
       getBatch: (emails: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+      getOwner: (owner: string) => Promise<{ success: boolean; data: string | null }>
+      getOwners: (owners: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
     }
     shell: {
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>

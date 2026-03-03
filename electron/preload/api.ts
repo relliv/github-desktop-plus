@@ -80,6 +80,8 @@ export const api = {
   avatar: {
     get: (email: string) => ipcRenderer.invoke('avatar:get', email),
     getBatch: (emails: string[]) => ipcRenderer.invoke('avatar:get-batch', emails),
+    getOwner: (owner: string) => ipcRenderer.invoke('avatar:get-owner', owner),
+    getOwners: (owners: string[]) => ipcRenderer.invoke('avatar:get-owners', owners),
   },
 
   editor: {
