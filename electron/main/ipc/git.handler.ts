@@ -378,14 +378,14 @@ export function registerGitHandlers() {
   })
 
   // Get remote URL
-  ipcMain.handle('git:getRemoteUrl', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | undefined> => {
+  ipcMain.handle('git:getRemoteUrl', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
     try {
       const repoGit = simpleGit(repoPath)
       const remotes = await repoGit.getRemotes(true)
       const origin = remotes.find(r => r.name === 'origin') ?? remotes[0]
-      return origin?.refs?.fetch ?? undefined
+      return origin?.refs?.fetch ?? null
     } catch {
-      return undefined
+      return null
     }
   })
 
