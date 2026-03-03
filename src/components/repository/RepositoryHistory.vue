@@ -76,35 +76,7 @@
                       <p class="text-sm font-medium truncate">{{ commit.message }}</p>
                       <div class="flex items-center gap-2 mt-1">
                         <!-- Author avatar(s) -->
-                        <div class="shrink-0 flex items-center" :class="getAuthors(commit).length > 1 ? '-space-x-1' : ''">
-                          <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
-                            <TooltipTrigger as-child>
-                              <div
-                                class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125 overflow-hidden"
-                                :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
-                              >
-                                <img
-                                  v-if="avatarMap[author.email.toLowerCase()]"
-                                  :src="avatarMap[author.email.toLowerCase()]!"
-                                  :alt="author.name"
-                                  class="size-full object-cover"
-                                />
-                                <span v-else>{{ getInitials(author.name) }}</span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipPortal>
-                              <TooltipContent
-                                side="top"
-                                :side-offset="6"
-                                class="z-[60] rounded-md bg-popover px-2.5 py-1.5 text-popover-foreground shadow-md border"
-                              >
-                                <p class="text-xs font-medium">{{ author.name }}</p>
-                                <p class="text-[11px] text-muted-foreground">{{ author.email }}</p>
-                                <TooltipArrow class="fill-popover" />
-                              </TooltipContent>
-                            </TooltipPortal>
-                          </TooltipRoot>
-                        </div>
+                        <AvatarStack :authors="getAvatarAuthors(commit)" />
                         <span class="text-xs text-muted-foreground truncate">
                           {{ commit.authorName }}
                         </span>
@@ -211,35 +183,7 @@
                           <p class="text-sm font-medium leading-snug">{{ commit.message }}</p>
                           <div class="flex items-center gap-2 mt-1.5">
                             <!-- Author avatar(s) -->
-                            <div class="shrink-0 flex items-center" :class="getAuthors(commit).length > 1 ? '-space-x-1' : ''">
-                              <TooltipRoot v-for="(author, i) in getAuthors(commit)" :key="i">
-                                <TooltipTrigger as-child>
-                                  <div
-                                    class="size-4 rounded-full flex items-center justify-center text-[7px] font-semibold text-white ring-1 ring-background cursor-default hover:!z-50 transition-transform hover:scale-125 overflow-hidden"
-                                    :style="{ backgroundColor: getAvatarColor(author.name), zIndex: getAuthors(commit).length - i }"
-                                  >
-                                    <img
-                                      v-if="avatarMap[author.email.toLowerCase()]"
-                                      :src="avatarMap[author.email.toLowerCase()]!"
-                                      :alt="author.name"
-                                      class="size-full object-cover"
-                                    />
-                                    <span v-else>{{ getInitials(author.name) }}</span>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipPortal>
-                                  <TooltipContent
-                                    side="top"
-                                    :side-offset="6"
-                                    class="z-[60] rounded-md bg-popover px-2.5 py-1.5 text-popover-foreground shadow-md border"
-                                  >
-                                    <p class="text-xs font-medium">{{ author.name }}</p>
-                                    <p class="text-[11px] text-muted-foreground">{{ author.email }}</p>
-                                    <TooltipArrow class="fill-popover" />
-                                  </TooltipContent>
-                                </TooltipPortal>
-                              </TooltipRoot>
-                            </div>
+                            <AvatarStack :authors="getAvatarAuthors(commit)" />
                             <span class="text-xs text-muted-foreground truncate">{{ commit.authorName }}</span>
                             <span class="text-xs text-muted-foreground shrink-0">{{ formatDate(commit.date) }}</span>
                             <div class="flex items-center gap-1 ml-auto shrink-0 opacity-0 group-hover/commit:opacity-100 transition-opacity">
@@ -448,6 +392,8 @@ import {
   TooltipRoot,
   TooltipTrigger,
 } from "reka-ui";
+import AvatarStack from "@/components/ui/AvatarStack.vue";
+import type { AvatarAuthor } from "@/components/ui/AvatarStack.vue";
 import {
   RefreshCw,
   GitCommitVertical,
@@ -921,26 +867,11 @@ function getAuthors(commit: CommitRecord): Author[] {
   return authors;
 }
 
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
-}
-
-const avatarColors = [
-  "#e11d48", "#db2777", "#c026d3", "#9333ea",
-  "#7c3aed", "#4f46e5", "#2563eb", "#0284c7",
-  "#0891b2", "#0d9488", "#059669", "#16a34a",
-  "#ca8a04", "#ea580c", "#dc2626", "#6d28d9",
-];
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return avatarColors[Math.abs(hash) % avatarColors.length];
+function getAvatarAuthors(commit: CommitRecord): AvatarAuthor[] {
+  return getAuthors(commit).map((a) => ({
+    name: a.name,
+    email: a.email,
+    imageUrl: avatarMap.value[a.email.toLowerCase()] ?? null,
+  }));
 }
 </script>
