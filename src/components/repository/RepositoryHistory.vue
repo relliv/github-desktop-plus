@@ -141,7 +141,7 @@
                   <p class="text-sm font-medium">{{ commit.message }}</p>
                   <p
                     v-if="commit.body"
-                    class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
+                    class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line max-h-48 overflow-y-auto pr-1"
                   >
                     {{ commit.body }}
                   </p>
@@ -297,7 +297,7 @@
                           </p>
                           <p
                             v-if="commit.body"
-                            class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line"
+                            class="mt-1.5 text-xs text-muted-foreground whitespace-pre-line max-h-48 overflow-y-auto pr-1"
                           >
                             {{ commit.body }}
                           </p>
