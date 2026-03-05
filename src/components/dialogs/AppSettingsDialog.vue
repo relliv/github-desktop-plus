@@ -142,32 +142,75 @@
           <!-- Editor Settings -->
           <div v-if="activeCategory === 'editor'" class="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle class="text-base">External Editor</CardTitle>
-                <CardDescription>
-                  Configure your preferred external editor
-                </CardDescription>
-              </CardHeader>
-              <CardContent class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <div class="space-y-0.5">
-                    <Label>Open files in editor tabs</Label>
-                    <p class="text-sm text-muted-foreground">
-                      Open multiple files in tabs instead of new windows
-                    </p>
+              <CardHeader class="pb-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0 mt-0.5">
+                      <FileText class="w-4 h-4 text-primary" :stroke-width="1.5" />
+                    </div>
+                    <div>
+                      <CardTitle class="text-base">Detected Editors</CardTitle>
+                      <CardDescription class="mt-0.5">
+                        Select which editors appear in context menus
+                      </CardDescription>
+                    </div>
                   </div>
-                  <Switch v-model="openInTabs" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="shrink-0"
+                    @click="detectEditors"
+                    :disabled="editorLoading"
+                  >
+                    <Loader2 v-if="editorLoading" class="w-4 h-4 mr-2 animate-spin" :stroke-width="1" />
+                    <Search v-else class="w-4 h-4 mr-2" :stroke-width="1" />
+                    Discover Editors
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent class="pt-0">
+                <!-- Loading state -->
+                <div v-if="editorLoading && availableEditors.length === 0" class="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <Loader2 class="w-6 h-6 mb-3 animate-spin" :stroke-width="1" />
+                  <span class="text-sm">Scanning for editors…</span>
                 </div>
 
-                <div class="flex items-center justify-between">
-                  <div class="space-y-0.5">
-                    <Label>Wait for editor to close</Label>
-                    <p class="text-sm text-muted-foreground">
-                      Wait for file to be closed before continuing
-                    </p>
-                  </div>
-                  <Switch v-model="waitForClose" />
+                <!-- Empty state -->
+                <div v-else-if="availableEditors.length === 0" class="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <Search class="w-8 h-8 mb-3 opacity-40" :stroke-width="1" />
+                  <span class="text-sm font-medium">No editors detected</span>
+                  <span class="text-xs mt-1">Click "Discover Editors" to scan your system</span>
                 </div>
+
+                <!-- Editor list -->
+                <div v-else class="border rounded-lg divide-y">
+                  <label
+                    v-for="editor in availableEditors"
+                    :key="editor.id"
+                    class="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50 first:rounded-t-lg last:rounded-b-lg"
+                    :class="{ 'bg-accent/30': settingsStore.isEditorSelected(editor.id) }"
+                  >
+                    <Checkbox
+                      :checked="settingsStore.isEditorSelected(editor.id)"
+                      @update:checked="settingsStore.toggleEditor(editor.id)"
+                    />
+                    <div class="flex items-center justify-center w-8 h-8 rounded-md bg-muted shrink-0">
+                      <component :is="editorIconMap[getEditorIcon(editor)]" class="w-4 h-4" :stroke-width="1.5" />
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="text-sm font-medium leading-tight">{{ editor.name }}</span>
+                      <span class="text-xs text-muted-foreground truncate">{{ editor.executable }}</span>
+                    </div>
+                    <Badge v-if="defaultEditor?.id === editor.id" variant="secondary" class="ml-auto shrink-0">
+                      Default
+                    </Badge>
+                  </label>
+                </div>
+
+                <!-- Selected count -->
+                <p v-if="availableEditors.length > 0" class="text-xs text-muted-foreground mt-3">
+                  {{ settingsStore.selectedEditors.length }} of {{ availableEditors.length }} editors selected
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -262,7 +305,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import {
   SettingsIcon,
   GitBranch,
@@ -270,6 +313,16 @@ import {
   Wrench,
   Info,
   Github,
+  Loader2,
+  Search,
+  FileCode2,
+  MousePointer2,
+  Wind,
+  Globe,
+  Lightbulb,
+  Terminal,
+  Zap,
+  Hammer,
 } from "lucide-vue-next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
@@ -291,9 +344,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Separator from "@/components/ui/Separator.vue";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { useAppStore, type Theme } from "@/stores/app.store";
+import { useSettingsStore } from "@/stores/settings.store";
+import { useEditor } from "@/composables/useEditor";
 
 const appStore = useAppStore();
+const settingsStore = useSettingsStore();
+const { availableEditors, defaultEditor, loading: editorLoading, detectEditors, getEditorIcon } = useEditor();
+
+const editorIconMap: Record<string, any> = {
+  FileCode2,
+  MousePointer2,
+  Wind,
+  FileText,
+  Globe,
+  Lightbulb,
+  Terminal,
+  Zap,
+  Hammer,
+};
 
 const isOpen = ref(false);
 
@@ -328,8 +399,17 @@ const defaultBranch = ref("main");
 const mergeStrategy = ref("merge");
 
 // Editor settings
-const openInTabs = ref(true);
-const waitForClose = ref(false);
+const editorsScanned = ref(false);
+
+// Auto-scan editors when the Editor tab is first shown
+watch(activeCategory, (val) => {
+  if (val === 'editor' && !editorsScanned.value) {
+    editorsScanned.value = true;
+    if (availableEditors.value.length === 0) {
+      detectEditors();
+    }
+  }
+});
 
 // Advanced settings
 const gpgSign = ref(false);
