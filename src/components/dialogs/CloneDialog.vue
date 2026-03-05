@@ -193,10 +193,13 @@ const emit = defineEmits<{
 const repositoriesStore = useRepositoriesStore()
 const settingsStore = useSettingsStore()
 
+const STORAGE_KEY_CLONE_PATH = 'gdp:lastClonePath'
+
 const isOpen = ref(false)
 const isCloning = ref(false)
 const showAdvanced = ref(false)
 const authType = ref<'none' | 'https'>('none')
+const defaultCloneBasePath = ref(localStorage.getItem(STORAGE_KEY_CLONE_PATH) || '')
 
 const cloneOptions = ref<CloneOptions>({
   url: '',
@@ -260,7 +263,7 @@ watch(() => cloneOptions.value.url, (url) => {
   if (!url.trim() || !isValidRepoUrl(url)) return
   const name = parseRepoNameFromUrl(url)
   if (name && !cloneOptions.value.directory) {
-    const basePath = settingsStore.defaultClonePath
+    const basePath = defaultCloneBasePath.value || settingsStore.defaultClonePath
     if (basePath) {
       cloneOptions.value.directory = `${basePath}/${name}`
     } else {
@@ -284,7 +287,10 @@ watch(authType, (newType) => {
 const browseDirectory = async () => {
   const result = await window.api.dialog.openDirectory()
   if (result) {
-    cloneOptions.value.directory = result
+    defaultCloneBasePath.value = result
+    localStorage.setItem(STORAGE_KEY_CLONE_PATH, result)
+    const name = parseRepoNameFromUrl(cloneOptions.value.url)
+    cloneOptions.value.directory = name ? `${result}/${name}` : result
   }
 }
 
@@ -341,6 +347,7 @@ const cancel = () => {
 }
 
 const open = () => {
+  defaultCloneBasePath.value = localStorage.getItem(STORAGE_KEY_CLONE_PATH) || ''
   isOpen.value = true
 }
 

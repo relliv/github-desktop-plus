@@ -417,9 +417,13 @@ const openRepository = async () => {
   }
 }
 
+// ── Persisted paths ─────────────────────────────────────────────────────────
+const STORAGE_KEY_CREATE_PATH = 'gdp:lastCreatePath'
+const STORAGE_KEY_CLONE_PATH = 'gdp:lastClonePath'
+
 // ── Create New ──────────────────────────────────────────────────────────────
 const isCreating = ref(false)
-const defaultCreatePath = ref('')
+const defaultCreatePath = ref(localStorage.getItem(STORAGE_KEY_CREATE_PATH) || '')
 
 const createOptions = ref<CreateRepositoryOptions>({
   name: '',
@@ -469,6 +473,7 @@ const browseCreateDirectory = async () => {
   const result = await window.api.dialog.openDirectory()
   if (result) {
     defaultCreatePath.value = result
+    localStorage.setItem(STORAGE_KEY_CREATE_PATH, result)
     updateCreatePath()
   }
 }
@@ -494,6 +499,7 @@ const createRepository = async () => {
 const isCloning = ref(false)
 const showAdvanced = ref(false)
 const authType = ref<'none' | 'https'>('none')
+const defaultCloneBasePath = ref(localStorage.getItem(STORAGE_KEY_CLONE_PATH) || '')
 
 const cloneOptions = ref<CloneOptions>({
   url: '',
@@ -556,7 +562,7 @@ watch(() => cloneOptions.value.url, (url) => {
     cloneRepoName.value = name
     // Auto-populate directory if empty
     if (name && !cloneOptions.value.directory) {
-      const basePath = settingsStore.defaultClonePath || await window.api.shell.getHomePath()
+      const basePath = defaultCloneBasePath.value || settingsStore.defaultClonePath || await window.api.shell.getHomePath()
       cloneOptions.value.directory = `${basePath}/${name}`
     }
   }, 400)
@@ -585,7 +591,12 @@ watch(authType, (newType) => {
 
 const browseCloneDirectory = async () => {
   const result = await window.api.dialog.openDirectory()
-  if (result) cloneOptions.value.directory = result
+  if (result) {
+    defaultCloneBasePath.value = result
+    localStorage.setItem(STORAGE_KEY_CLONE_PATH, result)
+    const name = cloneRepoName.value
+    cloneOptions.value.directory = name ? `${result}/${name}` : result
+  }
 }
 
 const startClone = async () => {
@@ -628,6 +639,9 @@ const handleCancel = () => {
 
 const open = (tab: 'add' | 'create' | 'clone' = 'add') => {
   activeTab.value = tab
+  // Restore persisted paths
+  defaultCreatePath.value = localStorage.getItem(STORAGE_KEY_CREATE_PATH) || ''
+  defaultCloneBasePath.value = localStorage.getItem(STORAGE_KEY_CLONE_PATH) || ''
   isOpen.value = true
 }
 
@@ -640,9 +654,8 @@ const close = () => {
     repositoryInfo.value = null
     isValidating.value = false
 
-    // Reset create
+    // Reset create (keep defaultCreatePath — persisted in localStorage)
     createOptions.value = { name: '', description: '', path: '', initializeWithReadme: true, gitignoreTemplate: undefined, license: undefined }
-    defaultCreatePath.value = ''
     useGitignore.value = false
     gitignoreTemplate.value = 'node'
     customGitignore.value = ''
