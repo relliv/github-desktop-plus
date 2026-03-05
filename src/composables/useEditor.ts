@@ -50,7 +50,8 @@ export function useEditor() {
     try {
       let result
       if (editor) {
-        result = await window.api.editor.openFile({ editor, filePath, lineNumber })
+        const plainEditor = { ...editor }
+        result = await window.api.editor.openFile({ editor: plainEditor, filePath, lineNumber })
       } else {
         result = await window.api.editor.openFileDefault({ filePath, lineNumber })
       }
@@ -66,13 +67,12 @@ export function useEditor() {
 
   const getEditorIconUrl = (editor: Editor): string => {
     const slugMap: Record<string, string> = {
-      'vscode': 'visualstudiocode',
-      'vscode-insiders': 'visualstudiocode',
+      'vscode': 'vscodium',
+      'vscode-insiders': 'vscodium',
       'vscodium': 'vscodium',
       'cursor': 'cursor',
       'windsurf': 'windsurf',
       'sublime': 'sublimetext',
-      'atom': 'atom',
       'webstorm': 'webstorm',
       'intellij': 'intellijidea',
       'vim': 'vim',
@@ -80,9 +80,8 @@ export function useEditor() {
       'emacs': 'gnuemacs',
       'zed': 'zedindustries',
       'xcode': 'xcode',
-      'fleet': 'jetbrains',
+      'fleet': 'intellijidea',
       'android-studio': 'androidstudio',
-      'nova': 'nova',
     }
     const slug = slugMap[editor.id] || editor.id
     const color = isDark.value ? 'white' : 'black'
