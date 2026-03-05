@@ -1,10 +1,21 @@
 import { ipcMain, shell } from 'electron'
 import { exec } from 'child_process'
+import { access } from 'fs/promises'
 import { homedir, platform } from 'os'
 
 export function registerShellHandlers() {
   // Get user home directory path
   ipcMain.handle('shell:get-home-path', () => homedir())
+
+  // Check if a path exists on disk
+  ipcMain.handle('shell:path-exists', async (_, path: string) => {
+    try {
+      await access(path)
+      return true
+    } catch {
+      return false
+    }
+  })
 
   // Open path in system file manager
   ipcMain.handle('shell:open-path', async (_, path: string) => {

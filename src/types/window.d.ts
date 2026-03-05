@@ -57,6 +57,7 @@ declare global {
         openTerminal: (path: string) => Promise<any>
         openExternal: (url: string) => Promise<any>
         getHomePath: () => Promise<string>
+        pathExists: (path: string) => Promise<boolean>
       }
       editor: {
         detect: () => Promise<any>

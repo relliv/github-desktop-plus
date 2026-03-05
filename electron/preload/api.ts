@@ -61,6 +61,7 @@ export const api = {
     openTerminal: (path: string) => ipcRenderer.invoke('shell:open-terminal', path),
     openExternal: (url: string) => ipcRenderer.invoke('shell:open-external', url),
     getHomePath: () => ipcRenderer.invoke('shell:get-home-path'),
+    pathExists: (path: string) => ipcRenderer.invoke('shell:path-exists', path),
   },
   
   commits: {

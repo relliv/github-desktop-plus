@@ -43,7 +43,10 @@
               Browse
             </Button>
           </div>
-          <p class="text-xs text-muted-foreground">
+          <p v-if="cloneDirExists" class="text-xs text-destructive">
+            A folder already exists at this path. Choose a different location.
+          </p>
+          <p v-else class="text-xs text-muted-foreground">
             Where to clone the repository
           </p>
         </div>
@@ -229,8 +232,21 @@ const progressStageText = computed(() => {
   }
 })
 
+const cloneDirExists = ref(false)
+
 const canClone = computed(() => {
-  return cloneOptions.value.url && cloneOptions.value.directory
+  return cloneOptions.value.url && cloneOptions.value.directory && !cloneDirExists.value
+})
+
+// Check if clone directory already exists
+let cloneDirCheckTimeout: ReturnType<typeof setTimeout> | null = null
+watch(() => cloneOptions.value.directory, (dir) => {
+  cloneDirExists.value = false
+  if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
+  if (!dir.trim()) return
+  cloneDirCheckTimeout = setTimeout(async () => {
+    cloneDirExists.value = await window.api.shell.pathExists(dir)
+  }, 300)
 })
 
 const parseRepoNameFromUrl = (url: string): string => {
@@ -372,6 +388,7 @@ const close = () => {
       total: 0,
       transferred: 0,
     }
+    cloneDirExists.value = false
   }, 300)
 }
 

@@ -210,7 +210,8 @@
                 />
                 <Button variant="outline" size="sm" @click="browseCloneDirectory">Browse</Button>
               </div>
-              <p class="text-xs text-muted-foreground">Where to clone the repository</p>
+              <p v-if="cloneDirExists" class="text-xs text-destructive">A folder already exists at this path. Choose a different location.</p>
+              <p v-else class="text-xs text-muted-foreground">Where to clone the repository</p>
             </div>
 
             <Collapsible v-model:open="showAdvanced">
@@ -519,6 +520,7 @@ const cloneProgress = ref<CloneProgress>({
 
 const cloneUrlError = ref('')
 const cloneRepoName = ref('')
+const cloneDirExists = ref(false)
 
 const parseRepoNameFromUrl = (url: string): string => {
   const cleaned = url.trim().replace(/\.git$/, '')
@@ -580,7 +582,18 @@ const progressStageText = computed(() => {
   }
 })
 
-const canClone = computed(() => cloneOptions.value.url && cloneOptions.value.directory)
+const canClone = computed(() => cloneOptions.value.url && cloneOptions.value.directory && !cloneDirExists.value)
+
+// Check if clone directory already exists
+let cloneDirCheckTimeout: ReturnType<typeof setTimeout> | null = null
+watch(() => cloneOptions.value.directory, (dir) => {
+  cloneDirExists.value = false
+  if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
+  if (!dir.trim()) return
+  cloneDirCheckTimeout = setTimeout(async () => {
+    cloneDirExists.value = await window.api.shell.pathExists(dir)
+  }, 300)
+})
 
 watch(authType, (newType) => {
   if (newType === 'none') {
@@ -672,12 +685,14 @@ const close = () => {
     cloneProgress.value = { stage: 'counting', percent: 0, total: 0, transferred: 0 }
     cloneRepoName.value = ''
     cloneUrlError.value = ''
+    cloneDirExists.value = false
   }, 300)
 }
 
 onUnmounted(() => {
   if (validationTimeout) clearTimeout(validationTimeout)
   if (cloneUrlDebounce) clearTimeout(cloneUrlDebounce)
+  if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
 })
 
 defineExpose({ open, close })
