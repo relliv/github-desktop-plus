@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-row items-center justify-between h-10 px-4 app-drag flex-shrink-0"
+    class="flex flex-row items-center justify-between h-10 pl-4 pr-1 app-drag flex-shrink-0"
   >
     <!-- Left - App title -->
     <span class="text-xs font-semibold text-foreground">
