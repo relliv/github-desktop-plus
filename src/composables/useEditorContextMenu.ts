@@ -4,11 +4,11 @@ import { useSettingsStore } from '@/stores/settings.store'
 
 export function useEditorContextMenu() {
   const settingsStore = useSettingsStore()
-  const { availableEditors, openInEditor, getEditorIcon } = useEditor()
-  
-  // Get only the selected editors that are available
+  const { openInEditor, getEditorIconUrl } = useEditor()
+
+  // Get only the selected editors from the store
   const contextMenuEditors = computed(() => {
-    return availableEditors.value.filter(editor => 
+    return settingsStore.discoveredEditors.filter(editor =>
       settingsStore.isEditorSelected(editor.id)
     )
   })
@@ -23,6 +23,6 @@ export function useEditorContextMenu() {
     contextMenuEditors,
     hasSelectedEditors,
     openFileInEditor,
-    getEditorIcon
+    getEditorIconUrl
   }
 }

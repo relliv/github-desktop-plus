@@ -46,11 +46,11 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function toggleEditor(editorId: string) {
-    const index = settings.value.selectedEditors.indexOf(editorId)
-    if (index > -1) {
-      settings.value.selectedEditors.splice(index, 1)
+    const current = settings.value.selectedEditors
+    if (current.includes(editorId)) {
+      settings.value.selectedEditors = current.filter(id => id !== editorId)
     } else {
-      settings.value.selectedEditors.push(editorId)
+      settings.value.selectedEditors = [...current, editorId]
     }
     saveSettings()
   }
