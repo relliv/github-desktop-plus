@@ -23,7 +23,7 @@ export const useSettingsStore = defineStore('settings', () => {
     selectedEditors: [],
     defaultClonePath: undefined,
     autoFetch: true,
-    autoFetchInterval: 10,
+    autoFetchInterval: 5,
     showLineNumbers: true,
     syntaxHighlighting: true,
     fontSize: 14,

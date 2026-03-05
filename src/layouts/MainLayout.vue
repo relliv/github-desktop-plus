@@ -52,6 +52,9 @@
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import TitleBar from "../components/layout/TitleBar.vue";
 import Sidebar from "../components/layout/Sidebar.vue";
+import { useAutoRefresh } from "../composables/useAutoRefresh";
+
+useAutoRefresh();
 
 function onLayoutChange(sizes: number[]) {
   // Update CSS variable so the top drag area matches sidebar width

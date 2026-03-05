@@ -250,6 +250,22 @@
                   </div>
                   <Switch v-model="autoFetch" />
                 </div>
+
+                <div v-if="autoFetch" class="flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <Label>Check interval</Label>
+                    <p class="text-sm text-muted-foreground">
+                      How often to check for changes (in minutes)
+                    </p>
+                  </div>
+                  <Input
+                    v-model.number="autoFetchInterval"
+                    type="number"
+                    :min="1"
+                    :max="60"
+                    class="w-20 text-center"
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -391,7 +407,17 @@ watch(activeCategory, (val) => {
 // Advanced settings
 const gpgSign = ref(false);
 const verboseCommit = ref(false);
-const autoFetch = ref(true);
+const autoFetch = computed({
+  get: () => settingsStore.autoFetch,
+  set: (val: boolean) => settingsStore.setAutoFetch(val),
+});
+const autoFetchInterval = computed({
+  get: () => settingsStore.autoFetchInterval,
+  set: (val: number) => {
+    const clamped = Math.max(1, Math.min(60, val || 5));
+    settingsStore.setAutoFetchInterval(clamped);
+  },
+});
 
 const open = () => {
   isOpen.value = true;
