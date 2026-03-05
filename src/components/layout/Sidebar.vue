@@ -1,13 +1,11 @@
 <template>
-  <aside
-    class="relative flex flex-col h-full w-full overflow-hidden"
-  >
+  <aside class="relative flex flex-col h-full w-full overflow-hidden">
     <!-- User dropdown button -->
     <div class="px-3 pt-2 pb-2 relative z-40 app-no-drag">
       <Popover v-model:open="userDropdownOpen">
         <PopoverTrigger as-child>
           <button
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/60 transition-colors text-left"
+            class="w-full flex items-center gap-3 px-1 mx-auto py-1 mt-2 rounded-lg hover:bg-accent/60 transition-colors text-left"
             title="Switch user"
           >
             <div
@@ -23,12 +21,17 @@
               class="!rounded-lg flex-shrink-0"
             />
             <div class="flex-1 min-w-0">
-              <div class="text-sm font-semibold truncate">{{ activeAccount?.name || 'User' }}</div>
+              <div class="text-sm font-semibold truncate">
+                {{ activeAccount?.name || "User" }}
+              </div>
               <div class="text-xs text-muted-foreground truncate">
-                {{ activeAccount?.email || 'Not signed in' }}
+                {{ activeAccount?.email || "Not signed in" }}
               </div>
             </div>
-            <ChevronsUpDown class="w-4 h-4 text-muted-foreground flex-shrink-0" :stroke-width="1.5" />
+            <ChevronsUpDown
+              class="w-4 h-4 text-muted-foreground flex-shrink-0"
+              :stroke-width="1.5"
+            />
           </button>
         </PopoverTrigger>
         <PopoverPortal>
@@ -40,17 +43,29 @@
           >
             <!-- Existing accounts -->
             <div v-if="accounts.length > 0" class="pb-1">
-              <div class="px-2 py-1.5 text-xs font-medium text-muted-foreground">Accounts</div>
+              <div
+                class="px-2 py-1.5 text-xs font-medium text-muted-foreground"
+              >
+                Accounts
+              </div>
               <button
                 v-for="account in accounts"
                 :key="account.id"
                 @click="switchAccount(account.id)"
                 class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-left text-sm hover:bg-accent transition-colors"
               >
-                <Avatar :name="account.name" size="sm" class="!rounded-md flex-shrink-0" />
+                <Avatar
+                  :name="account.name"
+                  size="sm"
+                  class="!rounded-md flex-shrink-0"
+                />
                 <div class="flex-1 min-w-0">
-                  <div class="font-medium truncate text-sm">{{ account.name }}</div>
-                  <div class="text-xs text-muted-foreground truncate">{{ account.email }}</div>
+                  <div class="font-medium truncate text-sm">
+                    {{ account.name }}
+                  </div>
+                  <div class="text-xs text-muted-foreground truncate">
+                    {{ account.email }}
+                  </div>
                 </div>
                 <Check
                   v-if="account.id === activeAccountId"
@@ -65,7 +80,9 @@
 
             <!-- Add account form -->
             <div v-if="showAddForm" class="p-2 space-y-2">
-              <div class="text-xs font-medium text-muted-foreground">New account</div>
+              <div class="text-xs font-medium text-muted-foreground">
+                New account
+              </div>
               <input
                 v-model="newAccountName"
                 type="text"
@@ -84,12 +101,16 @@
                 <button
                   @click="showAddForm = false"
                   class="flex-1 text-xs px-2 py-1.5 rounded-md hover:bg-accent transition-colors"
-                >Cancel</button>
+                >
+                  Cancel
+                </button>
                 <button
                   @click="submitAddAccount"
                   :disabled="!newAccountName.trim() || !newAccountEmail.trim()"
                   class="flex-1 text-xs px-2 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
-                >Add</button>
+                >
+                  Add
+                </button>
               </div>
             </div>
 
@@ -119,7 +140,10 @@
     <!-- Search -->
     <div class="px-3 py-2">
       <div class="relative">
-        <Search class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" :stroke-width="1.5" />
+        <Search
+          class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
+          :stroke-width="1.5"
+        />
         <input
           v-model="searchQuery"
           type="text"
@@ -136,7 +160,8 @@
         <kbd
           v-else
           class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground bg-background/80 border rounded px-1 py-0.5 font-mono"
-        >/</kbd>
+          >/</kbd
+        >
       </div>
     </div>
 
@@ -155,7 +180,10 @@
         </div>
 
         <!-- No results -->
-        <div v-if="filteredRepositoriesByOwner.length === 0 && searchQuery" class="px-2 py-6 text-center text-sm text-muted-foreground">
+        <div
+          v-if="filteredRepositoriesByOwner.length === 0 && searchQuery"
+          class="px-2 py-6 text-center text-sm text-muted-foreground"
+        >
           No results for "{{ searchQuery }}"
         </div>
 
@@ -270,7 +298,12 @@ import {
   Search,
   X,
 } from "lucide-vue-next";
-import { Popover, PopoverTrigger, PopoverContent, PopoverPortal } from "../ui/Popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverPortal,
+} from "../ui/Popover";
 import { useRepositoriesStore } from "@/shared/stores";
 import { useAccountsStore } from "@/stores/accounts.store";
 import SidebarButton from "../ui/SidebarButton.vue";
