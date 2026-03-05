@@ -1,27 +1,19 @@
 <template>
-  <div class="flex flex-row gap-4">
-    <!-- Title Bar -->
-    <div
-      class="flex flex-row gap-2 h-8 bg-background/95 backdrop-blur-sm border-b items-center justify-between z-40 w-full"
-    >
-      <!-- Center - Empty for drag area -->
-      <div
-        class="flex flex-row items-center justify-start pl-4 flex-1 h-full text-center app-drag"
-      >
-        <span class="text-xs font-semibold text-foreground"
-          >GitHub Desktop Plus</span
-        >
-      </div>
+  <div
+    class="flex flex-row items-center justify-between h-10 px-4 app-drag flex-shrink-0"
+  >
+    <!-- Left - App title -->
+    <span class="text-xs font-semibold text-foreground">
+      GitHub Desktop Plus
+    </span>
 
-      <!-- Right side - Window controls -->
-      <WindowControls />
-    </div>
+    <!-- Right side - Window controls -->
+    <WindowControls />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { Minus, Square, Copy, X, GitBranch } from "lucide-vue-next";
 import { useAppStore } from "../../stores/app.store";
 import { useRepositoriesStore } from "@/shared/stores";
 import WindowControls from "@/components/ui/WindowControls.vue";
@@ -29,9 +21,6 @@ import WindowControls from "@/components/ui/WindowControls.vue";
 const appStore = useAppStore();
 const repositoriesStore = useRepositoriesStore();
 
-// Get platform from user agent instead of process
-const isWindows = navigator.userAgent.includes("Windows");
-const isMac = navigator.userAgent.includes("Mac");
 const isMaximized = computed(() => appStore.isMaximized);
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 

@@ -1,33 +1,37 @@
 <template>
   <aside
-    class="relative bg-card border-r flex flex-col h-full w-full overflow-hidden"
+    class="relative flex flex-col h-full w-full overflow-hidden"
   >
-    <!-- User section -->
-    <div class="h-[50px] px-4 border-b flex items-center">
-      <div class="flex items-center gap-3">
+    <!-- User dropdown button -->
+    <div class="px-3 pb-2">
+      <button
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/60 transition-colors text-left"
+        title="Switch user"
+      >
         <div
-          class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0"
+          class="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center flex-shrink-0"
         >
-          <User class="w-4 h-4 text-primary-foreground" :stroke-width="1" />
+          <User class="w-4 h-4 text-foreground" :stroke-width="1.5" />
         </div>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">User</div>
+          <div class="text-sm font-semibold truncate">User</div>
           <div class="text-xs text-muted-foreground truncate">
             Not signed in
           </div>
         </div>
-      </div>
+        <ChevronsUpDown class="w-4 h-4 text-muted-foreground flex-shrink-0" :stroke-width="1.5" />
+      </button>
     </div>
 
     <!-- Search -->
-    <div class="px-3 py-2 border-b">
+    <div class="px-3 py-2">
       <div class="relative">
         <Search class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" :stroke-width="1.5" />
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search..."
-          class="w-full bg-accent/50 text-sm pl-7 pr-7 py-1.5 rounded-md outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+          placeholder="Search"
+          class="w-full bg-accent/50 text-sm pl-7 pr-8 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
         />
         <button
           v-if="searchQuery"
@@ -36,6 +40,10 @@
         >
           <X class="w-3.5 h-3.5" :stroke-width="1.5" />
         </button>
+        <kbd
+          v-else
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground bg-background/80 border rounded px-1 py-0.5 font-mono"
+        >/</kbd>
       </div>
     </div>
 
@@ -135,7 +143,7 @@
     </div>
 
     <!-- Bottom actions -->
-    <div class="border-t p-2 space-y-1">
+    <div class="p-2 space-y-1">
       <SidebarButton :icon="Settings" label="Settings" @click="openSettings" />
     </div>
 
@@ -163,6 +171,7 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  ChevronsUpDown,
   Search,
   X,
 } from "lucide-vue-next";
