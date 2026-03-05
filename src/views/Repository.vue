@@ -165,56 +165,8 @@
       <h1 class="text-lg font-semibold">Welcome to GitHub Desktop Plus</h1>
     </div>
 
-    <!-- Recent repositories -->
     <div class="flex-1 overflow-y-auto p-6">
       <div class="max-w-4xl mx-auto">
-        <!-- Recent Repositories Section -->
-        <div v-if="recentRepositories.length > 0" class="mb-8">
-          <h2 class="text-lg font-semibold mb-4">Recent Repositories</h2>
-          <div class="grid gap-3">
-            <button
-              v-for="repo in recentRepositories"
-              :key="repo.id"
-              @click="selectRepository(repo)"
-              class="p-4 bg-card border rounded-lg hover:bg-accent/50 transition-colors text-left group"
-            >
-              <div class="flex items-start justify-between">
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <GitBranch
-                      class="w-4 h-4 text-muted-foreground"
-                      :stroke-width="1"
-                    />
-                    <span class="font-medium">{{ repo.name }}</span>
-                    <Star
-                      v-if="repo.isFavorite"
-                      class="w-3 h-3 text-yellow-500 fill-yellow-500"
-                      :stroke-width="1"
-                    />
-                  </div>
-                  <p class="text-sm text-muted-foreground truncate">
-                    {{ repo.path }}
-                  </p>
-                  <div
-                    class="flex items-center gap-4 mt-2 text-xs text-muted-foreground"
-                  >
-                    <span v-if="repo.currentBranch">
-                      Branch: {{ repo.currentBranch }}
-                    </span>
-                    <span>
-                      Last opened: {{ formatDate(repo.lastOpenedAt) }}
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight
-                  class="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                  :stroke-width="1"
-                />
-              </div>
-            </button>
-          </div>
-        </div>
-
         <!-- Quick Actions -->
         <div class="mb-8">
           <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
@@ -385,7 +337,6 @@ const changeCount = computed(() => {
   if (!s) return 0;
   return s.modified.length + s.added.length + s.deleted.length + s.renamed.length + s.conflicted.length;
 });
-const recentRepositories = computed(() => repositoriesStore.recentRepositories);
 const favoriteRepositories = computed(
   () => repositoriesStore.favoriteRepositories,
 );
@@ -445,19 +396,6 @@ const openRepository = () => {
   openRepoDialog.value?.open();
 };
 
-const formatDate = (date: Date) => {
-  const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
-  if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-  if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-  return "Just now";
-};
 
 const handleRepositoryAction = () => {
   // Repository is already added and set as current by the dialog
