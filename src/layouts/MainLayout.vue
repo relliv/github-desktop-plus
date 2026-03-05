@@ -1,19 +1,17 @@
 <template>
-  <div class="flex flex-col h-screen bg-background text-foreground">
-    <!-- Drag area across the top -->
-    <div class="h-[50px] flex-shrink-0 flex">
-      <!-- Sidebar drag area -->
-      <div class="app-drag flex-shrink-0" :style="{ width: 'var(--sidebar-width, 260px)' }" />
-      <!-- Titlebar in main content area -->
-      <div class="flex-1" />
-    </div>
+  <div class="relative h-screen bg-background text-foreground">
+    <!-- Drag area overlapping sidebar header -->
+    <div
+      class="absolute top-0 left-0 h-[50px] z-30 app-drag"
+      :style="{ width: 'var(--sidebar-width, 20%)' }"
+    />
 
     <!-- Content area with splitter -->
     <SplitterGroup
       id="main-layout"
       direction="horizontal"
       auto-save-id="main-layout-splitter"
-      class="flex-1 min-h-0"
+      class="h-full"
       @layout="onLayoutChange"
     >
       <!-- Sidebar Panel -->

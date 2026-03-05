@@ -3,7 +3,7 @@
     class="relative flex flex-col h-full w-full overflow-hidden"
   >
     <!-- User dropdown button -->
-    <div class="px-3 pb-2">
+    <div class="px-3 pt-2 pb-2 relative z-40 app-no-drag">
       <Popover v-model:open="userDropdownOpen">
         <PopoverTrigger as-child>
           <button
@@ -492,3 +492,9 @@ const toggleFavorite = async (repo: any) => {
   await repositoriesStore.toggleFavorite(repo.id);
 };
 </script>
+
+<style scoped>
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+</style>
