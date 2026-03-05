@@ -54,26 +54,28 @@ export function useEditor() {
     }
   }
 
-  const getEditorIcon = (editor: Editor): string => {
-    // Map editor IDs to icon names (you can use lucide-vue-next icons)
-    const iconMap: Record<string, string> = {
-      'vscode': 'FileCode2',
-      'vscode-insiders': 'FileCode2',
-      'vscodium': 'FileCode2',
-      'cursor': 'MousePointer2',
-      'windsurf': 'Wind',
-      'sublime': 'FileText',
-      'atom': 'FileText',
-      'webstorm': 'Globe',
-      'intellij': 'Lightbulb',
-      'vim': 'Terminal',
-      'nvim': 'Terminal',
-      'emacs': 'FileText',
-      'zed': 'Zap',
-      'xcode': 'Hammer',
+  const getEditorIconUrl = (editor: Editor): string => {
+    const slugMap: Record<string, string> = {
+      'vscode': 'visualstudiocode',
+      'vscode-insiders': 'visualstudiocode',
+      'vscodium': 'vscodium',
+      'cursor': 'cursor',
+      'windsurf': 'windsurf',
+      'sublime': 'sublimetext',
+      'atom': 'atom',
+      'webstorm': 'webstorm',
+      'intellij': 'intellijidea',
+      'vim': 'vim',
+      'nvim': 'neovim',
+      'emacs': 'gnuemacs',
+      'zed': 'zedindustries',
+      'xcode': 'xcode',
+      'fleet': 'jetbrains',
+      'android-studio': 'androidstudio',
+      'nova': 'nova',
     }
-    
-    return iconMap[editor.id] || 'FileText'
+    const slug = slugMap[editor.id] || editor.id
+    return `https://cdn.simpleicons.org/${slug}/black/white`
   }
 
   onMounted(() => {
@@ -87,6 +89,6 @@ export function useEditor() {
     error,
     detectEditors,
     openInEditor,
-    getEditorIcon
+    getEditorIconUrl
   }
 }

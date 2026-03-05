@@ -195,7 +195,7 @@
                       @update:model-value="settingsStore.toggleEditor(editor.id)"
                     />
                     <div class="flex items-center justify-center w-8 h-8 rounded-md bg-muted shrink-0">
-                      <component :is="editorIconMap[getEditorIcon(editor)]" class="w-4 h-4" :stroke-width="1.5" />
+                      <img :src="getEditorIconUrl(editor)" :alt="editor.name" class="w-4 h-4" />
                     </div>
                     <div class="flex flex-col min-w-0">
                       <span class="text-sm font-medium leading-tight">{{ editor.name }}</span>
@@ -311,14 +311,6 @@ import {
   Github,
   Loader2,
   Search,
-  FileCode2,
-  MousePointer2,
-  Wind,
-  Globe,
-  Lightbulb,
-  Terminal,
-  Zap,
-  Hammer,
 } from "lucide-vue-next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
@@ -348,20 +340,8 @@ import { useEditor } from "@/composables/useEditor";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
-const { defaultEditor, loading: editorLoading, detectEditors, getEditorIcon } = useEditor();
+const { defaultEditor, loading: editorLoading, detectEditors, getEditorIconUrl } = useEditor();
 const availableEditors = computed(() => settingsStore.discoveredEditors);
-
-const editorIconMap: Record<string, any> = {
-  FileCode2,
-  MousePointer2,
-  Wind,
-  FileText,
-  Globe,
-  Lightbulb,
-  Terminal,
-  Zap,
-  Hammer,
-};
 
 const isOpen = ref(false);
 
