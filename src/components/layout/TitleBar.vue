@@ -8,7 +8,9 @@
     </span>
 
     <!-- Right side - Window controls -->
-    <WindowControls />
+    <div class="app-no-drag">
+      <WindowControls />
+    </div>
   </div>
 </template>
 

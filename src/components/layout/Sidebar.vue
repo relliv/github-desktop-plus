@@ -4,23 +4,116 @@
   >
     <!-- User dropdown button -->
     <div class="px-3 pb-2">
-      <button
-        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/60 transition-colors text-left"
-        title="Switch user"
-      >
-        <div
-          class="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <User class="w-4 h-4 text-foreground" :stroke-width="1.5" />
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold truncate">User</div>
-          <div class="text-xs text-muted-foreground truncate">
-            Not signed in
-          </div>
-        </div>
-        <ChevronsUpDown class="w-4 h-4 text-muted-foreground flex-shrink-0" :stroke-width="1.5" />
-      </button>
+      <Popover v-model:open="userDropdownOpen">
+        <PopoverTrigger as-child>
+          <button
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/60 transition-colors text-left"
+            title="Switch user"
+          >
+            <div
+              v-if="!activeAccount"
+              class="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center flex-shrink-0"
+            >
+              <User class="w-4 h-4 text-foreground" :stroke-width="1.5" />
+            </div>
+            <Avatar
+              v-else
+              :name="activeAccount.name"
+              size="lg"
+              class="!rounded-lg flex-shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold truncate">{{ activeAccount?.name || 'User' }}</div>
+              <div class="text-xs text-muted-foreground truncate">
+                {{ activeAccount?.email || 'Not signed in' }}
+              </div>
+            </div>
+            <ChevronsUpDown class="w-4 h-4 text-muted-foreground flex-shrink-0" :stroke-width="1.5" />
+          </button>
+        </PopoverTrigger>
+        <PopoverPortal>
+          <PopoverContent
+            side="bottom"
+            align="start"
+            :side-offset="4"
+            class="z-50 w-[240px] rounded-lg border bg-popover text-popover-foreground shadow-md p-1 outline-none animate-in fade-in-0 zoom-in-95"
+          >
+            <!-- Existing accounts -->
+            <div v-if="accounts.length > 0" class="pb-1">
+              <div class="px-2 py-1.5 text-xs font-medium text-muted-foreground">Accounts</div>
+              <button
+                v-for="account in accounts"
+                :key="account.id"
+                @click="switchAccount(account.id)"
+                class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-left text-sm hover:bg-accent transition-colors"
+              >
+                <Avatar :name="account.name" size="sm" class="!rounded-md flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium truncate text-sm">{{ account.name }}</div>
+                  <div class="text-xs text-muted-foreground truncate">{{ account.email }}</div>
+                </div>
+                <Check
+                  v-if="account.id === activeAccountId"
+                  class="w-3.5 h-3.5 text-primary flex-shrink-0"
+                  :stroke-width="2"
+                />
+              </button>
+            </div>
+
+            <!-- Separator -->
+            <div v-if="accounts.length > 0" class="h-px bg-border my-1" />
+
+            <!-- Add account form -->
+            <div v-if="showAddForm" class="p-2 space-y-2">
+              <div class="text-xs font-medium text-muted-foreground">New account</div>
+              <input
+                v-model="newAccountName"
+                type="text"
+                placeholder="Name"
+                class="w-full bg-accent/50 text-sm px-2.5 py-1.5 rounded-md outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+                @keydown.enter="submitAddAccount"
+              />
+              <input
+                v-model="newAccountEmail"
+                type="email"
+                placeholder="Email"
+                class="w-full bg-accent/50 text-sm px-2.5 py-1.5 rounded-md outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+                @keydown.enter="submitAddAccount"
+              />
+              <div class="flex gap-1.5">
+                <button
+                  @click="showAddForm = false"
+                  class="flex-1 text-xs px-2 py-1.5 rounded-md hover:bg-accent transition-colors"
+                >Cancel</button>
+                <button
+                  @click="submitAddAccount"
+                  :disabled="!newAccountName.trim() || !newAccountEmail.trim()"
+                  class="flex-1 text-xs px-2 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
+                >Add</button>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div v-if="!showAddForm">
+              <button
+                @click="showAddForm = true"
+                class="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors"
+              >
+                <Plus class="w-3.5 h-3.5" :stroke-width="1.5" />
+                <span>Add account</span>
+              </button>
+              <button
+                v-if="activeAccount"
+                @click="removeCurrentAccount"
+                class="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-destructive/10 text-destructive transition-colors"
+              >
+                <LogOut class="w-3.5 h-3.5" :stroke-width="1.5" />
+                <span>Remove account</span>
+              </button>
+            </div>
+          </PopoverContent>
+        </PopoverPortal>
+      </Popover>
     </div>
 
     <!-- Search -->
@@ -172,10 +265,14 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Check,
+  LogOut,
   Search,
   X,
 } from "lucide-vue-next";
+import { Popover, PopoverTrigger, PopoverContent, PopoverPortal } from "../ui/Popover";
 import { useRepositoriesStore } from "@/shared/stores";
+import { useAccountsStore } from "@/stores/accounts.store";
 import SidebarButton from "../ui/SidebarButton.vue";
 import AddRepositoryDialog from "../dialogs/AddRepositoryDialog.vue";
 import AppSettingsDialog from "../dialogs/AppSettingsDialog.vue";
@@ -185,6 +282,46 @@ import Avatar from "../ui/Avatar.vue";
 
 const router = useRouter();
 const repositoriesStore = useRepositoriesStore();
+const accountsStore = useAccountsStore();
+
+// Accounts
+const accounts = computed(() => accountsStore.accounts);
+const activeAccount = computed(() => accountsStore.activeAccount);
+const activeAccountId = computed(() => accountsStore.activeAccountId);
+const userDropdownOpen = ref(false);
+const showAddForm = ref(false);
+const newAccountName = ref("");
+const newAccountEmail = ref("");
+
+function switchAccount(id: string) {
+  accountsStore.setActive(id);
+  userDropdownOpen.value = false;
+}
+
+function submitAddAccount() {
+  const name = newAccountName.value.trim();
+  const email = newAccountEmail.value.trim();
+  if (!name || !email) return;
+  accountsStore.addAccount(name, email);
+  newAccountName.value = "";
+  newAccountEmail.value = "";
+  showAddForm.value = false;
+}
+
+function removeCurrentAccount() {
+  if (activeAccount.value) {
+    accountsStore.removeAccount(activeAccount.value.id);
+  }
+  userDropdownOpen.value = false;
+}
+
+watch(userDropdownOpen, (open) => {
+  if (!open) {
+    showAddForm.value = false;
+    newAccountName.value = "";
+    newAccountEmail.value = "";
+  }
+});
 
 const addRepoDialog = ref<InstanceType<typeof AddRepositoryDialog>>();
 const appSettingsDialog = ref<InstanceType<typeof AppSettingsDialog>>();
@@ -294,6 +431,7 @@ const collapsedGroups = ref<Set<string>>(new Set());
 const COLLAPSED_GROUPS_KEY = "sidebar_collapsed_groups";
 
 onMounted(async () => {
+  accountsStore.load();
   try {
     const result = await window.api.settings.get(COLLAPSED_GROUPS_KEY);
     if (result.success && result.data) {
