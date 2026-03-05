@@ -10,7 +10,7 @@
         @click="openInFolder(repo.path)"
       >
         <FolderOpen class="w-4 h-4 mr-2" />
-        Open {{ repoName(repo.path) }} in Folder
+        Open in Folder
       </ContextMenuItem>
       <ContextMenuSeparator v-if="githubUrl && props.repos.length > 0" />
       <ContextMenuItem v-if="githubUrl" @click="viewOnGitHub">
@@ -45,8 +45,6 @@ const githubUrl = computed(() => {
   )
   return hasGitHub ? `https://github.com/${props.owner}` : null
 })
-
-const repoName = (path: string) => path.split('/').pop() || path
 
 const openInFolder = (path: string) => {
   window.api.shell.openPath(path)
