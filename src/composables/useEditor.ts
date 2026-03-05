@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue'
+import { useSettingsStore } from '@/stores/settings.store'
 
 export interface Editor {
   name: string
@@ -9,7 +10,8 @@ export interface Editor {
 }
 
 export function useEditor() {
-  const availableEditors = ref<Editor[]>([])
+  const settingsStore = useSettingsStore()
+  const availableEditors = ref<Editor[]>(settingsStore.discoveredEditors)
   const defaultEditor = ref<Editor | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -17,11 +19,12 @@ export function useEditor() {
   const detectEditors = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
       const editors = await window.api.editor.detect()
       availableEditors.value = editors
-      
+      settingsStore.setDiscoveredEditors(editors)
+
       // Also get the default editor
       const defaultEd = await window.api.editor.getDefault()
       defaultEditor.value = defaultEd

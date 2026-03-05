@@ -191,8 +191,8 @@
                     :class="{ 'bg-accent/30': settingsStore.isEditorSelected(editor.id) }"
                   >
                     <Checkbox
-                      :checked="settingsStore.isEditorSelected(editor.id)"
-                      @update:checked="settingsStore.toggleEditor(editor.id)"
+                      :model-value="settingsStore.isEditorSelected(editor.id)"
+                      @update:model-value="settingsStore.toggleEditor(editor.id)"
                     />
                     <div class="flex items-center justify-center w-8 h-8 rounded-md bg-muted shrink-0">
                       <component :is="editorIconMap[getEditorIcon(editor)]" class="w-4 h-4" :stroke-width="1.5" />
@@ -207,10 +207,6 @@
                   </label>
                 </div>
 
-                <!-- Selected count -->
-                <p v-if="availableEditors.length > 0" class="text-xs text-muted-foreground mt-3">
-                  {{ settingsStore.selectedEditors.length }} of {{ availableEditors.length }} editors selected
-                </p>
               </CardContent>
             </Card>
           </div>
@@ -352,7 +348,8 @@ import { useEditor } from "@/composables/useEditor";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
-const { availableEditors, defaultEditor, loading: editorLoading, detectEditors, getEditorIcon } = useEditor();
+const { defaultEditor, loading: editorLoading, detectEditors, getEditorIcon } = useEditor();
+const availableEditors = computed(() => settingsStore.discoveredEditors);
 
 const editorIconMap: Record<string, any> = {
   FileCode2,

@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { Editor } from '@/composables/useEditor'
 
 export interface Settings {
   theme: 'light' | 'dark' | 'system'
+  discoveredEditors: Editor[] // Editors found on the system
   selectedEditors: string[] // Array of selected editor IDs
   defaultClonePath?: string
   autoFetch: boolean
@@ -17,6 +19,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // State
   const settings = ref<Settings>({
     theme: 'system',
+    discoveredEditors: [],
     selectedEditors: [],
     defaultClonePath: undefined,
     autoFetch: true,
@@ -29,6 +32,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   // Getters
   const theme = computed(() => settings.value.theme)
+  const discoveredEditors = computed(() => settings.value.discoveredEditors)
   const selectedEditors = computed(() => settings.value.selectedEditors)
   const defaultClonePath = computed(() => settings.value.defaultClonePath)
   const autoFetch = computed(() => settings.value.autoFetch)
@@ -48,6 +52,11 @@ export const useSettingsStore = defineStore('settings', () => {
     } else {
       settings.value.selectedEditors.push(editorId)
     }
+    saveSettings()
+  }
+
+  function setDiscoveredEditors(editors: Editor[]) {
+    settings.value.discoveredEditors = editors
     saveSettings()
   }
 
@@ -123,6 +132,7 @@ export const useSettingsStore = defineStore('settings', () => {
     settings,
     // Getters
     theme,
+    discoveredEditors,
     selectedEditors,
     defaultClonePath,
     autoFetch,
@@ -130,6 +140,7 @@ export const useSettingsStore = defineStore('settings', () => {
     // Actions
     setTheme,
     toggleEditor,
+    setDiscoveredEditors,
     setSelectedEditors,
     isEditorSelected,
     setDefaultClonePath,
