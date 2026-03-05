@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useSettingsStore } from '@/stores/settings.store'
 
 export interface Editor {
@@ -15,6 +15,16 @@ export function useEditor() {
   const defaultEditor = ref<Editor | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const isDark = ref(document.documentElement.classList.contains('dark'))
+
+  const observer = new MutationObserver(() => {
+    isDark.value = document.documentElement.classList.contains('dark')
+  })
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
+  onUnmounted(() => {
+    observer.disconnect()
+  })
 
   const detectEditors = async () => {
     loading.value = true
@@ -75,7 +85,8 @@ export function useEditor() {
       'nova': 'nova',
     }
     const slug = slugMap[editor.id] || editor.id
-    return `https://cdn.simpleicons.org/${slug}/black/white`
+    const color = isDark.value ? 'white' : 'black'
+    return `https://cdn.simpleicons.org/${slug}/${color}`
   }
 
   onMounted(() => {
