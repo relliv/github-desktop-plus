@@ -197,7 +197,7 @@
                 class="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-2"
               >
                 <ChevronDown
-                  v-if="!collapsedGroups.has(group.owner) || searchQuery"
+                  v-if="!isGroupCollapsed(group.owner) || searchQuery"
                   class="w-3 h-3 flex-shrink-0"
                   :stroke-width="1.5"
                 />
@@ -220,7 +220,7 @@
 
             <!-- Repositories in group -->
             <div
-              v-if="!collapsedGroups.has(group.owner) || searchQuery"
+              v-if="!isGroupCollapsed(group.owner) || searchQuery"
               class="space-y-0.5 ml-2"
             >
               <RepositoryContextMenu
@@ -460,8 +460,15 @@ watch(
 );
 
 // Track collapsed state for each owner group
+// Start hidden until DB state is restored to avoid expand-then-collapse flicker
 const collapsedGroups = ref<Set<string>>(new Set());
+const collapsedStateLoaded = ref(false);
 const COLLAPSED_GROUPS_KEY = "sidebar_collapsed_groups";
+
+const isGroupCollapsed = (owner: string) => {
+  if (!collapsedStateLoaded.value) return true;
+  return collapsedGroups.value.has(owner);
+};
 
 onMounted(async () => {
   accountsStore.load();
@@ -474,6 +481,7 @@ onMounted(async () => {
   } catch (error) {
     console.error("Failed to load collapsed groups:", error);
   }
+  collapsedStateLoaded.value = true;
 });
 
 const saveCollapsedGroups = () => {
