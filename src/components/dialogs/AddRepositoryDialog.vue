@@ -340,6 +340,7 @@ import Label from '@/components/ui/Label.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import { ChevronDown, GitBranch, FolderOpen, FilePlus } from 'lucide-vue-next'
 import { useRepositoriesStore } from '@/shared/stores'
+import { useSettingsStore } from '@/stores/settings.store'
 import type { CloneOptions, CloneProgress, CreateRepositoryOptions, RepositoryValidation } from '@/shared/types/git.types'
 import { gitignoreTemplates, licenseTemplates } from '@/utils/templates'
 
@@ -350,6 +351,7 @@ const emit = defineEmits<{
 }>()
 
 const repositoriesStore = useRepositoriesStore()
+const settingsStore = useSettingsStore()
 
 const isOpen = ref(false)
 const activeTab = ref<'add' | 'create' | 'clone'>('add')
@@ -545,13 +547,18 @@ watch(() => cloneOptions.value.url, (url) => {
   cloneUrlError.value = ''
   if (cloneUrlDebounce) clearTimeout(cloneUrlDebounce)
   if (!url.trim()) return
-  cloneUrlDebounce = setTimeout(() => {
+  cloneUrlDebounce = setTimeout(async () => {
     if (!isValidRepoUrl(url)) {
       cloneUrlError.value = 'Invalid repository URL'
       return
     }
     const name = parseRepoNameFromUrl(url)
     cloneRepoName.value = name
+    // Auto-populate directory if empty
+    if (name && !cloneOptions.value.directory) {
+      const basePath = settingsStore.defaultClonePath || await window.api.shell.getHomePath()
+      cloneOptions.value.directory = `${basePath}/${name}`
+    }
   }, 400)
 })
 

@@ -1,8 +1,11 @@
 import { ipcMain, shell } from 'electron'
 import { exec } from 'child_process'
-import { platform } from 'os'
+import { homedir, platform } from 'os'
 
 export function registerShellHandlers() {
+  // Get user home directory path
+  ipcMain.handle('shell:get-home-path', () => homedir())
+
   // Open path in system file manager
   ipcMain.handle('shell:open-path', async (_, path: string) => {
     try {

@@ -183,6 +183,7 @@ import {
 } from '@/components/ui/tabs'
 import { ChevronDown } from 'lucide-vue-next'
 import { useRepositoriesStore } from '@/shared/stores'
+import { useSettingsStore } from '@/stores/settings.store'
 import type { CloneOptions, CloneProgress } from '@/shared/types/git.types'
 
 const emit = defineEmits<{
@@ -190,6 +191,7 @@ const emit = defineEmits<{
 }>()
 
 const repositoriesStore = useRepositoriesStore()
+const settingsStore = useSettingsStore()
 
 const isOpen = ref(false)
 const isCloning = ref(false)
@@ -226,6 +228,49 @@ const progressStageText = computed(() => {
 
 const canClone = computed(() => {
   return cloneOptions.value.url && cloneOptions.value.directory
+})
+
+const parseRepoNameFromUrl = (url: string): string => {
+  const cleaned = url.trim().replace(/\.git$/, '')
+  const sshMatch = cleaned.match(/git@[^:]+:(?:[^/]+\/)?(.+)$/)
+  if (sshMatch) return sshMatch[1]
+  try {
+    const u = new URL(cleaned)
+    const parts = u.pathname.split('/').filter(Boolean)
+    if (parts.length >= 2) return parts[parts.length - 1]
+  } catch {}
+  return ''
+}
+
+const isValidRepoUrl = (url: string): boolean => {
+  const t = url.trim()
+  if (!t) return false
+  if (/^git@[^:]+:.+\/.+/.test(t)) return true
+  try {
+    const u = new URL(t)
+    return (u.protocol === 'https:' || u.protocol === 'http:') &&
+      u.pathname.split('/').filter(Boolean).length >= 2
+  } catch {
+    return false
+  }
+}
+
+// Auto-populate directory when a valid URL is entered
+watch(() => cloneOptions.value.url, (url) => {
+  if (!url.trim() || !isValidRepoUrl(url)) return
+  const name = parseRepoNameFromUrl(url)
+  if (name && !cloneOptions.value.directory) {
+    const basePath = settingsStore.defaultClonePath
+    if (basePath) {
+      cloneOptions.value.directory = `${basePath}/${name}`
+    } else {
+      window.api.shell.getHomePath().then((home) => {
+        if (!cloneOptions.value.directory) {
+          cloneOptions.value.directory = `${home}/${name}`
+        }
+      })
+    }
+  }
 })
 
 // Clean up auth fields when auth type changes

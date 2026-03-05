@@ -22,8 +22,9 @@ export const api = {
     create: (options: CreateRepositoryOptions) => ipcRenderer.invoke('git:create', options),
     getRemoteUrl: (path: string) => ipcRenderer.invoke('git:getRemoteUrl', path),
     onCloneProgress: (callback: (progress: any) => void) => {
-      ipcRenderer.on('git:clone:progress', (_, progress) => callback(progress))
-      return () => ipcRenderer.removeListener('git:clone:progress', callback)
+      const handler = (_: any, progress: any) => callback(progress)
+      ipcRenderer.on('git:clone:progress', handler)
+      return () => ipcRenderer.removeListener('git:clone:progress', handler)
     },
   },
   
@@ -59,6 +60,7 @@ export const api = {
     openPath: (path: string) => ipcRenderer.invoke('shell:open-path', path),
     openTerminal: (path: string) => ipcRenderer.invoke('shell:open-terminal', path),
     openExternal: (url: string) => ipcRenderer.invoke('shell:open-external', url),
+    getHomePath: () => ipcRenderer.invoke('shell:get-home-path'),
   },
   
   commits: {

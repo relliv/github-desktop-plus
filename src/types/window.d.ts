@@ -55,6 +55,8 @@ declare global {
       shell: {
         openPath: (path: string) => Promise<any>
         openTerminal: (path: string) => Promise<any>
+        openExternal: (url: string) => Promise<any>
+        getHomePath: () => Promise<string>
       }
       editor: {
         detect: () => Promise<any>
