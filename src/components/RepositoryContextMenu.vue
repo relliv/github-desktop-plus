@@ -66,12 +66,7 @@
       </ContextMenuItem>
       
       <ContextMenuSeparator />
-      
-      <ContextMenuItem @click="openSettings">
-        <Settings2 class="w-4 h-4 mr-2" />
-        Repository Settings...
-      </ContextMenuItem>
-      
+
       <ContextMenuItem @click="removeRepository" class="text-destructive">
         <Trash2 class="w-4 h-4 mr-2" />
         Remove
@@ -98,7 +93,6 @@ import {
 import {
   FileCode2,
   Settings,
-  Settings2,
   Copy,
   Folder,
   Terminal,
@@ -200,14 +194,6 @@ const copyPath = async () => {
 
 const toggleFavorite = () => {
   emit('toggle-favorite')
-}
-
-const openSettings = () => {
-  // You can implement a repository settings dialog here
-  toast({
-    title: 'Repository Settings',
-    description: 'Repository settings dialog not implemented yet',
-  })
 }
 
 const removeRepository = () => {
