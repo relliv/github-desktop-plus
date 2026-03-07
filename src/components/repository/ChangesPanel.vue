@@ -81,7 +81,7 @@
         size="sm"
       >
         <GitCommit class="w-4 h-4 mr-2" :stroke-width="1.5" />
-        Commit to {{ currentBranch }}
+        Commit Changes
       </Button>
       <p v-if="stagedFiles.length === 0" class="text-xs text-muted-foreground text-center">
         Stage changes to commit
