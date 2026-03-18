@@ -1,13 +1,14 @@
 <template>
   <Popover v-model:open="popoverOpen">
     <TooltipProvider :delay-duration="500">
-      <TooltipRoot :open="!popoverOpen ? undefined : false">
+      <TooltipRoot :open="tooltipOpen" @update:open="onTooltipOpenChange">
         <TooltipTrigger as-child>
           <PopoverTrigger as-child>
             <Button
               variant="outline"
               size="sm"
               class="flex flex-row items-center w-[200px] h-[30px]"
+              @contextmenu.prevent="openContextMenu"
             >
               <GitBranch
                 class="size-3.5 shrink-0 text-muted-foreground"
@@ -68,6 +69,29 @@
     </PopoverContent>
   </Popover>
 
+  <!-- Branch context menu -->
+  <Teleport to="body">
+    <div
+      v-if="ctxMenu.visible"
+      class="fixed inset-0 z-50"
+      @click="closeContextMenu"
+      @contextmenu.prevent="closeContextMenu"
+    >
+      <div
+        class="absolute w-48 rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
+        :style="{ left: ctxMenu.x + 'px', top: ctxMenu.y + 'px' }"
+      >
+        <button
+          class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+          @click="copyBranchName"
+        >
+          <Copy class="w-4 h-4 mr-2" :stroke-width="1.5" />
+          Copy Branch Name
+        </button>
+      </div>
+    </div>
+  </Teleport>
+
   <!-- Uncommitted Changes Dialog -->
   <AlertDialog v-model:open="showErrorDialog">
     <AlertDialogContent>
@@ -99,8 +123,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { ChevronDown, Check, AlertTriangle, GitBranch } from "lucide-vue-next";
+import { ref, computed, watch } from "vue";
+import { ChevronDown, Check, AlertTriangle, GitBranch, Copy } from "lucide-vue-next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
   TooltipArrow,
@@ -122,12 +146,50 @@ import {
 } from "../ui/alert-dialog";
 import Button from "../ui/Button.vue";
 import { useRepositoriesStore } from "@/shared/stores";
+import { useToast } from "@/composables/useToast";
 
 const repositoriesStore = useRepositoriesStore();
+const { toast } = useToast();
 const searchQuery = ref("");
 const showErrorDialog = ref(false);
 const pendingBranch = ref<string>("");
 const popoverOpen = ref(false);
+const tooltipOpen = ref(false);
+
+function onTooltipOpenChange(value: boolean) {
+  if (!popoverOpen.value) {
+    tooltipOpen.value = value;
+  }
+}
+
+watch(popoverOpen, (open) => {
+  if (open) tooltipOpen.value = false;
+});
+
+const ctxMenu = ref<{ visible: boolean; x: number; y: number }>({
+  visible: false,
+  x: 0,
+  y: 0,
+});
+
+function openContextMenu(event: MouseEvent) {
+  ctxMenu.value = { visible: true, x: event.clientX, y: event.clientY };
+}
+
+function closeContextMenu() {
+  ctxMenu.value = { visible: false, x: 0, y: 0 };
+}
+
+function copyBranchName() {
+  if (!currentBranch.value) return;
+  navigator.clipboard.writeText(currentBranch.value);
+  closeContextMenu();
+  toast({
+    title: "Branch name copied",
+    description: currentBranch.value,
+    duration: 3000,
+  });
+}
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 const branches = computed(() => repositoriesStore.branches?.local || []);
