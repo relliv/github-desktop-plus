@@ -170,13 +170,22 @@
       <div class="px-2 py-4">
         <div class="flex items-center justify-between pl-2 mb-2">
           <h3 class="font-medium text-sm">Repositories</h3>
-          <button
-            @click="openAddRepository"
-            class="p-1 hover:bg-accent rounded transition-colors"
-            title="Add repository"
-          >
-            <Plus class="w-4 h-4" :stroke-width="1" />
-          </button>
+          <div class="flex items-center">
+            <button
+              @click="collapseAllGroups"
+              class="p-1 hover:bg-accent rounded transition-colors"
+              title="Collapse all groups"
+            >
+              <ChevronsDownUp class="w-4 h-4" :stroke-width="1" />
+            </button>
+            <button
+              @click="openAddRepository"
+              class="p-1 hover:bg-accent rounded transition-colors"
+              title="Add repository"
+            >
+              <Plus class="w-4 h-4" :stroke-width="1" />
+            </button>
+          </div>
         </div>
 
         <!-- No results -->
@@ -294,6 +303,7 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  ChevronsDownUp,
   Check,
   LogOut,
   Search,
@@ -546,6 +556,17 @@ const toggleGroup = (owner: string) => {
     collapsedGroups.value.delete(owner);
   } else {
     collapsedGroups.value.add(owner);
+  }
+  saveCollapsedGroups();
+};
+
+const collapseAllGroups = () => {
+  const allOwners = repositoriesByOwner.value.map((g) => g.owner);
+  const allCollapsed = allOwners.every((o) => collapsedGroups.value.has(o));
+  if (allCollapsed) {
+    collapsedGroups.value.clear();
+  } else {
+    collapsedGroups.value = new Set(allOwners);
   }
   saveCollapsedGroups();
 };
