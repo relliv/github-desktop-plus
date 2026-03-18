@@ -1,41 +1,28 @@
 <template>
   <Popover v-model:open="popoverOpen">
-    <TooltipProvider :delay-duration="500">
-      <TooltipRoot :open="tooltipOpen" @update:open="onTooltipOpenChange">
-        <TooltipTrigger as-child>
-          <PopoverTrigger as-child>
-            <Button
-              variant="outline"
-              size="sm"
-              class="flex flex-row items-center w-[200px] h-[30px]"
-              @contextmenu.prevent="openContextMenu"
-            >
-              <GitBranch
-                class="size-3.5 shrink-0 text-muted-foreground"
-                :stroke-width="1"
-              />
-              <span class="truncate flex-1 text-left ml-2 text-xs">{{
-                currentBranch || "No branch"
-              }}</span>
-              <ChevronDown
-                class="ml-2 h-4 w-4 shrink-0 opacity-50"
-                :stroke-width="1"
-              />
-            </Button>
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipPortal>
-          <TooltipContent
-            side="bottom"
-            :side-offset="4"
-            class="z-50 rounded-md bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
-          >
-            {{ currentBranch || "No branch" }}
-            <TooltipArrow class="fill-popover" />
-          </TooltipContent>
-        </TooltipPortal>
-      </TooltipRoot>
-    </TooltipProvider>
+    <PopoverTrigger as-child>
+      <Button
+        variant="outline"
+        size="sm"
+        class="flex flex-row items-center w-[200px] h-[30px]"
+        @contextmenu.prevent="openContextMenu"
+        @mouseenter="startTooltipDelay"
+        @mouseleave="cancelTooltip"
+      >
+        <GitBranch
+          class="size-3.5 shrink-0 text-muted-foreground"
+          :stroke-width="1"
+        />
+        <span class="truncate flex-1 text-left ml-2 text-xs">{{
+          currentBranch || "No branch"
+        }}</span>
+        <ChevronDown
+          class="ml-2 h-4 w-4 shrink-0 opacity-50"
+          :stroke-width="1"
+        />
+      </Button>
+    </PopoverTrigger>
+
     <PopoverContent class="w-[200px] p-0" align="start">
       <div
         class="bg-white dark:bg-card mt-1 rounded-md shadow-md dark:shadow-lg border border-border"
@@ -68,6 +55,17 @@
       </div>
     </PopoverContent>
   </Popover>
+
+  <!-- Branch name tooltip -->
+  <Teleport to="body">
+    <div
+      v-if="tooltipOpen && !popoverOpen"
+      class="fixed z-50 rounded-md bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
+      :style="{ left: tooltipPos.x + 'px', top: tooltipPos.y + 'px' }"
+    >
+      {{ currentBranch || "No branch" }}
+    </div>
+  </Teleport>
 
   <!-- Branch context menu -->
   <Teleport to="body">
@@ -127,14 +125,6 @@ import { ref, computed, watch } from "vue";
 import { ChevronDown, Check, AlertTriangle, GitBranch, Copy } from "lucide-vue-next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
-  TooltipArrow,
-  TooltipContent,
-  TooltipPortal,
-  TooltipProvider,
-  TooltipRoot,
-  TooltipTrigger,
-} from "reka-ui";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -155,15 +145,30 @@ const showErrorDialog = ref(false);
 const pendingBranch = ref<string>("");
 const popoverOpen = ref(false);
 const tooltipOpen = ref(false);
+const tooltipPos = ref({ x: 0, y: 0 });
+let tooltipTimeout: ReturnType<typeof setTimeout> | null = null;
 
-function onTooltipOpenChange(value: boolean) {
-  if (!popoverOpen.value) {
-    tooltipOpen.value = value;
-  }
+function startTooltipDelay(event: MouseEvent) {
+  cancelTooltip();
+  const target = event.currentTarget as HTMLElement;
+  tooltipTimeout = setTimeout(() => {
+    const rect = target.getBoundingClientRect();
+    tooltipPos.value = {
+      x: rect.left,
+      y: rect.bottom + 4,
+    };
+    tooltipOpen.value = true;
+  }, 500);
+}
+
+function cancelTooltip() {
+  if (tooltipTimeout) clearTimeout(tooltipTimeout);
+  tooltipTimeout = null;
+  tooltipOpen.value = false;
 }
 
 watch(popoverOpen, (open) => {
-  if (open) tooltipOpen.value = false;
+  if (open) cancelTooltip();
 });
 
 const ctxMenu = ref<{ visible: boolean; x: number; y: number }>({
