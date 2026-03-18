@@ -161,35 +161,64 @@
       <!-- Changes tab content -->
       <TabsContent value="changes" class="flex-1 min-h-0 mt-0 overflow-hidden">
         <SplitterGroup
-          direction="horizontal"
-          auto-save-id="repository-splitter"
+          :direction="changesLayout"
+          :auto-save-id="`changes-splitter-${changesLayout}`"
+          :key="changesLayout"
           class="h-full"
         >
           <!-- Changes panel -->
           <SplitterPanel
-            :default-size="30"
+            :default-size="changesLayout === 'horizontal' ? 30 : 40"
             :min-size="20"
             :max-size="50"
             class="flex flex-col overflow-hidden"
             :collapsible="false"
           >
-            <div class="shrink-0 px-4 py-3 border-b">
+            <div class="shrink-0 px-4 py-3 border-b flex items-center justify-between">
               <h2 class="font-semibold">Changes</h2>
+              <div class="flex items-center rounded-md border bg-muted/50 p-0.5">
+                <button
+                  @click="changesLayout = 'horizontal'"
+                  class="p-1 rounded-sm transition-colors"
+                  :class="
+                    changesLayout === 'horizontal'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  "
+                  title="Side by side"
+                >
+                  <Columns2 class="size-3.5" :stroke-width="1.5" />
+                </button>
+                <button
+                  @click="changesLayout = 'vertical'"
+                  class="p-1 rounded-sm transition-colors"
+                  :class="
+                    changesLayout === 'vertical'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  "
+                  title="Top and bottom"
+                >
+                  <Rows2 class="size-3.5" :stroke-width="1.5" />
+                </button>
+              </div>
             </div>
             <ChangesPanel @file-selected="onChangeFileSelected" />
           </SplitterPanel>
 
           <SplitterResizeHandle
-            class="flex items-center justify-center group border-x"
+            class="flex items-center justify-center group"
+            :class="changesLayout === 'horizontal' ? 'border-x' : 'border-y'"
           >
             <div
-              class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
+              class="rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
+              :class="changesLayout === 'horizontal' ? 'h-8 w-px' : 'w-8 h-px'"
             />
           </SplitterResizeHandle>
 
           <!-- Diff viewer -->
           <SplitterPanel
-            :default-size="70"
+            :default-size="changesLayout === 'horizontal' ? 70 : 60"
             :min-size="30"
             class="flex flex-col"
           >
@@ -347,6 +376,8 @@ import {
   CalendarDays,
   Settings,
   History,
+  Columns2,
+  Rows2,
 } from "lucide-vue-next";
 import {
   Popover,
@@ -394,7 +425,13 @@ const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
 const activeTab = ref("history");
 const repoSwitcherOpen = ref(false);
 
-// Changes tab file selection
+// Changes tab layout and file selection
+const CHANGES_LAYOUT_KEY = "changes-layout";
+const changesLayout = ref<"horizontal" | "vertical">(
+  (localStorage.getItem(CHANGES_LAYOUT_KEY) as "horizontal" | "vertical") || "horizontal",
+);
+watch(changesLayout, (v) => localStorage.setItem(CHANGES_LAYOUT_KEY, v));
+
 const changesSelectedFile = ref<string | null>(null);
 const changesIsStaged = ref(false);
 

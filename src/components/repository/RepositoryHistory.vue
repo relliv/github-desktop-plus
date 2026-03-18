@@ -351,143 +351,185 @@
         />
       </SplitterResizeHandle>
 
-      <!-- Column 2: Changed files -->
+      <!-- Columns 2+3: Changed files + Diff (switchable layout) -->
       <SplitterPanel
-        :default-size="25"
-        :min-size="15"
-        :max-size="40"
+        :default-size="60"
+        :min-size="30"
         class="flex flex-col overflow-hidden"
       >
-        <div
-          class="flex flex-row gap-2 justify-between items-center shrink-0 px-4 py-3 border-b h-[55px]"
+        <SplitterGroup
+          :direction="detailLayout"
+          :auto-save-id="`history-detail-${detailLayout}`"
+          :key="detailLayout"
+          class="flex-1 min-h-0"
         >
-          <h2 class="font-semibold text-sm">
-            Changed Files
-            <span
-              v-if="commitFiles.length > 0"
-              class="text-muted-foreground font-normal"
-            >
-              ({{ commitFiles.length }})
-            </span>
-          </h2>
-        </div>
-
-        <div
-          v-if="isLoadingFiles"
-          class="flex-1 flex items-center justify-center"
-        >
-          <span class="text-xs text-muted-foreground">Loading files...</span>
-        </div>
-
-        <div
-          v-else-if="commitFiles.length > 0"
-          class="flex-1 min-h-0 overflow-y-auto"
-          v-lenis
-        >
-          <button
-            v-for="file in commitFiles"
-            :key="file.file"
-            @click="selectFile(file)"
-            class="w-full text-left px-4 py-2 border-b hover:bg-accent/50 transition-colors flex items-center gap-2"
-            :class="{ 'bg-accent': selectedFile?.file === file.file }"
+          <!-- Changed files -->
+          <SplitterPanel
+            :default-size="detailLayout === 'horizontal' ? 40 : 40"
+            :min-size="20"
+            :max-size="60"
+            class="flex flex-col overflow-hidden"
           >
-            <span
-              class="shrink-0 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded"
-              :class="fileStatusClass(file.status)"
+            <div
+              class="flex flex-row gap-2 justify-between items-center shrink-0 px-4 py-3 border-b h-[55px]"
             >
-              {{ file.status }}
-            </span>
-            <span class="text-sm truncate" :title="file.file">
-              {{ getFileName(file.file) }}
-            </span>
-            <span
-              v-if="getFilePath(file.file)"
-              class="text-xs text-muted-foreground truncate ml-auto shrink-0"
+              <h2 class="font-semibold text-sm">
+                Changed Files
+                <span
+                  v-if="commitFiles.length > 0"
+                  class="text-muted-foreground font-normal"
+                >
+                  ({{ commitFiles.length }})
+                </span>
+              </h2>
+              <div class="flex items-center rounded-md border bg-muted/50 p-0.5">
+                <button
+                  @click="detailLayout = 'horizontal'"
+                  class="p-1 rounded-sm transition-colors"
+                  :class="
+                    detailLayout === 'horizontal'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  "
+                  title="Side by side"
+                >
+                  <Columns2 class="size-3" :stroke-width="1.5" />
+                </button>
+                <button
+                  @click="detailLayout = 'vertical'"
+                  class="p-1 rounded-sm transition-colors"
+                  :class="
+                    detailLayout === 'vertical'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  "
+                  title="Top and bottom"
+                >
+                  <Rows2 class="size-3" :stroke-width="1.5" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              v-if="isLoadingFiles"
+              class="flex-1 flex items-center justify-center"
             >
-              {{ getFilePath(file.file) }}
-            </span>
-          </button>
-        </div>
+              <span class="text-xs text-muted-foreground">Loading files...</span>
+            </div>
 
-        <div
-          v-else-if="selectedCommit"
-          class="flex-1 flex items-center justify-center"
-        >
-          <p class="text-sm text-muted-foreground">No files changed</p>
-        </div>
+            <div
+              v-else-if="commitFiles.length > 0"
+              class="flex-1 min-h-0 overflow-y-auto"
+              v-lenis
+            >
+              <button
+                v-for="file in commitFiles"
+                :key="file.file"
+                @click="selectFile(file)"
+                class="w-full text-left px-4 py-2 border-b hover:bg-accent/50 transition-colors flex items-center gap-2"
+                :class="{ 'bg-accent': selectedFile?.file === file.file }"
+              >
+                <span
+                  class="shrink-0 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded"
+                  :class="fileStatusClass(file.status)"
+                >
+                  {{ file.status }}
+                </span>
+                <span class="text-sm truncate" :title="file.file">
+                  {{ getFileName(file.file) }}
+                </span>
+                <span
+                  v-if="getFilePath(file.file)"
+                  class="text-xs text-muted-foreground truncate ml-auto shrink-0"
+                >
+                  {{ getFilePath(file.file) }}
+                </span>
+              </button>
+            </div>
 
-        <div v-else class="flex-1 flex items-center justify-center">
-          <div class="text-center">
-            <FileText
-              class="size-8 mx-auto mb-3 text-muted-foreground"
-              :stroke-width="1"
+            <div
+              v-else-if="selectedCommit"
+              class="flex-1 flex items-center justify-center"
+            >
+              <p class="text-sm text-muted-foreground">No files changed</p>
+            </div>
+
+            <div v-else class="flex-1 flex items-center justify-center">
+              <div class="text-center">
+                <FileText
+                  class="size-8 mx-auto mb-3 text-muted-foreground"
+                  :stroke-width="1"
+                />
+                <p class="text-sm text-muted-foreground">
+                  Select a commit to view changes
+                </p>
+              </div>
+            </div>
+          </SplitterPanel>
+
+          <SplitterResizeHandle
+            class="flex items-center justify-center group"
+            :class="detailLayout === 'horizontal' ? 'border-x' : 'border-y'"
+          >
+            <div
+              class="rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
+              :class="detailLayout === 'horizontal' ? 'h-8 w-px' : 'w-8 h-px'"
             />
-            <p class="text-sm text-muted-foreground">
-              Select a commit to view changes
-            </p>
-          </div>
-        </div>
-      </SplitterPanel>
+          </SplitterResizeHandle>
 
-      <SplitterResizeHandle
-        class="flex items-center justify-center group border-x"
-      >
-        <div
-          class="h-8 rounded-full bg-border group-hover:bg-muted-foreground/50 transition-colors"
-        />
-      </SplitterResizeHandle>
+          <!-- Diff preview -->
+          <SplitterPanel
+            :default-size="60"
+            :min-size="20"
+            class="flex flex-col overflow-hidden"
+          >
+            <div
+              class="flex flex-row gap-2 justify-between items-center shrink-0 px-4 py-3 border-b h-[55px]"
+            >
+              <h2 class="font-semibold text-sm truncate">
+                {{ selectedFile ? selectedFile.file : "Diff" }}
+              </h2>
+            </div>
 
-      <!-- Column 3: Diff preview -->
-      <SplitterPanel
-        :default-size="35"
-        :min-size="20"
-        class="flex flex-col overflow-hidden"
-      >
-        <div
-          class="flex flex-row gap-2 justify-between items-center shrink-0 px-4 py-3 border-b h-[55px]"
-        >
-          <h2 class="font-semibold text-sm truncate">
-            {{ selectedFile ? selectedFile.file : "Diff" }}
-          </h2>
-        </div>
+            <div
+              v-if="isLoadingDiff"
+              class="flex-1 flex items-center justify-center"
+            >
+              <span class="text-xs text-muted-foreground">Loading diff...</span>
+            </div>
 
-        <div
-          v-if="isLoadingDiff"
-          class="flex-1 flex items-center justify-center"
-        >
-          <span class="text-xs text-muted-foreground">Loading diff...</span>
-        </div>
+            <div
+              v-else-if="fileDiff"
+              class="flex-1 min-h-0 overflow-auto"
+              v-lenis
+            >
+              <NxDiffViewer
+                :diff="fileDiff"
+                :theme="codeViewerTheme"
+                :language="selectedFileLanguage"
+                :show-header="false"
+                :file-extension="selectedFileExtension"
+                border-style="none"
+              />
+            </div>
 
-        <div
-          v-else-if="fileDiff"
-          class="flex-1 min-h-0 overflow-auto"
-          v-lenis
-        >
-          <NxDiffViewer
-            :diff="fileDiff"
-            :theme="codeViewerTheme"
-            :language="selectedFileLanguage"
-            :show-header="false"
-            :file-extension="selectedFileExtension"
-            border-style="none"
-          />
-        </div>
-
-        <div v-else class="flex-1 flex items-center justify-center">
-          <div class="text-center">
-            <Code
-              class="size-8 mx-auto mb-3 text-muted-foreground"
-              :stroke-width="1"
-            />
-            <p class="text-sm text-muted-foreground">
-              {{
-                selectedCommit
-                  ? "Select a file to view diff"
-                  : "Select a commit to get started"
-              }}
-            </p>
-          </div>
-        </div>
+            <div v-else class="flex-1 flex items-center justify-center">
+              <div class="text-center">
+                <Code
+                  class="size-8 mx-auto mb-3 text-muted-foreground"
+                  :stroke-width="1"
+                />
+                <p class="text-sm text-muted-foreground">
+                  {{
+                    selectedCommit
+                      ? "Select a file to view diff"
+                      : "Select a commit to get started"
+                  }}
+                </p>
+              </div>
+            </div>
+          </SplitterPanel>
+        </SplitterGroup>
       </SplitterPanel>
     </SplitterGroup>
 
@@ -541,6 +583,8 @@ import {
   Check,
   List,
   CalendarDays,
+  Columns2,
+  Rows2,
 } from "lucide-vue-next";
 import NumberFlow from "@number-flow/vue";
 import { DiffViewer as NxDiffViewer } from "@ngeenx/nx-vue-code-viewer";
@@ -604,6 +648,12 @@ const viewMode = ref<"list" | "timeline">(
   (localStorage.getItem(VIEW_MODE_KEY) as "list" | "timeline") || "list",
 );
 watch(viewMode, (v) => localStorage.setItem(VIEW_MODE_KEY, v));
+
+const DETAIL_LAYOUT_KEY = "history-detail-layout";
+const detailLayout = ref<"horizontal" | "vertical">(
+  (localStorage.getItem(DETAIL_LAYOUT_KEY) as "horizontal" | "vertical") || "horizontal",
+);
+watch(detailLayout, (v) => localStorage.setItem(DETAIL_LAYOUT_KEY, v));
 
 const isScanning = ref(false);
 const isLoadingMore = ref(false);
