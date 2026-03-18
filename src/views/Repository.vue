@@ -176,7 +176,7 @@
             <div class="shrink-0 px-4 py-3 border-b">
               <h2 class="font-semibold">Changes</h2>
             </div>
-            <ChangesPanel />
+            <ChangesPanel @file-selected="onChangeFileSelected" />
           </SplitterPanel>
 
           <SplitterResizeHandle
@@ -194,9 +194,14 @@
             class="flex flex-col"
           >
             <div class="px-4 py-3 border-b">
-              <h2 class="font-semibold">Diff</h2>
+              <h2 class="font-semibold truncate">
+                {{ changesSelectedFile || "Diff" }}
+              </h2>
             </div>
-            <DiffViewer />
+            <DiffViewer
+              :selected-file="changesSelectedFile"
+              :is-staged="changesIsStaged"
+            />
           </SplitterPanel>
         </SplitterGroup>
       </TabsContent>
@@ -323,6 +328,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { perf } from "@/shared/perf";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import {
   GitBranch,
@@ -376,6 +382,15 @@ const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
 
 const activeTab = ref("history");
 const repoSwitcherOpen = ref(false);
+
+// Changes tab file selection
+const changesSelectedFile = ref<string | null>(null);
+const changesIsStaged = ref(false);
+
+const onChangeFileSelected = (file: string, staged: boolean) => {
+  changesSelectedFile.value = file;
+  changesIsStaged.value = staged;
+};
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
 
@@ -439,20 +454,11 @@ const handleWindowFocus = () => {
 };
 
 onMounted(() => {
+  perf.mark("repository-view:mounted");
   window.addEventListener("focus", handleWindowFocus);
-  if (currentRepository.value) {
-    repositoriesStore.fetchGitStatus();
-  }
 });
 
-watch(
-  () => currentRepository.value?.id,
-  (newId) => {
-    if (newId) {
-      repositoriesStore.fetchGitStatus();
-    }
-  },
-);
+// Git status is loaded by setCurrentRepository — no duplicate call needed here
 
 onUnmounted(() => {
   window.removeEventListener("focus", handleWindowFocus);
@@ -481,34 +487,40 @@ const toggleFavorite = () => {
 
 const fetchChanges = async () => {
   if (currentRepository.value) {
-    try {
-      await window.api.git.fetch(currentRepository.value.path);
-      await repositoriesStore.fetchGitStatus();
-    } catch (error) {
-      console.error("Failed to fetch:", error);
-    }
+    return perf.measure("repo-view:fetch", async () => {
+      try {
+        await window.api.git.fetch(currentRepository.value!.path);
+        await repositoriesStore.fetchGitStatus();
+      } catch (error) {
+        console.error("Failed to fetch:", error);
+      }
+    });
   }
 };
 
 const pullChanges = async () => {
   if (currentRepository.value) {
-    try {
-      await window.api.git.pull(currentRepository.value.path);
-      await repositoriesStore.fetchGitStatus();
-    } catch (error) {
-      console.error("Failed to pull:", error);
-    }
+    return perf.measure("repo-view:pull", async () => {
+      try {
+        await window.api.git.pull(currentRepository.value!.path);
+        await repositoriesStore.fetchGitStatus();
+      } catch (error) {
+        console.error("Failed to pull:", error);
+      }
+    });
   }
 };
 
 const pushChanges = async () => {
   if (currentRepository.value) {
-    try {
-      await window.api.git.push(currentRepository.value.path);
-      await repositoriesStore.fetchGitStatus();
-    } catch (error) {
-      console.error("Failed to push:", error);
-    }
+    return perf.measure("repo-view:push", async () => {
+      try {
+        await window.api.git.push(currentRepository.value!.path);
+        await repositoriesStore.fetchGitStatus();
+      } catch (error) {
+        console.error("Failed to push:", error);
+      }
+    });
   }
 };
 

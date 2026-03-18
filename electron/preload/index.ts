@@ -1,6 +1,15 @@
 import { ipcRenderer, contextBridge } from 'electron'
 import { api } from './api'
 
+// Capture preloaded sidebar data as early as possible (before Vue starts)
+let _preloadedSidebarData: any = null
+ipcRenderer.on('preloaded-sidebar-data', (_, data) => {
+  _preloadedSidebarData = data
+})
+contextBridge.exposeInMainWorld('__preloadedSidebarData', {
+  get: () => _preloadedSidebarData,
+})
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {

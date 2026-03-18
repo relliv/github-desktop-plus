@@ -17,13 +17,18 @@
         <ExternalLink class="w-4 h-4 mr-2" />
         View on GitHub
       </ContextMenuItem>
+      <ContextMenuSeparator />
+      <ContextMenuItem @click="refreshRemotes">
+        <RefreshCw class="w-4 h-4 mr-2" />
+        Refresh Remotes
+      </ContextMenuItem>
     </ContextMenuContent>
   </ContextMenu>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ExternalLink, FolderOpen } from 'lucide-vue-next'
+import { ExternalLink, FolderOpen, RefreshCw } from 'lucide-vue-next'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -54,5 +59,9 @@ const viewOnGitHub = () => {
   if (githubUrl.value) {
     window.api.shell.openExternal(githubUrl.value)
   }
+}
+
+const refreshRemotes = () => {
+  window.api.repository.refreshRemotes().catch(console.error)
 }
 </script>

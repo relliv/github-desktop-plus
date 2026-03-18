@@ -1,21 +1,38 @@
 import { db, schema } from '../db'
 import { eq } from 'drizzle-orm'
-import { net } from 'electron'
+import { app, net } from 'electron'
+import path from 'path'
+import fs from 'fs'
+import { perf } from '@shared/perf'
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000
+// Cache avatars for 7 days — images rarely change
+const CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+
+// Directory for cached avatar image files
+const avatarCacheDir = path.join(app.getPath('userData'), 'avatar-cache')
+
+// Ensure cache directory exists
+if (!fs.existsSync(avatarCacheDir)) {
+  fs.mkdirSync(avatarCacheDir, { recursive: true })
+}
+
+function avatarFilePath(key: string): string {
+  // Sanitize key to safe filename
+  const safe = key.replace(/[^a-zA-Z0-9_-]/g, '_')
+  return path.join(avatarCacheDir, `${safe}.png`)
+}
 
 export class AvatarService {
   async getAvatar(email: string): Promise<string | null> {
-    const cached = await this.getCached(email)
-
-    if (cached !== undefined) {
-      return cached
-    }
-
-    return this.fetchAndCache(email)
+    return perf.measure(`avatar-service:get(${email})`, async () => {
+      const cached = await this.getCached(email)
+      if (cached !== undefined) return cached
+      return this.fetchAndCache(email)
+    })
   }
 
   async getAvatars(emails: string[]): Promise<Record<string, string | null>> {
+    const endBatch = perf.start(`avatar-service:get-avatars(${emails.length})`)
     const unique = [...new Set(emails.map((e) => e.toLowerCase()))]
     const result: Record<string, string | null> = {}
 
@@ -33,7 +50,7 @@ export class AvatarService {
 
     for (const email of unique) {
       const entry = cacheMap.get(email)
-      if (entry && now - entry.fetchedAt.getTime() < ONE_DAY_MS) {
+      if (entry && now - entry.fetchedAt.getTime() < CACHE_MAX_AGE_MS) {
         result[email] = entry.avatarUrl
       } else {
         toFetch.push(email)
@@ -50,112 +67,153 @@ export class AvatarService {
       })
     }
 
+    endBatch()
     return result
   }
 
-  private async getCached(email: string): Promise<string | null | undefined> {
-    const normalizedEmail = email.toLowerCase()
+  private async getCached(key: string): Promise<string | null | undefined> {
+    const normalizedKey = key.toLowerCase()
     const rows = await db
       .select()
       .from(schema.avatarCache)
-      .where(eq(schema.avatarCache.email, normalizedEmail))
+      .where(eq(schema.avatarCache.email, normalizedKey))
 
     if (rows.length === 0) return undefined
 
     const row = rows[0]
     const age = Date.now() - row.fetchedAt.getTime()
-    if (age > ONE_DAY_MS) return undefined
+    if (age > CACHE_MAX_AGE_MS) return undefined
 
-    return row.avatarUrl
+    // If we have a data URI cached, return it directly
+    if (row.avatarUrl?.startsWith('data:')) return row.avatarUrl
+
+    // Legacy entry with a remote URL — check if we have the image on disk
+    const filePath = avatarFilePath(normalizedKey)
+    if (fs.existsSync(filePath)) {
+      const dataUri = this.fileToDataUri(filePath)
+      if (dataUri) {
+        // Upgrade DB entry to data URI
+        await this.upsertCache(normalizedKey, dataUri)
+        return dataUri
+      }
+    }
+
+    // Stale legacy entry — refetch
+    return undefined
   }
 
   private async fetchAndCache(email: string): Promise<string | null> {
     const normalizedEmail = email.toLowerCase()
-    let avatarUrl: string | null = null
 
     try {
-      avatarUrl = await this.fetchGitHubAvatar(normalizedEmail)
+      const avatarUrl = await this.fetchGitHubAvatar(normalizedEmail)
+      if (!avatarUrl) {
+        await this.upsertCache(normalizedEmail, null)
+        return null
+      }
+      return this.downloadAndCache(normalizedEmail, avatarUrl)
     } catch {
-      // Network error — don't cache, return null
       return null
     }
-
-    await db
-      .insert(schema.avatarCache)
-      .values({
-        email: normalizedEmail,
-        avatarUrl,
-        fetchedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: schema.avatarCache.email,
-        set: {
-          avatarUrl,
-          fetchedAt: new Date(),
-        },
-      })
-
-    return avatarUrl
   }
 
   async getOwnerAvatar(owner: string): Promise<string | null> {
-    const cacheKey = `owner:${owner.toLowerCase()}`
-    const cached = await this.getCached(cacheKey)
-
-    if (cached !== undefined) {
-      return cached
-    }
-
-    return this.fetchAndCacheOwner(owner, cacheKey)
+    return perf.measure(`avatar-service:get-owner(${owner})`, async () => {
+      const cacheKey = `owner:${owner.toLowerCase()}`
+      const cached = await this.getCached(cacheKey)
+      if (cached !== undefined) return cached
+      return this.fetchAndCacheOwner(owner, cacheKey)
+    })
   }
 
   async getOwnerAvatars(owners: string[]): Promise<Record<string, string | null>> {
-    const unique = [...new Set(owners.map((o) => o.toLowerCase()))]
-    const result: Record<string, string | null> = {}
+    return perf.measure(`avatar-service:get-owner-avatars(${owners.length})`, async () => {
+      const unique = [...new Set(owners.map((o) => o.toLowerCase()))]
+      const result: Record<string, string | null> = {}
 
-    for (const owner of unique) {
-      result[owner] = await this.getOwnerAvatar(owner)
-    }
+      const entries = await Promise.allSettled(
+        unique.map(async (owner) => {
+          const avatar = await this.getOwnerAvatar(owner)
+          return [owner, avatar] as const
+        })
+      )
 
-    return result
+      for (const entry of entries) {
+        if (entry.status === 'fulfilled') {
+          result[entry.value[0]] = entry.value[1]
+        }
+      }
+
+      return result
+    })
   }
 
   private async fetchAndCacheOwner(owner: string, cacheKey: string): Promise<string | null> {
-    let avatarUrl: string | null = null
-
     try {
-      avatarUrl = await this.fetchGitHubOwnerAvatar(owner)
+      const avatarUrl = await this.fetchGitHubOwnerAvatar(owner)
+      if (!avatarUrl) {
+        await this.upsertCache(cacheKey, null)
+        return null
+      }
+      return this.downloadAndCache(cacheKey, avatarUrl)
     } catch {
       return null
     }
-
-    await db
-      .insert(schema.avatarCache)
-      .values({
-        email: cacheKey,
-        avatarUrl,
-        fetchedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: schema.avatarCache.email,
-        set: {
-          avatarUrl,
-          fetchedAt: new Date(),
-        },
-      })
-
-    return avatarUrl
   }
 
-  private fetchGitHubOwnerAvatar(owner: string): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      const url = `https://api.github.com/users/${encodeURIComponent(owner)}`
+  /**
+   * Download avatar image, save to disk, store as data URI in DB.
+   */
+  private async downloadAndCache(cacheKey: string, imageUrl: string): Promise<string | null> {
+    try {
+      const buffer = await perf.measure(`avatar-net:download(${cacheKey})`, () => this.downloadImage(imageUrl))
+      if (!buffer || buffer.length === 0) {
+        await this.upsertCache(cacheKey, null)
+        return null
+      }
 
+      // Save to disk as backup
+      const filePath = avatarFilePath(cacheKey)
+      fs.writeFileSync(filePath, buffer)
+
+      // Convert to data URI and store in DB
+      const dataUri = `data:image/png;base64,${buffer.toString('base64')}`
+      await this.upsertCache(cacheKey, dataUri)
+      return dataUri
+    } catch {
+      return null
+    }
+  }
+
+  private async upsertCache(key: string, avatarUrl: string | null): Promise<void> {
+    return perf.measure(`avatar-db:upsert(${key})`, () =>
+      db
+        .insert(schema.avatarCache)
+        .values({
+          email: key,
+          avatarUrl,
+          fetchedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: schema.avatarCache.email,
+          set: {
+            avatarUrl,
+            fetchedAt: new Date(),
+          },
+        })
+        .then(() => {})
+    )
+  }
+
+  /**
+   * Download an image URL and return the raw bytes.
+   */
+  private downloadImage(url: string): Promise<Buffer | null> {
+    return new Promise((resolve, reject) => {
       const request = net.request(url)
       request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
-      request.setHeader('Accept', 'application/vnd.github.v3+json')
 
-      let body = ''
+      const chunks: Buffer[] = []
 
       request.on('response', (response) => {
         if (response.statusCode !== 200) {
@@ -163,34 +221,63 @@ export class AvatarService {
           return
         }
 
-        response.on('data', (chunk) => {
-          body += chunk.toString()
+        response.on('data', (chunk: Buffer) => {
+          chunks.push(chunk)
         })
 
         response.on('end', () => {
-          try {
-            const data = JSON.parse(body)
-            if (data.avatar_url) {
-              resolve(data.avatar_url + '&size=64')
-            } else {
-              resolve(null)
-            }
-          } catch {
-            resolve(null)
-          }
+          resolve(Buffer.concat(chunks))
         })
       })
 
-      request.on('error', (err) => {
-        reject(err)
-      })
-
+      request.on('error', (err) => reject(err))
       request.end()
     })
   }
 
+  private fetchGitHubOwnerAvatar(owner: string): Promise<string | null> {
+    return perf.measure(`avatar-net:github-api(user:${owner})`, () =>
+      new Promise<string | null>((resolve, reject) => {
+        const url = `https://api.github.com/users/${encodeURIComponent(owner)}`
+
+        const request = net.request(url)
+        request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
+        request.setHeader('Accept', 'application/vnd.github.v3+json')
+
+        let body = ''
+
+        request.on('response', (response) => {
+          if (response.statusCode !== 200) {
+            resolve(null)
+            return
+          }
+
+          response.on('data', (chunk) => {
+            body += chunk.toString()
+          })
+
+          response.on('end', () => {
+            try {
+              const data = JSON.parse(body)
+              if (data.avatar_url) {
+                resolve(data.avatar_url + '&size=64')
+              } else {
+                resolve(null)
+              }
+            } catch {
+              resolve(null)
+            }
+          })
+        })
+
+        request.on('error', (err) => reject(err))
+        request.end()
+      })
+    )
+  }
+
   private fetchGitHubAvatar(email: string): Promise<string | null> {
-    return new Promise((resolve, reject) => {
+    return perf.measure(`avatar-net:github-api(search:${email})`, () => new Promise((resolve, reject) => {
       const url = `https://api.github.com/search/users?q=${encodeURIComponent(email)}+in:email&per_page=1`
 
       const request = net.request(url)
@@ -223,12 +310,9 @@ export class AvatarService {
         })
       })
 
-      request.on('error', (err) => {
-        reject(err)
-      })
-
+      request.on('error', (err) => reject(err))
       request.end()
-    })
+    }))
   }
 }
 

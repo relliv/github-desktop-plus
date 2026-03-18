@@ -1,8 +1,9 @@
 import { ipcMain } from 'electron'
 import { settingsService } from '../services/settings.service'
+import { perf } from '@shared/perf'
 
 export function registerSettingsHandlers() {
-  ipcMain.handle('settings:get', async (_, key: string) => {
+  perf.handle(ipcMain, 'settings:get', async (_, key: string) => {
     try {
       const value = await settingsService.getSetting(key)
       return { success: true, data: value }
@@ -12,7 +13,7 @@ export function registerSettingsHandlers() {
     }
   })
 
-  ipcMain.handle('settings:set', async (_, key: string, value: string) => {
+  perf.handle(ipcMain, 'settings:set', async (_, key: string, value: string) => {
     try {
       await settingsService.setSetting(key, value)
       return { success: true }

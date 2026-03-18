@@ -1,5 +1,6 @@
 import { db, schema } from '../db'
 import { eq } from 'drizzle-orm'
+import { perf } from '@shared/perf'
 
 export interface WindowBounds {
   x: number
@@ -14,44 +15,48 @@ const WINDOW_BOUNDS_KEY = 'window_bounds'
 export class SettingsService {
   // Get a setting by key
   async getSetting(key: string): Promise<string | null> {
-    try {
-      const [setting] = await db
-        .select()
-        .from(schema.appSettings)
-        .where(eq(schema.appSettings.key, key))
-        .limit(1)
+    return perf.measure(`settings-service:get(${key})`, async () => {
+      try {
+        const [setting] = await db
+          .select()
+          .from(schema.appSettings)
+          .where(eq(schema.appSettings.key, key))
+          .limit(1)
 
-      return setting?.value ?? null
-    } catch (error) {
-      console.error('Error fetching setting:', error)
-      return null
-    }
+        return setting?.value ?? null
+      } catch (error) {
+        console.error('Error fetching setting:', error)
+        return null
+      }
+    })
   }
 
   // Set a setting value
   async setSetting(key: string, value: string): Promise<void> {
-    try {
-      const existing = await this.getSetting(key)
+    return perf.measure(`settings-service:set(${key})`, async () => {
+      try {
+        const existing = await this.getSetting(key)
 
-      if (existing !== null) {
-        await db
-          .update(schema.appSettings)
-          .set({
+        if (existing !== null) {
+          await db
+            .update(schema.appSettings)
+            .set({
+              value,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.appSettings.key, key))
+        } else {
+          await db.insert(schema.appSettings).values({
+            key,
             value,
             updatedAt: new Date(),
           })
-          .where(eq(schema.appSettings.key, key))
-      } else {
-        await db.insert(schema.appSettings).values({
-          key,
-          value,
-          updatedAt: new Date(),
-        })
+        }
+      } catch (error) {
+        console.error('Error setting value:', error)
+        throw error
       }
-    } catch (error) {
-      console.error('Error setting value:', error)
-      throw error
-    }
+    })
   }
 
   // Get saved window bounds

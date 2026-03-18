@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { RepositoryInfo } from '../types/git.types'
+import { perf } from '../perf'
 
 export interface GitStatus {
   modified: string[]
@@ -66,6 +67,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
 
   // Actions
   const loadRepositories = async () => {
+    const endLoad = perf.start('store:load-repositories')
     isLoading.value = true
     error.value = null
 
@@ -80,6 +82,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
       console.error('Failed to load repositories:', err)
     } finally {
       isLoading.value = false
+      endLoad()
     }
   }
 
@@ -189,13 +192,31 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     }
   }
 
-  const setCurrentRepository = async (repo: RepositoryInfo | null) => {
+  // Guards to prevent duplicate concurrent operations
+  let _statusInFlight: string | null = null
+  let _branchesInFlight: string | null = null
+  let _scanInFlight: number | null = null
+
+  const setCurrentRepository = (repo: RepositoryInfo | null) => {
+    // Skip if already set to the same repo
+    if (repo?.id === currentRepository.value?.id && repo !== null) return
+
     currentRepository.value = repo
     if (repo) {
-      await window.api.repository.update(repo.id, { lastOpenedAt: new Date() })
-      await Promise.all([fetchGitStatus(), fetchBranches()])
-      // Trigger background commit scan (non-blocking)
-      window.api.commits.scan(repo.id, repo.path).catch(console.error)
+      perf.mark(`store:set-current-repo(${repo.name})`)
+
+      // Fire all background operations in parallel — don't block UI, don't chain
+      window.api.repository.update(repo.id, { lastOpenedAt: new Date() }).catch(console.error)
+      fetchGitStatus().catch(console.error)
+      fetchBranches().catch(console.error)
+
+      // Deduplicate commit scan
+      if (_scanInFlight !== repo.id) {
+        _scanInFlight = repo.id
+        window.api.commits.scan(repo.id, repo.path)
+          .catch(console.error)
+          .finally(() => { _scanInFlight = null })
+      }
     } else {
       gitStatus.value = null
       branches.value = null
@@ -204,50 +225,73 @@ export const useRepositoriesStore = defineStore('repositories', () => {
 
   const fetchGitStatus = async () => {
     if (!currentRepository.value) return
+    const repoPath = currentRepository.value.path
 
-    try {
-      gitStatus.value = await window.api.git.getStatus(
-        currentRepository.value.path
-      )
-    } catch (err) {
-      console.error('Failed to fetch git status:', err)
-      gitStatus.value = null
-    }
+    // Skip if already fetching status for this repo
+    if (_statusInFlight === repoPath) return
+    _statusInFlight = repoPath
+
+    return perf.measure('store:fetch-git-status', async () => {
+      try {
+        const result = await window.api.git.getStatus(repoPath)
+        // Only apply if still the current repo (user may have switched)
+        if (currentRepository.value?.path === repoPath) {
+          gitStatus.value = result
+        }
+      } catch (err) {
+        console.error('Failed to fetch git status:', err)
+        if (currentRepository.value?.path === repoPath) {
+          gitStatus.value = null
+        }
+      } finally {
+        if (_statusInFlight === repoPath) _statusInFlight = null
+      }
+    })
   }
 
   const fetchBranches = async () => {
     if (!currentRepository.value) return
+    const repoPath = currentRepository.value.path
 
-    try {
-      const result = await window.api.git.getBranches(
-        currentRepository.value.path
-      )
-      branches.value = {
-        current: result.current,
-        local: result.local,
-        remote: result.remote || [],
-      }
+    // Skip if already fetching branches for this repo
+    if (_branchesInFlight === repoPath) return
+    _branchesInFlight = repoPath
 
-      // Update current branch in repository if it changed and persist to DB
-      if (currentRepository.value.currentBranch !== result.current) {
-        const repoId = currentRepository.value.id
-        const index = repositories.value.findIndex((r) => r.id === repoId)
-        if (index !== -1) {
-          // Persist to database
-          await window.api.repository.updateBranch(repoId, result.current)
+    return perf.measure('store:fetch-branches', async () => {
+      try {
+        const result = await window.api.git.getBranches(repoPath)
+        // Only apply if still the current repo
+        if (currentRepository.value?.path !== repoPath) return
 
-          // Update local state
-          repositories.value[index] = {
-            ...repositories.value[index],
-            currentBranch: result.current,
-          }
-          currentRepository.value = repositories.value[index]
+        branches.value = {
+          current: result.current,
+          local: result.local,
+          remote: result.remote || [],
         }
+
+        // Update current branch in repository if it changed and persist to DB
+        if (currentRepository.value.currentBranch !== result.current) {
+          const repoId = currentRepository.value.id
+          const index = repositories.value.findIndex((r) => r.id === repoId)
+          if (index !== -1) {
+            await window.api.repository.updateBranch(repoId, result.current)
+            repositories.value[index] = {
+              ...repositories.value[index],
+              currentBranch: result.current,
+            }
+            // Update in place — don't reassign currentRepository to avoid re-triggering watchers
+            currentRepository.value.currentBranch = result.current
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch branches:', err)
+        if (currentRepository.value?.path === repoPath) {
+          branches.value = null
+        }
+      } finally {
+        if (_branchesInFlight === repoPath) _branchesInFlight = null
       }
-    } catch (err) {
-      console.error('Failed to fetch branches:', err)
-      branches.value = null
-    }
+    })
   }
 
   const updateRepositoryBranch = async (id: number, branch: string) => {
@@ -274,8 +318,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     error.value = null
   }
 
-  // Initialize - load repositories from database
-  loadRepositories()
+  // Repositories are loaded on-demand by components calling loadRepositories()
 
   return {
     // State

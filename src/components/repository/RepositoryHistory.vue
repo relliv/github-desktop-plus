@@ -82,7 +82,7 @@
         >
           <!-- List view -->
           <TooltipProvider v-if="viewMode === 'list'" :delay-duration="isScrolling ? 999999 : 400" :skip-delay-duration="0">
-            <TooltipRoot v-for="commit in commits" :key="commit.hash" :open="isScrolling ? false : undefined">
+            <TooltipRoot v-for="commit in commits" :key="commit.hash" :open="isScrolling ? false : undefined" @update:open="(open) => open && (hoveredCommit = commit.hash)">
               <TooltipTrigger as-child>
                 <button
                   @click="selectCommit(commit)"
@@ -132,7 +132,7 @@
                   </div>
                 </button>
               </TooltipTrigger>
-              <TooltipPortal v-if="!isScrolling">
+              <TooltipPortal v-if="!isScrolling && hoveredCommit === commit.hash">
                 <TooltipContent
                   side="right"
                   :side-offset="8"
@@ -234,7 +234,7 @@
                     </div>
 
                     <!-- Commit content with tooltip -->
-                    <TooltipRoot :open="isScrolling ? false : undefined">
+                    <TooltipRoot :open="isScrolling ? false : undefined" @update:open="(open) => open && (hoveredCommit = commit.hash)">
                       <TooltipTrigger as-child>
                         <button
                           @click="selectCommit(commit)"
@@ -286,7 +286,7 @@
                           </div>
                         </button>
                       </TooltipTrigger>
-                      <TooltipPortal v-if="!isScrolling">
+                      <TooltipPortal v-if="!isScrolling && hoveredCommit === commit.hash">
                         <TooltipContent
                           side="right"
                           :side-offset="8"
@@ -460,12 +460,17 @@
 
         <div
           v-else-if="fileDiff"
-          class="flex-1 min-h-0 overflow-auto bg-muted/30"
+          class="flex-1 min-h-0 overflow-auto"
           v-lenis
         >
-          <pre
-            class="text-xs font-mono p-4 leading-relaxed"
-          ><code>{{ fileDiff }}</code></pre>
+          <NxDiffViewer
+            :diff="fileDiff"
+            :theme="codeViewerTheme"
+            :language="selectedFileLanguage"
+            :show-header="false"
+            :file-extension="selectedFileExtension"
+            border-style="none"
+          />
         </div>
 
         <div v-else class="flex-1 flex items-center justify-center">
@@ -480,9 +485,6 @@
                   ? "Select a file to view diff"
                   : "Select a commit to get started"
               }}
-            </p>
-            <p class="text-xs text-muted-foreground mt-1">
-              Code diff viewer coming soon
             </p>
           </div>
         </div>
@@ -541,7 +543,9 @@ import {
   CalendarDays,
 } from "lucide-vue-next";
 import NumberFlow from "@number-flow/vue";
+import { DiffViewer as NxDiffViewer } from "@ngeenx/nx-vue-code-viewer";
 import { useRepositoriesStore } from "@/shared/stores";
+import { useAppStore } from "@/stores/app.store";
 import { useToast } from "@/composables/useToast";
 
 interface CommitRecord {
@@ -563,8 +567,32 @@ interface CommitFile {
 }
 
 const repositoriesStore = useRepositoriesStore();
+const appStore = useAppStore();
 const { toast } = useToast();
 const currentRepository = computed(() => repositoriesStore.currentRepository);
+
+const codeViewerTheme = computed(() => (appStore.isDark ? "dark" : "light"));
+
+const selectedFileExtension = computed(() => {
+  if (!selectedFile.value) return undefined;
+  const parts = selectedFile.value.file.split(".");
+  return parts.length > 1 ? parts.pop() : undefined;
+});
+
+const selectedFileLanguage = computed(() => {
+  const ext = selectedFileExtension.value;
+  if (!ext) return "plaintext";
+  const map: Record<string, string> = {
+    ts: "typescript", tsx: "tsx", js: "javascript", jsx: "jsx",
+    vue: "vue", css: "css", scss: "scss", html: "html",
+    json: "json", md: "markdown", py: "python", rs: "rust",
+    go: "go", java: "java", rb: "ruby", sh: "bash",
+    yml: "yaml", yaml: "yaml", toml: "toml", xml: "xml",
+    sql: "sql", swift: "swift", kt: "kotlin", dart: "dart",
+    c: "c", cpp: "cpp", h: "c", hpp: "cpp",
+  };
+  return map[ext] || "plaintext";
+});
 
 const commits = ref<CommitRecord[]>([]);
 const totalCommits = ref(0);
@@ -590,6 +618,7 @@ const commitListRef = ref<HTMLElement | null>(null);
 const avatarMap = ref<Record<string, string | null>>({});
 
 const copiedHash = ref<string | null>(null);
+const hoveredCommit = ref<string | null>(null);
 
 // Dismiss tooltips on scroll
 const isScrolling = ref(false);
@@ -640,7 +669,7 @@ function copyHash(hash: string) {
   });
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 20;
 let currentOffset = 0;
 let hasMore = true;
 
@@ -964,12 +993,18 @@ function getDateLabel(date: string | Date): string {
   });
 }
 
-function getDateCommitCount(dateLabel: string): number {
-  let count = 0;
+// Pre-computed date commit counts to avoid O(n²) per-render
+const dateCommitCounts = computed(() => {
+  const counts: Record<string, number> = {};
   for (const c of commits.value) {
-    if (getDateLabel(c.date) === dateLabel) count++;
+    const label = getDateLabel(c.date);
+    counts[label] = (counts[label] || 0) + 1;
   }
-  return count;
+  return counts;
+});
+
+function getDateCommitCount(dateLabel: string): number {
+  return dateCommitCounts.value[dateLabel] || 0;
 }
 
 function getDaysAgo(date: string | Date): string {

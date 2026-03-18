@@ -1,12 +1,20 @@
 import { ipcMain, dialog } from 'electron'
 import { repositoryService } from '../services/repository.service'
+import { perf } from '@shared/perf'
 
 export function registerRepositoryHandlers() {
-  // Refresh remote URLs on startup (for existing repositories)
-  repositoryService.refreshRemoteUrls().catch(console.error)
+  // Manual refresh remote URLs — triggered by user via context menu
+  perf.handle(ipcMain, 'repository:refresh-remotes', async () => {
+    try {
+      await repositoryService.refreshRemoteUrls()
+      return { success: true }
+    } catch (error) {
+      console.error('Error in repository:refresh-remotes:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
 
-  // Get all repositories
-  ipcMain.handle('repository:list', async () => {
+  perf.handle(ipcMain, 'repository:list', async () => {
     try {
       const repositories = await repositoryService.getAllRepositories()
       return { success: true, data: repositories }
@@ -16,8 +24,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  // Add repository
-  ipcMain.handle('repository:add', async (_, repoPath: string) => {
+  perf.handle(ipcMain, 'repository:add', async (_, repoPath: string) => {
     try {
       const repository = await repositoryService.addRepository(repoPath)
       return { success: true, data: repository }
@@ -27,8 +34,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  // Open repository dialog
-  ipcMain.handle('repository:open-dialog', async () => {
+  perf.handle(ipcMain, 'repository:open-dialog', async () => {
     try {
       const result = await dialog.showOpenDialog({
         properties: ['openDirectory'],
@@ -47,8 +53,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  // Update repository
-  ipcMain.handle('repository:update', async (_, id: number, updates: any) => {
+  perf.handle(ipcMain, 'repository:update', async (_, id: number, updates: any) => {
     try {
       const repository = await repositoryService.updateRepository(id, updates)
       return { success: true, data: repository }
@@ -58,8 +63,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  // Toggle favorite
-  ipcMain.handle('repository:toggle-favorite', async (_, id: number) => {
+  perf.handle(ipcMain, 'repository:toggle-favorite', async (_, id: number) => {
     try {
       const repository = await repositoryService.toggleFavorite(id)
       return { success: true, data: repository }
@@ -69,8 +73,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  // Delete repository
-  ipcMain.handle('repository:delete', async (_, id: number) => {
+  perf.handle(ipcMain, 'repository:delete', async (_, id: number) => {
     try {
       await repositoryService.deleteRepository(id)
       return { success: true }
@@ -80,8 +83,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  // Update branch
-  ipcMain.handle('repository:update-branch', async (_, id: number, branch: string) => {
+  perf.handle(ipcMain, 'repository:update-branch', async (_, id: number, branch: string) => {
     try {
       const repository = await repositoryService.updateRepositoryBranch(id, branch)
       return { success: true, data: repository }

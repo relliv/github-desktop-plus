@@ -2,55 +2,38 @@ import { ipcMain, IpcMainInvokeEvent } from 'electron'
 import simpleGit, { SimpleGit, SimpleGitProgressEvent } from 'simple-git'
 import path from 'path'
 import fs from 'fs/promises'
-import { 
-  CloneOptions, 
+import {
+  CloneOptions,
   CloneProgress,
   CreateRepositoryOptions,
   RepositoryValidation
 } from '../../src/shared/types/git.types'
+import { perf } from '@shared/perf'
 
 const git: SimpleGit = simpleGit()
 
 export function registerGitHandlers() {
-  // Open repository
-  ipcMain.handle('git:open-repository', async (_, repoPath: string) => {
+  // Open repository — lightweight: only reads branch + remote, no git status
+  perf.handle(ipcMain, 'git:open-repository', async (_, repoPath: string) => {
     try {
-      // Check if path exists
       await fs.access(repoPath)
-      
-      // Check if it's a git repository
-      const gitDir = path.join(repoPath, '.git')
-      await fs.access(gitDir)
-      
-      // Get repository info
-      const repoGit = simpleGit(repoPath)
-      const status = await repoGit.status()
-      const remotes = await repoGit.getRemotes(true)
-      const branches = await repoGit.branchLocal()
+      await fs.access(path.join(repoPath, '.git'))
 
-      // Serialize to plain objects to avoid IPC cloning issues
-      const result = {
+      const repoGit = simpleGit(repoPath)
+
+      // Only fetch lightweight data (branch + remote) — status is fetched separately
+      const [branchRaw, remotes] = await Promise.all([
+        repoGit.raw(['branch', '--show-current']),
+        repoGit.getRemotes(true),
+      ])
+
+      return {
         success: true,
         name: path.basename(repoPath),
         path: repoPath,
-        currentBranch: String(branches.current || ''),
+        currentBranch: branchRaw.trim() || '',
         remoteUrl: remotes[0]?.refs?.fetch ? String(remotes[0].refs.fetch) : null,
-        status: {
-          modified: [...status.modified],
-          created: [...status.created],
-          deleted: [...status.deleted],
-          renamed: status.renamed.map(r => ({ from: String(r.from), to: String(r.to) })),
-          conflicted: [...status.conflicted],
-          staged: [...status.staged],
-          ahead: Number(status.ahead) || 0,
-          behind: Number(status.behind) || 0,
-          current: status.current ? String(status.current) : null,
-          tracking: status.tracking ? String(status.tracking) : null,
-          isClean: Boolean(status.isClean())
-        }
       }
-
-      return JSON.parse(JSON.stringify(result))
     } catch (error) {
       return {
         success: false,
@@ -58,47 +41,101 @@ export function registerGitHandlers() {
       }
     }
   })
-  
-  // Get repository status
-  ipcMain.handle('git:get-status', async (_, repoPath: string) => {
+
+  // Get repository status — optimized for large repos
+  perf.handle(ipcMain, 'git:get-status', async (_, repoPath: string) => {
     try {
       const repoGit = simpleGit(repoPath)
-      const status = await repoGit.status()
 
-      return JSON.parse(JSON.stringify({
-        modified: status.modified,
-        added: [...status.created, ...status.not_added],
-        deleted: status.deleted,
-        renamed: status.renamed,
-        conflicted: status.conflicted,
-        staged: status.staged,
-        ahead: status.ahead,
-        behind: status.behind
-      }))
+      // Run porcelain status + ahead/behind in parallel
+      const [porcelainOutput, aheadBehind] = await Promise.all([
+        // --porcelain=v1: machine-readable, fast
+        // --no-renames: skip expensive rename detection
+        // -unormal: show untracked files but don't recurse into untracked dirs
+        repoGit.raw(['status', '--porcelain=v1', '--no-renames', '-unormal']),
+        // Get ahead/behind from status --branch --porcelain (first line only)
+        repoGit.raw(['status', '--branch', '--porcelain=v1', '--no-renames', '-unormal']).then(out => {
+          const firstLine = out.split('\n')[0] || ''
+          const abMatch = firstLine.match(/\[ahead (\d+)(?:, behind (\d+))?\]|\[behind (\d+)\]/)
+          return {
+            ahead: parseInt(abMatch?.[1] || '0') || 0,
+            behind: parseInt(abMatch?.[2] || abMatch?.[3] || '0') || 0,
+          }
+        }),
+      ])
+
+      const modified: string[] = []
+      const added: string[] = []
+      const deleted: string[] = []
+      const renamed: Array<{ from: string; to: string }> = []
+      const conflicted: string[] = []
+      const staged: string[] = []
+
+      for (const line of porcelainOutput.split('\n')) {
+        if (!line || line.length < 4) continue
+        const x = line[0] // staged
+        const y = line[1] // working tree
+        const file = line.slice(3)
+
+        // Staged changes
+        if (x === 'M' || x === 'A' || x === 'D' || x === 'R') staged.push(file)
+
+        // Working tree changes
+        if (y === 'M') modified.push(file)
+        else if (y === 'D') deleted.push(file)
+        else if (x === '?' && y === '?') added.push(file)
+        else if (x === 'U' || y === 'U' || (x === 'A' && y === 'A') || (x === 'D' && y === 'D')) conflicted.push(file)
+        else if (x === 'A' && y === ' ') { /* staged only */ }
+        else if (x === 'M' && y === ' ') { /* staged only */ }
+        else if (x === 'D' && y === ' ') { /* staged only */ }
+      }
+
+      return { modified, added, deleted, renamed, conflicted, staged, ...aheadBehind }
     } catch (error) {
       throw new Error(`Failed to get status: ${error}`)
     }
   })
-  
-  // Get branches
-  ipcMain.handle('git:get-branches', async (_, repoPath: string) => {
+
+  // Get branches — optimized: single call, parse locally
+  perf.handle(ipcMain, 'git:get-branches', async (_, repoPath: string) => {
     try {
       const repoGit = simpleGit(repoPath)
-      const localBranches = await repoGit.branchLocal()
-      const remoteBranches = await repoGit.branch(['-r'])
-      
-      return JSON.parse(JSON.stringify({
-        current: localBranches.current,
-        local: localBranches.all,
-        remote: remoteBranches.all.filter(b => !b.includes('HEAD'))
-      }))
+
+      // Run local + remote branch queries in parallel
+      const [localRaw, remoteRaw] = await Promise.all([
+        repoGit.raw(['branch', '--no-color']),
+        repoGit.raw(['branch', '-r', '--no-color']),
+      ])
+
+      let current = ''
+      const local: string[] = []
+      for (const line of localRaw.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed) continue
+        if (line.startsWith('* ')) {
+          current = trimmed.slice(2)
+          local.push(current)
+        } else {
+          local.push(trimmed)
+        }
+      }
+
+      const remote: string[] = []
+      for (const line of remoteRaw.split('\n')) {
+        const trimmed = line.trim()
+        if (trimmed && !trimmed.includes('HEAD')) {
+          remote.push(trimmed)
+        }
+      }
+
+      return { current, local, remote }
     } catch (error) {
       throw new Error(`Failed to get branches: ${error}`)
     }
   })
-  
+
   // Checkout branch
-  ipcMain.handle('git:checkout', async (_, repoPath: string, branch: string) => {
+  perf.handle(ipcMain, 'git:checkout', async (_, repoPath: string, branch: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.checkout(branch)
@@ -107,9 +144,9 @@ export function registerGitHandlers() {
       throw new Error(`Failed to checkout: ${error}`)
     }
   })
-  
+
   // Create branch
-  ipcMain.handle('git:create-branch', async (_, repoPath: string, branchName: string) => {
+  perf.handle(ipcMain, 'git:create-branch', async (_, repoPath: string, branchName: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.checkoutLocalBranch(branchName)
@@ -118,9 +155,9 @@ export function registerGitHandlers() {
       throw new Error(`Failed to create branch: ${error}`)
     }
   })
-  
+
   // Stage files
-  ipcMain.handle('git:stage', async (_, repoPath: string, files: string[]) => {
+  perf.handle(ipcMain, 'git:stage', async (_, repoPath: string, files: string[]) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.add(files)
@@ -129,9 +166,9 @@ export function registerGitHandlers() {
       throw new Error(`Failed to stage files: ${error}`)
     }
   })
-  
+
   // Unstage files
-  ipcMain.handle('git:unstage', async (_, repoPath: string, files: string[]) => {
+  perf.handle(ipcMain, 'git:unstage', async (_, repoPath: string, files: string[]) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.reset(['HEAD', ...files])
@@ -140,13 +177,13 @@ export function registerGitHandlers() {
       throw new Error(`Failed to unstage files: ${error}`)
     }
   })
-  
+
   // Commit
-  ipcMain.handle('git:commit', async (_, repoPath: string, message: string) => {
+  perf.handle(ipcMain, 'git:commit', async (_, repoPath: string, message: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       const result = await repoGit.commit(message)
-      return { 
+      return {
         success: true,
         commit: result.commit,
         summary: result.summary
@@ -155,9 +192,9 @@ export function registerGitHandlers() {
       throw new Error(`Failed to commit: ${error}`)
     }
   })
-  
+
   // Push
-  ipcMain.handle('git:push', async (_, repoPath: string) => {
+  perf.handle(ipcMain, 'git:push', async (_, repoPath: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.push()
@@ -166,13 +203,13 @@ export function registerGitHandlers() {
       throw new Error(`Failed to push: ${error}`)
     }
   })
-  
+
   // Pull
-  ipcMain.handle('git:pull', async (_, repoPath: string) => {
+  perf.handle(ipcMain, 'git:pull', async (_, repoPath: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       const result = await repoGit.pull()
-      return { 
+      return {
         success: true,
         summary: result.summary
       }
@@ -180,9 +217,9 @@ export function registerGitHandlers() {
       throw new Error(`Failed to pull: ${error}`)
     }
   })
-  
+
   // Fetch
-  ipcMain.handle('git:fetch', async (_, repoPath: string) => {
+  perf.handle(ipcMain, 'git:fetch', async (_, repoPath: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.fetch()
@@ -193,7 +230,7 @@ export function registerGitHandlers() {
   })
 
   // Stash
-  ipcMain.handle('git:stash', async (_, repoPath: string, message?: string) => {
+  perf.handle(ipcMain, 'git:stash', async (_, repoPath: string, message?: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       if (message) {
@@ -208,7 +245,7 @@ export function registerGitHandlers() {
   })
 
   // Stash pop
-  ipcMain.handle('git:stash-pop', async (_, repoPath: string) => {
+  perf.handle(ipcMain, 'git:stash-pop', async (_, repoPath: string) => {
     try {
       const repoGit = simpleGit(repoPath)
       await repoGit.stash(['pop'])
@@ -217,9 +254,9 @@ export function registerGitHandlers() {
       throw new Error(`Failed to pop stash: ${error}`)
     }
   })
-  
+
   // Get commit history
-  ipcMain.handle('git:get-log', async (_, repoPath: string, limit: number = 50) => {
+  perf.handle(ipcMain, 'git:get-log', async (_, repoPath: string, limit: number = 50) => {
     try {
       const repoGit = simpleGit(repoPath)
       const log = await repoGit.log(['-n', limit.toString()])
@@ -228,39 +265,27 @@ export function registerGitHandlers() {
       throw new Error(`Failed to get log: ${error}`)
     }
   })
-  
+
   // Clone repository with progress
-  ipcMain.handle('git:clone', async (event: IpcMainInvokeEvent, options: CloneOptions) => {
+  perf.handle(ipcMain, 'git:clone', async (event: IpcMainInvokeEvent, options: CloneOptions) => {
     try {
-      // Validate directory doesn't exist or is empty
       try {
         const files = await fs.readdir(options.directory)
         if (files.length > 0) {
-          return {
-            success: false,
-            error: 'Directory is not empty'
-          }
+          return { success: false, error: 'Directory is not empty' }
         }
       } catch {
         // Directory doesn't exist, which is fine
       }
 
-      // Create directory if it doesn't exist
       await fs.mkdir(options.directory, { recursive: true })
 
-      // Parse progress from git output
       const parseProgress = (data: SimpleGitProgressEvent): CloneProgress => {
         let stage: CloneProgress['stage'] = 'receiving'
-        
-        if (data.stage.includes('Counting objects')) {
-          stage = 'counting'
-        } else if (data.stage.includes('Compressing objects')) {
-          stage = 'compressing'
-        } else if (data.stage.includes('Receiving objects')) {
-          stage = 'receiving'
-        } else if (data.stage.includes('Resolving deltas')) {
-          stage = 'resolving'
-        }
+        if (data.stage.includes('Counting objects')) stage = 'counting'
+        else if (data.stage.includes('Compressing objects')) stage = 'compressing'
+        else if (data.stage.includes('Receiving objects')) stage = 'receiving'
+        else if (data.stage.includes('Resolving deltas')) stage = 'resolving'
 
         return {
           stage,
@@ -271,12 +296,10 @@ export function registerGitHandlers() {
         }
       }
 
-      // Configure git with progress handler
       const progressGit = simpleGit({
         progress: (data: SimpleGitProgressEvent) => {
           try {
             const progress = parseProgress(data)
-            // JSON round-trip to ensure plain serializable object
             event.sender.send('git:clone:progress', JSON.parse(JSON.stringify(progress)))
           } catch {
             // Ignore progress send failures
@@ -284,95 +307,52 @@ export function registerGitHandlers() {
         }
       })
 
-      // Build clone options
       const cloneOptions: string[] = []
-      if (options.branch) {
-        cloneOptions.push('--branch', options.branch)
-      }
-      if (options.depth) {
-        cloneOptions.push('--depth', options.depth.toString())
-      }
+      if (options.branch) cloneOptions.push('--branch', options.branch)
+      if (options.depth) cloneOptions.push('--depth', options.depth.toString())
 
-      // Handle authentication
       let cloneUrl = options.url
       if (options.username && options.password) {
-        // For HTTPS authentication
         cloneUrl = options.url.replace(
           /^https:\/\//,
           `https://${encodeURIComponent(options.username)}:${encodeURIComponent(options.password)}@`
         )
       }
 
-      // Clone the repository
       await progressGit.clone(cloneUrl, options.directory, cloneOptions)
 
-      // Send completion progress
       event.sender.send('git:clone:progress', {
-        stage: 'complete',
-        percent: 100,
-        total: 100,
-        transferred: 100,
+        stage: 'complete', percent: 100, total: 100, transferred: 100,
         message: 'Clone completed successfully'
       })
 
-      return {
-        success: true,
-        path: options.directory
-      }
+      return { success: true, path: options.directory }
     } catch (error) {
-      // Send error progress
       event.sender.send('git:clone:progress', {
-        stage: 'error',
-        percent: 0,
-        total: 0,
-        transferred: 0,
+        stage: 'error', percent: 0, total: 0, transferred: 0,
         message: error instanceof Error ? error.message : 'Clone failed'
       })
-
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Clone failed'
-      }
+      return { success: false, error: error instanceof Error ? error.message : 'Clone failed' }
     }
   })
-  
+
   // Validate repository
-  ipcMain.handle('git:validate', async (_: IpcMainInvokeEvent, repoPath: string): Promise<RepositoryValidation> => {
+  perf.handle(ipcMain, 'git:validate', async (_: IpcMainInvokeEvent, repoPath: string): Promise<RepositoryValidation> => {
     try {
       const repoGit = simpleGit(repoPath)
-      
-      // Check if it's a git repository
       const isRepo = await repoGit.checkIsRepo()
       if (!isRepo) {
-        return {
-          isValid: false,
-          isGitRepository: false,
-          hasRemote: false,
-          error: 'Not a git repository'
-        }
+        return { isValid: false, isGitRepository: false, hasRemote: false, error: 'Not a git repository' }
       }
-
-      // Check for remotes
       const remotes = await repoGit.getRemotes(true)
-      const hasRemote = remotes.length > 0
-
-      return {
-        isValid: true,
-        isGitRepository: true,
-        hasRemote
-      }
+      return { isValid: true, isGitRepository: true, hasRemote: remotes.length > 0 }
     } catch (error) {
-      return {
-        isValid: false,
-        isGitRepository: false,
-        hasRemote: false,
-        error: error instanceof Error ? error.message : 'Validation failed'
-      }
+      return { isValid: false, isGitRepository: false, hasRemote: false, error: error instanceof Error ? error.message : 'Validation failed' }
     }
   })
-  
+
   // Get current branch
-  ipcMain.handle('git:getCurrentBranch', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
+  perf.handle(ipcMain, 'git:getCurrentBranch', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
     try {
       const repoGit = simpleGit(repoPath)
       const branches = await repoGit.branchLocal()
@@ -383,7 +363,7 @@ export function registerGitHandlers() {
   })
 
   // Get remote URL
-  ipcMain.handle('git:getRemoteUrl', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
+  perf.handle(ipcMain, 'git:getRemoteUrl', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
     try {
       const repoGit = simpleGit(repoPath)
       const remotes = await repoGit.getRemotes(true)
@@ -394,51 +374,55 @@ export function registerGitHandlers() {
     }
   })
 
-  // Create new repository
-  ipcMain.handle('git:create', async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
+  // Get diff for a working tree file (unstaged changes)
+  perf.handle(ipcMain, 'git:diff-file', async (_, repoPath: string, filePath: string) => {
     try {
-      // Create directory
-      await fs.mkdir(options.path, { recursive: true })
+      const repoGit = simpleGit(repoPath)
+      const diff = await repoGit.diff([filePath])
+      return { success: true, data: diff }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to get diff' }
+    }
+  })
 
-      // Initialize git repository
+  // Get diff for a staged file
+  perf.handle(ipcMain, 'git:diff-staged', async (_, repoPath: string, filePath: string) => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      const diff = await repoGit.diff(['--cached', filePath])
+      return { success: true, data: diff }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to get staged diff' }
+    }
+  })
+
+  // Create new repository
+  perf.handle(ipcMain, 'git:create', async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
+    try {
+      await fs.mkdir(options.path, { recursive: true })
       const repoGit = simpleGit(options.path)
       await repoGit.init()
 
-      // Create initial files
       if (options.initializeWithReadme) {
         const readmePath = path.join(options.path, 'README.md')
-        const readmeContent = `# ${options.name}\n\n${options.description || 'A new repository'}\n`
-        await fs.writeFile(readmePath, readmeContent)
+        await fs.writeFile(readmePath, `# ${options.name}\n\n${options.description || 'A new repository'}\n`)
         await repoGit.add('README.md')
       }
-
       if (options.gitignoreTemplate) {
-        const gitignorePath = path.join(options.path, '.gitignore')
-        await fs.writeFile(gitignorePath, options.gitignoreTemplate)
+        await fs.writeFile(path.join(options.path, '.gitignore'), options.gitignoreTemplate)
         await repoGit.add('.gitignore')
       }
-
       if (options.license) {
-        const licensePath = path.join(options.path, 'LICENSE')
-        await fs.writeFile(licensePath, options.license)
+        await fs.writeFile(path.join(options.path, 'LICENSE'), options.license)
         await repoGit.add('LICENSE')
       }
 
-      // Create initial commit if files were added
       const status = await repoGit.status()
-      if (status.files.length > 0) {
-        await repoGit.commit('Initial commit')
-      }
+      if (status.files.length > 0) await repoGit.commit('Initial commit')
 
-      return {
-        success: true,
-        path: options.path
-      }
+      return { success: true, path: options.path }
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to create repository'
-      }
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to create repository' }
     }
   })
 }

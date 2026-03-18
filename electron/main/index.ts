@@ -4,6 +4,16 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import { settingsService, WindowBounds } from '../../src/main/services/settings.service'
+import { perf } from '@shared/perf'
+
+perf.mark('main:module-load')
+
+// Forward renderer [perf] logs to terminal
+ipcMain.on('main-process-message', (_, msg) => {
+  if (typeof msg === 'string' && msg.startsWith('[perf]')) {
+    console.log(msg.replace('[perf]', '[perf:renderer]'))
+  }
+})
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -71,8 +81,9 @@ function saveWindowBounds() {
 }
 
 async function createWindow() {
+  const endCreateWindow = perf.start('main:create-window')
   // Load saved bounds or use defaults
-  const savedBounds = await settingsService.getWindowBounds()
+  const savedBounds = await perf.measure('main:load-window-bounds', () => settingsService.getWindowBounds())
   const bounds = savedBounds ?? getDefaultWindowBounds()
 
   win = new BrowserWindow({
@@ -104,8 +115,11 @@ async function createWindow() {
     win.maximize()
   }
 
+  endCreateWindow()
+
   // Show window when ready
   win.once('ready-to-show', () => {
+    perf.mark('main:window-ready-to-show')
     win?.show()
   })
 
@@ -116,14 +130,14 @@ async function createWindow() {
 
   if (VITE_DEV_SERVER_URL) { // #298
     win.loadURL(VITE_DEV_SERVER_URL)
-    // Open devTool if the app is not packaged
-    win.webContents.openDevTools()
+    // DevTools: open manually with Cmd+Option+I to avoid blocking renderer IPC
   } else {
     win.loadFile(indexHtml)
   }
 
   // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
+    perf.mark('main:renderer-did-finish-load')
     win?.webContents.send('main-process-message', new Date().toLocaleString())
   })
 
@@ -141,23 +155,59 @@ async function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  perf.mark('main:app-ready')
   createWindow()
-  
-  // Register repository handlers after app is ready
-  const { registerRepositoryHandlers } = await import('../../src/main/ipc/repository.handler')
+
+  // Register all IPC handlers in parallel
+  const endHandlers = perf.start('main:register-ipc-handlers')
+  const [
+    { registerRepositoryHandlers },
+    { registerCommitHistoryHandlers },
+    { registerAvatarHandlers },
+    { registerSettingsHandlers },
+  ] = await Promise.all([
+    import('../../src/main/ipc/repository.handler'),
+    import('../../src/main/ipc/commit-history.handler'),
+    import('../../src/main/ipc/avatar.handler'),
+    import('../../src/main/ipc/settings.handler'),
+  ])
+
   registerRepositoryHandlers()
-
-  // Register commit history handlers
-  const { registerCommitHistoryHandlers } = await import('../../src/main/ipc/commit-history.handler')
   registerCommitHistoryHandlers()
-
-  // Register avatar handlers
-  const { registerAvatarHandlers } = await import('../../src/main/ipc/avatar.handler')
   registerAvatarHandlers()
-
-  // Register settings handlers
-  const { registerSettingsHandlers } = await import('../../src/main/ipc/settings.handler')
   registerSettingsHandlers()
+  endHandlers()
+  perf.mark('main:all-handlers-registered')
+
+  // Pre-fetch ALL sidebar data (repos + avatars) and push to renderer immediately.
+  // This runs at ~130ms, well before the renderer starts (~3.5s).
+  // The data sits in the IPC buffer and is available instantly when the preload script runs.
+  const { repositoryService } = await import('../../src/main/services/repository.service')
+  const { avatarService } = await import('../../src/main/services/avatar.service')
+
+  const [repos, accounts, activeAccountId, collapsedGroups] = await Promise.all([
+    repositoryService.getAllRepositories(),
+    settingsService.getSetting('accounts'),
+    settingsService.getSetting('active_account_id'),
+    settingsService.getSetting('sidebar_collapsed_groups'),
+  ])
+
+  // Extract unique owners from repos and fetch their avatars
+  const owners = [...new Set(repos.map((r) => {
+    const url = r.remoteUrl || ''
+    const httpsMatch = url.match(/https?:\/\/[^/]+\/([^/]+)\//)
+    if (httpsMatch) return httpsMatch[1]
+    const sshMatch = url.match(/git@[^:]+:([^/]+)\//)
+    if (sshMatch) return sshMatch[1]
+    return 'Local'
+  }).filter(o => o !== 'Local'))]
+
+  const ownerAvatars = await avatarService.getOwnerAvatars(owners)
+
+  win?.webContents.send('preloaded-sidebar-data', {
+    repos, accounts, activeAccountId, collapsedGroups, ownerAvatars,
+  })
+  perf.mark('main:sidebar-data-pushed')
 })
 
 app.on('window-all-closed', () => {

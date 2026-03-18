@@ -4,6 +4,7 @@ import { app } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import * as schema from './schema'
+import { perf } from '@shared/perf'
 
 // Get the user data directory for storing the database
 const userDataPath = app.getPath('userData')
@@ -15,12 +16,22 @@ if (!fs.existsSync(userDataPath)) {
 }
 
 // Create SQLite database instance
+const endDbOpen = perf.start('db:open')
 const sqlite = new Database(dbPath)
+endDbOpen()
+
+// Enable WAL mode for better concurrent read/write performance
+const endPragma = perf.start('db:pragma')
+sqlite.pragma('journal_mode = WAL')
+// Reduce fsync overhead — safe with WAL mode
+sqlite.pragma('synchronous = NORMAL')
+endPragma()
 
 // Create drizzle instance
 export const db = drizzle(sqlite, { schema })
 
 // Initialize database tables
+const endSchema = perf.start('db:schema-init')
 sqlite.exec(`
   CREATE TABLE IF NOT EXISTS repositories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,6 +75,7 @@ sqlite.exec(`
     fetched_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
   );
 `)
+endSchema()
 
 // Migration: Add remote_url column if it doesn't exist
 try {
@@ -71,6 +83,8 @@ try {
 } catch {
   // Column already exists, ignore error
 }
+
+perf.mark('db:ready')
 
 // Close database connection when app quits
 app.on('before-quit', () => {

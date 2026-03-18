@@ -283,6 +283,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { perf } from "@/shared/perf";
 import { useRouter } from "vue-router";
 import {
   User,
@@ -441,23 +442,25 @@ async function fetchOwnerAvatars(owners: string[]) {
   );
   if (toFetch.length === 0) return;
 
-  try {
-    const result = await window.api.avatar.getOwners(toFetch);
-    if (result.success && result.data) {
-      ownerAvatars.value = { ...ownerAvatars.value, ...result.data };
+  return perf.measure(`sidebar:fetch-avatars(${toFetch.length})`, async () => {
+    try {
+      const result = await window.api.avatar.getOwners(toFetch);
+      if (result.success && result.data) {
+        ownerAvatars.value = { ...ownerAvatars.value, ...result.data };
+      }
+    } catch (error) {
+      console.error("Failed to fetch owner avatars:", error);
     }
-  } catch (error) {
-    console.error("Failed to fetch owner avatars:", error);
-  }
+  });
 }
 
-watch(
-  repositoriesByOwner,
-  (groups) => {
-    fetchOwnerAvatars(groups.map((g) => g.owner));
-  },
-  { immediate: true },
-);
+// Fetch avatars when repo list changes (instant from disk cache)
+watch(repositoriesByOwner, (groups) => {
+  perf.mark("sidebar:avatar-fetch-triggered");
+  fetchOwnerAvatars(groups.map((g) => g.owner)).then(() => {
+    perf.mark("sidebar:avatars-rendered");
+  });
+});
 
 // Track collapsed state for each owner group
 // Start hidden until DB state is restored to avoid expand-then-collapse flicker
@@ -470,18 +473,65 @@ const isGroupCollapsed = (owner: string) => {
   return collapsedGroups.value.has(owner);
 };
 
-onMounted(async () => {
-  accountsStore.load();
-  try {
-    const result = await window.api.settings.get(COLLAPSED_GROUPS_KEY);
-    if (result.success && result.data) {
-      const parsed: string[] = JSON.parse(result.data);
-      collapsedGroups.value = new Set(parsed);
-    }
-  } catch (error) {
-    console.error("Failed to load collapsed groups:", error);
+function applyPreloadedData(data: any) {
+  // Apply avatars FIRST — before repos, so the repositoriesByOwner watcher
+  // sees cached avatars and skips the IPC fetch
+  if (data.ownerAvatars) {
+    ownerAvatars.value = { ...ownerAvatars.value, ...data.ownerAvatars };
+  }
+  if (data.accounts) {
+    try { accountsStore.accounts = JSON.parse(data.accounts); } catch {}
+  }
+  if (data.activeAccountId) {
+    accountsStore.activeAccountId = data.activeAccountId;
+  }
+  if (data.collapsedGroups) {
+    try { collapsedGroups.value = new Set(JSON.parse(data.collapsedGroups)); } catch {}
+  }
+  // Apply repos LAST — triggers repositoriesByOwner watcher, which will see avatars already cached
+  if (data.repos) {
+    repositoriesStore.repositories = data.repos.map((r: any) => ({
+      ...r,
+      lastOpenedAt: new Date(r.lastOpenedAt),
+      createdAt: new Date(r.createdAt),
+      updatedAt: new Date(r.updatedAt),
+    }));
   }
   collapsedStateLoaded.value = true;
+}
+
+onMounted(() => {
+  perf.mark("sidebar:mounted");
+
+  // Check if main process already pushed data (available via preload script global)
+  const preloaded = (window as any).__preloadedSidebarData?.get?.();
+  if (preloaded) {
+    perf.mark("sidebar:using-preloaded-data");
+    applyPreloadedData(preloaded);
+    return;
+  }
+
+  // Fallback: listen for push or load via IPC
+  window.api.onPreloadedSidebarData((data: any) => {
+    perf.mark("sidebar:preloaded-data-received");
+    applyPreloadedData(data);
+  });
+
+  const endInit = perf.start("sidebar:init-data-fallback");
+  Promise.all([
+    accountsStore.load(),
+    repositoriesStore.loadRepositories(),
+    window.api.settings.get(COLLAPSED_GROUPS_KEY).then((result) => {
+      if (result.success && result.data) {
+        collapsedGroups.value = new Set(JSON.parse(result.data));
+      }
+    }),
+  ])
+    .catch((error) => console.error("Failed to initialize sidebar:", error))
+    .finally(() => {
+      collapsedStateLoaded.value = true;
+      endInit();
+    });
 });
 
 const saveCollapsedGroups = () => {

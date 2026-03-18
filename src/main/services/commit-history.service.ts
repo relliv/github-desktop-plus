@@ -1,6 +1,7 @@
 import { db, schema } from '../db'
 import { eq, desc, count } from 'drizzle-orm'
 import { simpleGit } from 'simple-git'
+import { perf } from '@shared/perf'
 
 // Unique delimiter unlikely to appear in commit data
 const DELIM = '<%GD+%>'
@@ -57,6 +58,7 @@ export class CommitHistoryService {
     activeScans.set(repositoryId, scanState)
 
     try {
+      const endScan = perf.start(`commits:scan(repo:${repositoryId})`)
       const git = simpleGit(repoPath)
 
       // Get the latest commit hash we already have
@@ -70,13 +72,20 @@ export class CommitHistoryService {
       const logArgs: string[] = [LOG_FORMAT]
 
       if (latestStored) {
+        // Only fetch new commits since last scan
         logArgs.push(`${latestStored.hash}..HEAD`)
+      } else {
+        // First scan: limit to most recent 500 commits to avoid blocking
+        logArgs.push('-n', '500')
       }
 
-      const rawLog = await git.raw(['log', ...logArgs])
+      const rawLog = await perf.measure(`commits:git-log(repo:${repositoryId})`, () =>
+        git.raw(['log', ...logArgs])
+      )
       const commits = parseCommitLog(rawLog, repositoryId)
 
       if (commits.length === 0) {
+        endScan()
         return { added: 0 }
       }
 
@@ -96,6 +105,7 @@ export class CommitHistoryService {
         }
       }
 
+      endScan()
       return { added }
     } catch (error) {
       console.error(`Error scanning commits for repo ${repositoryId}:`, error)
@@ -122,15 +132,19 @@ export class CommitHistoryService {
     activeScans.set(repositoryId, scanState)
 
     try {
+      const endFullScan = perf.start(`commits:full-scan(repo:${repositoryId})`)
       await db
         .delete(schema.commits)
         .where(eq(schema.commits.repositoryId, repositoryId))
 
       const git = simpleGit(repoPath)
-      const rawLog = await git.raw(['log', LOG_FORMAT])
+      const rawLog = await perf.measure(`commits:full-git-log(repo:${repositoryId})`, () =>
+        git.raw(['log', LOG_FORMAT])
+      )
       const commits = parseCommitLog(rawLog, repositoryId)
 
       if (commits.length === 0) {
+        endFullScan()
         return { added: 0 }
       }
 
@@ -149,6 +163,7 @@ export class CommitHistoryService {
         }
       }
 
+      endFullScan()
       return { added }
     } catch (error) {
       console.error(`Error in full scan for repo ${repositoryId}:`, error)
@@ -159,60 +174,68 @@ export class CommitHistoryService {
   }
 
   async getCommits(repositoryId: number, offset = 0, limit = 50) {
-    return db
-      .select()
-      .from(schema.commits)
-      .where(eq(schema.commits.repositoryId, repositoryId))
-      .orderBy(desc(schema.commits.date))
-      .offset(offset)
-      .limit(limit)
+    return perf.measure(`commits-db:list(repo:${repositoryId},offset:${offset})`, () =>
+      db
+        .select()
+        .from(schema.commits)
+        .where(eq(schema.commits.repositoryId, repositoryId))
+        .orderBy(desc(schema.commits.date))
+        .offset(offset)
+        .limit(limit)
+    )
   }
 
   async getCommitCount(repositoryId: number): Promise<number> {
-    const [result] = await db
-      .select({ count: count() })
-      .from(schema.commits)
-      .where(eq(schema.commits.repositoryId, repositoryId))
+    return perf.measure(`commits-db:count(repo:${repositoryId})`, async () => {
+      const [result] = await db
+        .select({ count: count() })
+        .from(schema.commits)
+        .where(eq(schema.commits.repositoryId, repositoryId))
 
-    return result?.count ?? 0
+      return result?.count ?? 0
+    })
   }
 
   async getCommitFiles(repoPath: string, commitHash: string) {
-    try {
-      const git = simpleGit(repoPath)
-      const result = await git.raw([
-        'diff-tree', '--no-commit-id', '-r', '--name-status', commitHash,
-      ])
+    return perf.measure(`commits-git:files(${commitHash.slice(0, 7)})`, async () => {
+      try {
+        const git = simpleGit(repoPath)
+        const result = await git.raw([
+          'diff-tree', '--no-commit-id', '-r', '--name-status', commitHash,
+        ])
 
-      if (!result.trim()) return []
+        if (!result.trim()) return []
 
-      return result.trim().split('\n').map((line) => {
-        const [status, ...fileParts] = line.split('\t')
-        return {
-          status: status as 'A' | 'M' | 'D' | 'R' | 'C',
-          file: fileParts.join('\t'),
-        }
-      })
-    } catch (error) {
-      console.error(`Error getting commit files for ${commitHash}:`, error)
-      return []
-    }
+        return result.trim().split('\n').map((line) => {
+          const [status, ...fileParts] = line.split('\t')
+          return {
+            status: status as 'A' | 'M' | 'D' | 'R' | 'C',
+            file: fileParts.join('\t'),
+          }
+        })
+      } catch (error) {
+        console.error(`Error getting commit files for ${commitHash}:`, error)
+        return []
+      }
+    })
   }
 
   async getCommitFileDiff(repoPath: string, commitHash: string, filePath: string) {
-    try {
-      const git = simpleGit(repoPath)
-      return await git.raw(['diff', `${commitHash}^`, commitHash, '--', filePath])
-    } catch {
-      // For initial commits with no parent, use show instead
+    return perf.measure(`commits-git:diff(${commitHash.slice(0, 7)}/${filePath.split('/').pop()})`, async () => {
       try {
         const git = simpleGit(repoPath)
-        return await git.raw(['show', '--format=', commitHash, '--', filePath])
-      } catch (innerError) {
-        console.error(`Error getting diff for ${filePath} in ${commitHash}:`, innerError)
-        return ''
+        return await git.raw(['diff', `${commitHash}^`, commitHash, '--', filePath])
+      } catch {
+        // For initial commits with no parent, use show instead
+        try {
+          const git = simpleGit(repoPath)
+          return await git.raw(['show', '--format=', commitHash, '--', filePath])
+        } catch (innerError) {
+          console.error(`Error getting diff for ${filePath} in ${commitHash}:`, innerError)
+          return ''
+        }
       }
-    }
+    })
   }
 
   async deleteCommitsForRepository(repositoryId: number) {

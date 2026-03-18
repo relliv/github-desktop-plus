@@ -21,6 +21,8 @@ export const api = {
     validate: (path: string) => ipcRenderer.invoke('git:validate', path),
     create: (options: CreateRepositoryOptions) => ipcRenderer.invoke('git:create', options),
     getRemoteUrl: (path: string) => ipcRenderer.invoke('git:getRemoteUrl', path),
+    diffFile: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-file', path, filePath),
+    diffStaged: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-staged', path, filePath),
     onCloneProgress: (callback: (progress: any) => void) => {
       const handler = (_: any, progress: any) => callback(progress)
       ipcRenderer.on('git:clone:progress', handler)
@@ -54,6 +56,7 @@ export const api = {
     toggleFavorite: (id: number) => ipcRenderer.invoke('repository:toggle-favorite', id),
     delete: (id: number) => ipcRenderer.invoke('repository:delete', id),
     updateBranch: (id: number, branch: string) => ipcRenderer.invoke('repository:update-branch', id, branch),
+    refreshRemotes: () => ipcRenderer.invoke('repository:refresh-remotes'),
   },
   
   shell: {
@@ -101,5 +104,10 @@ export const api = {
   settings: {
     get: (key: string) => ipcRenderer.invoke('settings:get', key),
     set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),
-  }
+  },
+
+  // Preloaded sidebar data — pushed from main process, no IPC round-trip needed
+  onPreloadedSidebarData: (callback: (data: any) => void) => {
+    ipcRenderer.on('preloaded-sidebar-data', (_, data) => callback(data))
+  },
 }
