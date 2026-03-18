@@ -4,7 +4,7 @@
       <Button
         variant="outline"
         size="sm"
-        class="flex flex-row items-center w-[200px] h-[30px]"
+        class="flex flex-row items-center w-[245px] h-[30px]"
         @contextmenu.prevent="openContextMenu"
         @mouseenter="startTooltipDelay"
         @mouseleave="cancelTooltip"
@@ -23,7 +23,7 @@
       </Button>
     </PopoverTrigger>
 
-    <PopoverContent class="w-[200px] p-0" align="start">
+    <PopoverContent class="w-[245px] p-0" align="start">
       <div
         class="bg-white dark:bg-card mt-1 rounded-md shadow-md dark:shadow-lg border border-border"
       >
@@ -34,7 +34,10 @@
             class="w-full px-2 py-1 text-sm border rounded bg-background text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
-        <div class="border-t border-border max-h-[300px] overflow-y-auto mr-1" v-lenis>
+        <div
+          class="border-t border-border max-h-[350px] overflow-y-auto mr-1"
+          v-lenis
+        >
           <button
             v-for="branch in filteredBranches"
             :key="branch"
@@ -122,7 +125,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { ChevronDown, Check, AlertTriangle, GitBranch, Copy } from "lucide-vue-next";
+import {
+  ChevronDown,
+  Check,
+  AlertTriangle,
+  GitBranch,
+  Copy,
+} from "lucide-vue-next";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import {
   AlertDialog,
