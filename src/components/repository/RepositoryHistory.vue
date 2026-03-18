@@ -81,8 +81,8 @@
           v-lenis
         >
           <!-- List view -->
-          <TooltipProvider v-if="viewMode === 'list'" :delay-duration="400">
-            <TooltipRoot v-for="commit in commits" :key="commit.hash">
+          <TooltipProvider v-if="viewMode === 'list'" :delay-duration="isScrolling ? 999999 : 400" :skip-delay-duration="0">
+            <TooltipRoot v-for="commit in commits" :key="commit.hash" :open="isScrolling ? false : undefined">
               <TooltipTrigger as-child>
                 <button
                   @click="selectCommit(commit)"
@@ -153,7 +153,7 @@
 
           <!-- Timeline view -->
           <div v-else class="px-4 py-3">
-            <TooltipProvider :delay-duration="400">
+            <TooltipProvider :delay-duration="isScrolling ? 999999 : 400" :skip-delay-duration="0">
               <div class="relative">
                 <!-- Timeline line -->
                 <div
@@ -234,7 +234,7 @@
                     </div>
 
                     <!-- Commit content with tooltip -->
-                    <TooltipRoot>
+                    <TooltipRoot :open="isScrolling ? false : undefined">
                       <TooltipTrigger as-child>
                         <button
                           @click="selectCommit(commit)"
