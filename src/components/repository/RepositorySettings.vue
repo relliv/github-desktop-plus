@@ -38,6 +38,16 @@
             <div class="flex items-center gap-2">
               <div class="text-sm truncate">{{ remoteUrl }}</div>
               <Button
+                v-if="browsableRemoteUrl"
+                variant="ghost"
+                size="icon"
+                class="h-6 w-6 shrink-0"
+                @click="openRemoteInBrowser"
+                title="Open in browser"
+              >
+                <ExternalLink class="w-3.5 h-3.5" :stroke-width="1" />
+              </Button>
+              <Button
                 variant="ghost"
                 size="icon"
                 class="h-6 w-6 shrink-0"
@@ -224,7 +234,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, Copy, Terminal, FileCode } from "lucide-vue-next";
+import { FolderOpen, Copy, Terminal, FileCode, ExternalLink } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 
 const repositoriesStore = useRepositoriesStore();
@@ -280,9 +290,27 @@ const openInExplorer = async () => {
   }
 };
 
+const browsableRemoteUrl = computed(() => {
+  const url = remoteUrl.value;
+  if (!url) return null;
+  if (url.startsWith("https://") || url.startsWith("http://")) {
+    return url.replace(/\.git$/, "");
+  }
+  // Convert SSH to HTTPS: git@github.com:user/repo.git -> https://github.com/user/repo
+  const sshMatch = url.match(/git@([^:]+):(.+?)(?:\.git)?$/);
+  if (sshMatch) return `https://${sshMatch[1]}/${sshMatch[2]}`;
+  return null;
+});
+
 const copyRemoteUrl = async () => {
   if (remoteUrl.value) {
     await navigator.clipboard.writeText(remoteUrl.value);
+  }
+};
+
+const openRemoteInBrowser = () => {
+  if (browsableRemoteUrl.value) {
+    window.api.shell.openExternal(browsableRemoteUrl.value);
   }
 };
 
