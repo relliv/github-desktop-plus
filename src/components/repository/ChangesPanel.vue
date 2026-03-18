@@ -20,7 +20,7 @@
             :key="file"
             :file="file"
             :staged="true"
-            @click="selectFile(file)"
+            @click="selectFile(file, true)"
             @unstage="unstageFile(file)"
           />
         </div>
@@ -100,6 +100,10 @@ import FileItem from "./FileItem.vue";
 const repositoriesStore = useRepositoriesStore();
 const commitMessage = ref("");
 const commitDescription = ref("");
+const emit = defineEmits<{
+  fileSelected: [file: string, staged: boolean];
+}>();
+
 const selectedFile = ref<string | null>(null);
 
 const gitStatus = computed(() => repositoriesStore.gitStatus);
@@ -120,9 +124,9 @@ const currentBranch = computed(
   () => currentRepository.value?.currentBranch || "main"
 );
 
-const selectFile = (file: string) => {
+const selectFile = (file: string, staged: boolean = false) => {
   selectedFile.value = file;
-  // TODO: Emit event to update diff viewer
+  emit("fileSelected", file, staged);
 };
 
 const stageFile = async (file: string) => {

@@ -545,7 +545,7 @@ import {
 import NumberFlow from "@number-flow/vue";
 import { DiffViewer as NxDiffViewer } from "@ngeenx/nx-vue-code-viewer";
 import { useRepositoriesStore } from "@/shared/stores";
-import { useAppStore } from "@/stores/app.store";
+import { useCodeViewerTheme } from "@/composables/useCodeViewerTheme";
 import { useToast } from "@/composables/useToast";
 
 interface CommitRecord {
@@ -567,11 +567,9 @@ interface CommitFile {
 }
 
 const repositoriesStore = useRepositoriesStore();
-const appStore = useAppStore();
+const { codeViewerTheme } = useCodeViewerTheme();
 const { toast } = useToast();
 const currentRepository = computed(() => repositoriesStore.currentRepository);
-
-const codeViewerTheme = computed(() => (appStore.isDark ? "dark" : "light"));
 
 const selectedFileExtension = computed(() => {
   if (!selectedFile.value) return undefined;
