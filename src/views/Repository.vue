@@ -329,6 +329,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { perf } from "@/shared/perf";
+import { useToast } from "@/composables/useToast";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import {
   GitBranch,
@@ -375,6 +376,16 @@ import OpenRepositoryDialog from "../components/dialogs/OpenRepositoryDialog.vue
 import CreateRepositoryDialog from "../components/dialogs/CreateRepositoryDialog.vue";
 
 const repositoriesStore = useRepositoriesStore();
+const { toast } = useToast();
+
+function parseGitError(error: unknown): string {
+  const msg = error instanceof Error ? error.message : String(error);
+  // Strip nested "Failed to pull: Error: " prefixes
+  const inner = msg.replace(/^.*?Failed to \w+:\s*Error:\s*/i, "");
+  // Remove stack traces (lines starting with "at ")
+  const lines = inner.split("\n").filter((l) => !l.trim().startsWith("at "));
+  return lines.join("\n").trim() || msg;
+}
 
 const cloneDialog = ref<InstanceType<typeof CloneDialog>>();
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
@@ -493,6 +504,12 @@ const fetchChanges = async () => {
         await repositoriesStore.fetchGitStatus();
       } catch (error) {
         console.error("Failed to fetch:", error);
+        toast({
+          title: "Fetch failed",
+          description: parseGitError(error),
+          variant: "destructive",
+          duration: 5000,
+        });
       }
     });
   }
@@ -506,6 +523,12 @@ const pullChanges = async () => {
         await repositoriesStore.fetchGitStatus();
       } catch (error) {
         console.error("Failed to pull:", error);
+        toast({
+          title: "Pull failed",
+          description: parseGitError(error),
+          variant: "destructive",
+          duration: 5000,
+        });
       }
     });
   }
@@ -519,6 +542,12 @@ const pushChanges = async () => {
         await repositoriesStore.fetchGitStatus();
       } catch (error) {
         console.error("Failed to push:", error);
+        toast({
+          title: "Push failed",
+          description: parseGitError(error),
+          variant: "destructive",
+          duration: 5000,
+        });
       }
     });
   }
