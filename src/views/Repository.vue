@@ -5,7 +5,7 @@
   >
     <!-- Repository header -->
     <div
-      class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between"
+      class="shrink-0 h-[50px] px-2 pr-4 border-b flex items-center justify-between"
     >
       <div class="flex items-center gap-4">
         <!-- Owner repo switcher -->
@@ -14,6 +14,11 @@
             <button
               class="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent/60 transition-colors"
             >
+              <Avatar
+                :name="currentOwner"
+                :image-url="ownerAvatarUrl"
+                size="sm"
+              />
               <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
               <ChevronDown
                 class="size-4 text-muted-foreground shrink-0"
@@ -22,8 +27,14 @@
             </button>
           </PopoverTrigger>
           <PopoverPortal>
-            <PopoverContent class="z-50 w-[260px] p-0" align="start" :side-offset="8">
-              <div class="bg-white dark:bg-card rounded-md shadow-md dark:shadow-lg border border-border">
+            <PopoverContent
+              class="z-50 w-[260px] p-0"
+              align="start"
+              :side-offset="8"
+            >
+              <div
+                class="bg-white dark:bg-card rounded-md shadow-md dark:shadow-lg border border-border"
+              >
                 <div class="px-3 py-2 border-b">
                   <p class="text-xs font-medium text-muted-foreground">
                     {{ currentOwner }} repositories
@@ -39,7 +50,10 @@
                       repo.id === currentRepository.id ? 'bg-accent' : '',
                     ]"
                   >
-                    <GitBranch class="size-3.5 shrink-0 text-muted-foreground" :stroke-width="1" />
+                    <GitBranch
+                      class="size-3.5 shrink-0 text-muted-foreground"
+                      :stroke-width="1"
+                    />
                     <span class="truncate flex-1">{{ repo.name }}</span>
                     <Check
                       v-if="repo.id === currentRepository.id"
@@ -112,7 +126,7 @@
               v-if="changeCount > 0"
               class="ml-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground flex items-center justify-center"
             >
-              {{ changeCount > 99 ? '99+' : changeCount }}
+              {{ changeCount > 99 ? "99+" : changeCount }}
             </span>
           </TabsTrigger>
           <TabsTrigger
@@ -327,9 +341,15 @@ import {
   Settings,
   History,
 } from "lucide-vue-next";
-import { Popover, PopoverContent, PopoverPortal, PopoverTrigger } from "../components/ui/Popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverPortal,
+  PopoverTrigger,
+} from "../components/ui/Popover";
 import { useRepositoriesStore } from "@/shared/stores";
 import type { RepositoryInfo } from "@/shared/types/git.types";
+import Avatar from "../components/ui/Avatar.vue";
 import Button from "../components/ui/Button.vue";
 import {
   Tabs,
@@ -378,6 +398,32 @@ const ownerRepositories = computed(() =>
     .sort((a, b) => a.name.localeCompare(b.name)),
 );
 
+const ownerAvatarUrl = ref<string | null>(null);
+
+async function fetchOwnerAvatar(owner: string) {
+  if (owner === "Local") {
+    ownerAvatarUrl.value = null;
+    return;
+  }
+  try {
+    const result = await window.api.avatar.getOwner(owner);
+    if (result.success && result.data) {
+      ownerAvatarUrl.value = result.data;
+    }
+  } catch {
+    ownerAvatarUrl.value = null;
+  }
+}
+
+watch(
+  currentOwner,
+  (owner) => {
+    ownerAvatarUrl.value = null;
+    fetchOwnerAvatar(owner);
+  },
+  { immediate: true },
+);
+
 function switchRepository(repo: RepositoryInfo) {
   repoSwitcherOpen.value = false;
   if (repo.id !== currentRepository.value?.id) {
@@ -405,7 +451,7 @@ watch(
     if (newId) {
       repositoriesStore.fetchGitStatus();
     }
-  }
+  },
 );
 
 onUnmounted(() => {
@@ -415,7 +461,13 @@ const gitStatus = computed(() => repositoriesStore.gitStatus);
 const changeCount = computed(() => {
   const s = gitStatus.value;
   if (!s) return 0;
-  return s.modified.length + s.added.length + s.deleted.length + s.renamed.length + s.conflicted.length;
+  return (
+    s.modified.length +
+    s.added.length +
+    s.deleted.length +
+    s.renamed.length +
+    s.conflicted.length
+  );
 });
 const favoriteRepositories = computed(
   () => repositoriesStore.favoriteRepositories,
@@ -475,7 +527,6 @@ const cloneRepository = () => {
 const openRepository = () => {
   openRepoDialog.value?.open();
 };
-
 
 const handleRepositoryAction = () => {
   // Repository is already added and set as current by the dialog
