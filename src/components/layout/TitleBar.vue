@@ -2,10 +2,22 @@
   <div
     class="flex flex-row items-center justify-between h-10 pl-4 pr-1 app-drag flex-shrink-0"
   >
-    <!-- Left - App title -->
-    <span class="text-xs font-semibold text-foreground">
-      GitHub Desktop Plus
-    </span>
+    <!-- Left - Sidebar toggle + App title -->
+    <div class="flex items-center gap-2">
+      <button
+        class="app-no-drag p-1 rounded hover:bg-accent transition-colors"
+        @click="appStore.toggleSidebar()"
+        :title="appStore.isSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'"
+      >
+        <PanelLeft
+          class="size-4 text-muted-foreground"
+          :stroke-width="1.5"
+        />
+      </button>
+      <span class="text-xs font-semibold text-foreground">
+        GitHub Desktop Plus
+      </span>
+    </div>
 
     <!-- Right side - Window controls -->
     <div class="app-no-drag">
@@ -15,20 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import { useAppStore } from "../../stores/app.store";
-import { useRepositoriesStore } from "@/shared/stores";
 import WindowControls from "@/components/ui/WindowControls.vue";
+import { PanelLeft } from "lucide-vue-next";
 
 const appStore = useAppStore();
-const repositoriesStore = useRepositoriesStore();
-
-const isMaximized = computed(() => appStore.isMaximized);
-const currentRepository = computed(() => repositoriesStore.currentRepository);
-
-const minimize = () => window.api.window.minimize();
-const maximize = () => window.api.window.maximize();
-const close = () => window.api.window.close();
 </script>
 
 <style scoped>

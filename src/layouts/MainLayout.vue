@@ -2,6 +2,7 @@
   <div class="relative h-screen bg-background text-foreground">
     <!-- Drag area overlapping sidebar header -->
     <div
+      v-if="!appStore.isSidebarCollapsed"
       class="absolute top-0 left-0 h-[50px] z-30 app-drag"
       :style="{ width: 'var(--sidebar-width, 20%)' }"
     />
@@ -17,10 +18,14 @@
       <!-- Sidebar Panel -->
       <SplitterPanel
         id="sidebar"
+        ref="sidebarPanel"
         :default-size="20"
         :min-size="15"
         :max-size="35"
-        :collapsible="false"
+        :collapsible="true"
+        :collapsed="appStore.isSidebarCollapsed"
+        @collapse="appStore.isSidebarCollapsed = true"
+        @expand="appStore.isSidebarCollapsed = false"
       >
         <Sidebar class="h-full" />
       </SplitterPanel>
@@ -35,7 +40,7 @@
 
       <!-- Main Content Panel -->
       <SplitterPanel id="main-content" :min-size="50">
-        <div class="flex flex-col h-full py-2 pr-2">
+        <div :class="['flex flex-col h-full py-2 pr-2', appStore.isSidebarCollapsed && 'pl-2']">
           <div class="flex-1 flex flex-col bg-card rounded-xl shadow-sm border border-border/50 overflow-hidden">
             <TitleBar />
             <main class="flex-1 flex flex-col overflow-hidden">
@@ -49,12 +54,25 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import TitleBar from "../components/layout/TitleBar.vue";
 import Sidebar from "../components/layout/Sidebar.vue";
 import { useAutoRefresh } from "../composables/useAutoRefresh";
+import { useAppStore } from "../stores/app.store";
 
 useAutoRefresh();
+
+const appStore = useAppStore();
+const sidebarPanel = ref<InstanceType<typeof SplitterPanel> | null>(null);
+
+watch(() => appStore.isSidebarCollapsed, (collapsed) => {
+  if (collapsed) {
+    sidebarPanel.value?.collapse();
+  } else {
+    sidebarPanel.value?.expand();
+  }
+});
 
 function onLayoutChange(sizes: number[]) {
   // Update CSS variable so the top drag area matches sidebar width
