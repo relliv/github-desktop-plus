@@ -213,25 +213,10 @@
 
                   <!-- Commit row with dot -->
                   <div class="relative pl-8 pb-4 last:pb-0">
-                    <!-- Timeline node — aligned to commit content -->
-                    <div
-                      class="absolute left-[2px] top-2.5 size-[18px] rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors"
-                      :class="
-                        selectedCommit?.hash === commit.hash
-                          ? 'bg-primary border-primary'
-                          : 'bg-background border-muted-foreground/30 hover:border-primary/60'
-                      "
+                    <TimelineNode
+                      :active="selectedCommit?.hash === commit.hash"
                       @click="selectCommit(commit)"
-                    >
-                      <div
-                        class="size-2 rounded-full"
-                        :class="
-                          selectedCommit?.hash === commit.hash
-                            ? 'bg-primary-foreground'
-                            : 'bg-muted-foreground/50'
-                        "
-                      />
-                    </div>
+                    />
 
                     <!-- Commit content with tooltip -->
                     <TooltipRoot :open="isScrolling ? false : undefined" @update:open="(open) => open && (hoveredCommit = commit.hash)">
@@ -573,6 +558,7 @@ import {
   TooltipTrigger,
 } from "reka-ui";
 import AvatarStack from "@/components/ui/AvatarStack.vue";
+import TimelineNode from "./TimelineNode.vue";
 import type { AvatarAuthor } from "@/components/ui/AvatarStack.vue";
 import {
   RefreshCw,
