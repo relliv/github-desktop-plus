@@ -4,7 +4,10 @@
       <!-- Repository Info -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">Repository Information</CardTitle>
+          <CardTitle class="text-base flex items-center gap-2">
+            <Info class="size-4 text-muted-foreground" :stroke-width="1.5" />
+            Repository Information
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="grid grid-cols-[100px_1fr] items-center gap-2">
@@ -64,7 +67,10 @@
       <!-- Branch Settings -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">Branch Settings</CardTitle>
+          <CardTitle class="text-base flex items-center gap-2">
+            <GitBranch class="size-4 text-muted-foreground" :stroke-width="1.5" />
+            Branch Settings
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="flex items-center justify-between">
@@ -95,7 +101,10 @@
       <!-- Git Configuration -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">Git Configuration</CardTitle>
+          <CardTitle class="text-base flex items-center gap-2">
+            <Settings class="size-4 text-muted-foreground" :stroke-width="1.5" />
+            Git Configuration
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="grid gap-4 sm:grid-cols-2">
@@ -131,7 +140,10 @@
       <!-- Quick Actions -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base">Quick Actions</CardTitle>
+          <CardTitle class="text-base flex items-center gap-2">
+            <Zap class="size-4 text-muted-foreground" :stroke-width="1.5" />
+            Quick Actions
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-3">
           <div class="flex items-center justify-between">
@@ -167,7 +179,10 @@
       <!-- Danger Zone -->
       <Card class="border-destructive/50">
         <CardHeader>
-          <CardTitle class="text-base text-destructive">Danger Zone</CardTitle>
+          <CardTitle class="text-base text-destructive flex items-center gap-2">
+            <AlertTriangle class="size-4" :stroke-width="1.5" />
+            Danger Zone
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div class="flex items-center justify-between">
@@ -234,7 +249,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, Copy, Terminal, FileCode, ExternalLink } from "lucide-vue-next";
+import {
+  FolderOpen,
+  Copy,
+  Terminal,
+  FileCode,
+  ExternalLink,
+  Info,
+  GitBranch,
+  Settings,
+  Zap,
+  AlertTriangle,
+} from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 
 const repositoriesStore = useRepositoriesStore();
