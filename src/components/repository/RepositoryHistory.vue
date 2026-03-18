@@ -23,7 +23,7 @@
                 :animated="true"
                 :transformTiming="{ duration: 500, easing: 'ease-out' }"
                 :spinTiming="{ duration: 500, easing: 'ease-out' }"
-                trend="decreasing"
+                :trend="-1"
               />)
             </span>
             <button
