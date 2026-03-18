@@ -88,4 +88,12 @@ function onLayoutChange(sizes: number[]) {
 .app-drag {
   -webkit-app-region: drag;
 }
+
+:deep(#sidebar) {
+  transition: flex-grow 300ms ease-in-out, flex-basis 300ms ease-in-out;
+}
+
+:deep(#main-content) {
+  transition: flex-grow 300ms ease-in-out, flex-basis 300ms ease-in-out;
+}
 </style>
