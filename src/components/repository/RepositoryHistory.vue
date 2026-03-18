@@ -924,6 +924,10 @@ async function selectCommit(commit: CommitRecord) {
     );
     if (result.success && result.data) {
       commitFiles.value = result.data;
+      // Auto-select first file to show its diff immediately
+      if (result.data.length > 0) {
+        selectFile(result.data[0]);
+      }
     }
   } catch (error) {
     console.error("Failed to load commit files:", error);
