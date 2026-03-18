@@ -5,7 +5,7 @@ import App from './App.vue'
 import { vLenis } from './directives/lenis'
 
 import 'lenis/dist/lenis.css'
-import './style.scss'
+import './style.css'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 import './demos/ipc'
