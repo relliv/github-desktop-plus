@@ -266,6 +266,31 @@ export function registerGitHandlers() {
     }
   })
 
+  // Get tags mapped to commit hashes
+  perf.handle(ipcMain, 'git:get-tags', async (_, repoPath: string) => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      // format: <hash> <refname:short>
+      const raw = await repoGit.raw(['tag', '-l', '--format=%(objectname) %(refname:short)'])
+      const tags: Record<string, string[]> = {}
+      for (const line of raw.split('\n')) {
+        if (!line.trim()) continue
+        const spaceIdx = line.indexOf(' ')
+        if (spaceIdx === -1) continue
+        const hash = line.slice(0, spaceIdx)
+        const tag = line.slice(spaceIdx + 1)
+        // For annotated tags, dereference to the commit hash
+        const derefRaw = await repoGit.raw(['rev-parse', `${tag}^{commit}`]).catch(() => hash)
+        const commitHash = derefRaw.trim()
+        if (!tags[commitHash]) tags[commitHash] = []
+        tags[commitHash].push(tag)
+      }
+      return { success: true, data: tags }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to get tags' }
+    }
+  })
+
   // Clone repository with progress
   perf.handle(ipcMain, 'git:clone', async (event: IpcMainInvokeEvent, options: CloneOptions) => {
     try {

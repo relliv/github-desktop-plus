@@ -92,9 +92,19 @@
                 >
                   <div class="flex items-start gap-2">
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium truncate">
-                        {{ commit.message }}
-                      </p>
+                      <div class="flex items-center gap-1.5">
+                        <p class="text-sm font-medium truncate">
+                          {{ commit.message }}
+                        </p>
+                        <span
+                          v-for="tag in tagMap[commit.hash] || []"
+                          :key="tag"
+                          class="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-primary/10 text-primary border border-primary/20"
+                        >
+                          <Tag class="size-2.5" :stroke-width="2" />
+                          {{ tag }}
+                        </span>
+                      </div>
                       <div class="flex items-center gap-2 mt-1">
                         <!-- Author avatar(s) -->
                         <AvatarStack :authors="getAvatarAuthors(commit)" />
@@ -229,9 +239,19 @@
                             'bg-accent': selectedCommit?.hash === commit.hash,
                           }"
                         >
-                          <p class="text-sm font-medium leading-snug">
-                            {{ commit.message }}
-                          </p>
+                          <div class="flex items-center gap-1.5 flex-wrap">
+                            <p class="text-sm font-medium leading-snug">
+                              {{ commit.message }}
+                            </p>
+                            <span
+                              v-for="tag in tagMap[commit.hash] || []"
+                              :key="tag"
+                              class="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-primary/10 text-primary border border-primary/20"
+                            >
+                              <Tag class="size-2.5" :stroke-width="2" />
+                              {{ tag }}
+                            </span>
+                          </div>
                           <div class="flex items-center gap-2 mt-1.5">
                             <!-- Author avatar(s) -->
                             <AvatarStack :authors="getAvatarAuthors(commit)" />
@@ -571,6 +591,7 @@ import {
   CalendarDays,
   Columns2,
   Rows2,
+  Tag,
 } from "lucide-vue-next";
 import NumberFlow from "@number-flow/vue";
 import { DiffViewer as NxDiffViewer } from "@ngeenx/nx-vue-code-viewer";
@@ -650,6 +671,9 @@ const commitListRef = ref<HTMLElement | null>(null);
 
 // Avatar cache: email -> avatar URL
 const avatarMap = ref<Record<string, string | null>>({});
+
+// Tags: commit hash -> tag names
+const tagMap = ref<Record<string, string[]>>({});
 
 const copiedHash = ref<string | null>(null);
 const hoveredCommit = ref<string | null>(null);
@@ -800,6 +824,7 @@ function resetState() {
   commitFiles.value = [];
   selectedFile.value = null;
   fileDiff.value = "";
+  tagMap.value = {};
   currentOffset = 0;
   hasMore = true;
 }
@@ -853,6 +878,18 @@ async function loadCommits(reset = false) {
 
     if (countResult?.success) {
       totalCommits.value = countResult.data;
+    }
+
+    // Fetch tags on initial load
+    if (isInitialLoad && currentRepository.value) {
+      window.api.git
+        .getTags(currentRepository.value.path)
+        .then((res: any) => {
+          if (res.success && res.data) {
+            tagMap.value = res.data;
+          }
+        })
+        .catch(console.error);
     }
   } catch (error) {
     console.error("Failed to load commits:", error);

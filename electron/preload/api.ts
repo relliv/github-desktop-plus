@@ -21,6 +21,7 @@ export const api = {
     validate: (path: string) => ipcRenderer.invoke('git:validate', path),
     create: (options: CreateRepositoryOptions) => ipcRenderer.invoke('git:create', options),
     getRemoteUrl: (path: string) => ipcRenderer.invoke('git:getRemoteUrl', path),
+    getTags: (path: string) => ipcRenderer.invoke('git:get-tags', path),
     diffFile: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-file', path, filePath),
     diffStaged: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-staged', path, filePath),
     onCloneProgress: (callback: (progress: any) => void) => {
