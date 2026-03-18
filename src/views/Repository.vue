@@ -165,7 +165,7 @@
       <h1 class="text-lg font-semibold">Welcome to GitHub Desktop Plus</h1>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6">
+    <div class="flex-1 overflow-y-auto p-6" v-lenis>
       <div class="max-w-4xl mx-auto">
         <!-- Quick Actions -->
         <div class="mb-8">

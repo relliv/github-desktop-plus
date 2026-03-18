@@ -26,7 +26,7 @@
       </nav>
       
       <!-- Settings Panel -->
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto" v-lenis>
         <div class="mx-auto p-6">
           <!-- General Settings -->
           <div v-if="activeCategory === 'general'" class="space-y-6">

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 overflow-y-auto bg-muted/30">
+  <div class="flex-1 overflow-y-auto bg-muted/30" v-lenis>
     <div class="p-4">
       <div class="bg-card rounded-lg border p-4">
         <h3 class="text-lg font-medium mb-4">Diff Viewer</h3>

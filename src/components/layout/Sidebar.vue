@@ -166,7 +166,7 @@
     </div>
 
     <!-- Repository section -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto" v-lenis>
       <div class="px-2 py-4">
         <div class="flex items-center justify-between pl-2 mb-2">
           <h3 class="font-medium text-sm">Repositories</h3>

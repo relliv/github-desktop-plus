@@ -9,7 +9,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto px-6 py-6">
+    <div class="flex-1 overflow-y-auto px-6 py-6" v-lenis>
       <div class="max-w-3xl space-y-6">
         <!-- Editor Selection Info -->
         <Card>

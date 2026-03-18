@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full overflow-y-auto p-6">
+  <div class="h-full overflow-y-auto p-6" v-lenis>
     <div class="space-y-4">
       <Card>
         <CardHeader>

@@ -79,6 +79,7 @@
           class="flex-1 min-h-0 overflow-y-auto"
           @scroll="handleScroll"
           ref="commitListRef"
+          v-lenis
         >
           <!-- List view -->
           <TooltipProvider v-if="viewMode === 'list'" :delay-duration="400">
@@ -382,6 +383,7 @@
         <div
           v-else-if="commitFiles.length > 0"
           class="flex-1 min-h-0 overflow-y-auto"
+          v-lenis
         >
           <button
             v-for="file in commitFiles"
@@ -460,6 +462,7 @@
         <div
           v-else-if="fileDiff"
           class="flex-1 min-h-0 overflow-auto bg-muted/30"
+          v-lenis
         >
           <pre
             class="text-xs font-mono p-4 leading-relaxed"

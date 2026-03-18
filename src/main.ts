@@ -2,7 +2,9 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
+import { vLenis } from './directives/lenis'
 
+import 'lenis/dist/lenis.css'
 import './style.scss'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
@@ -15,6 +17,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.directive('lenis', vLenis)
 
 app.mount('#app')
   .$nextTick(() => {

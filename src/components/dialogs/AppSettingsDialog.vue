@@ -25,7 +25,7 @@
         </nav>
 
         <!-- Settings Panel -->
-        <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 overflow-y-auto p-6" v-lenis>
           <!-- General Settings -->
           <div v-if="activeCategory === 'general'" class="space-y-6">
             <Card>

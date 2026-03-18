@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currentRepository" class="h-full overflow-y-auto p-6">
+  <div v-if="currentRepository" class="h-full overflow-y-auto p-6" v-lenis>
     <div class="space-y-4">
       <!-- Repository Info -->
       <Card>
