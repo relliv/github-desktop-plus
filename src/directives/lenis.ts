@@ -3,6 +3,10 @@ import type { Directive } from 'vue'
 
 const lenisInstances = new WeakMap<HTMLElement, Lenis>()
 
+export function getLenisInstance(el: HTMLElement): Lenis | undefined {
+  return lenisInstances.get(el)
+}
+
 export const vLenis: Directive<HTMLElement> = {
   mounted(el) {
     const lenis = new Lenis({

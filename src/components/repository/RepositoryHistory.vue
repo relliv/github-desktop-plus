@@ -77,7 +77,6 @@
         <div
           v-if="commits.length > 0"
           class="flex-1 min-h-0 overflow-y-auto"
-          @scroll="handleScroll"
           ref="commitListRef"
           v-lenis
         >
@@ -516,7 +515,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { getLenisInstance } from "@/directives/lenis";
 import {
   SplitterGroup,
   SplitterPanel,
@@ -700,6 +700,16 @@ onMounted(() => {
   if (currentRepository.value) {
     loadCommits(true);
   }
+
+  // Attach Lenis scroll listener (nextTick ensures v-lenis directive has mounted)
+  nextTick(() => setupLenisListener());
+});
+
+// Re-attach Lenis listener when commit list appears (v-if becomes true)
+watch(() => commits.value.length, (len, oldLen) => {
+  if (len > 0 && oldLen === 0) {
+    nextTick(() => setupLenisListener());
+  }
 });
 
 onUnmounted(() => {
@@ -769,6 +779,13 @@ async function loadCommits(reset = false) {
 
       // Fetch avatars for new commits in background
       fetchAvatars(listResult.data);
+
+      // Recalculate Lenis dimensions after DOM updates
+      nextTick(() => {
+        if (commitListRef.value) {
+          getLenisInstance(commitListRef.value)?.resize();
+        }
+      });
     }
 
     if (countResult?.success) {
@@ -877,10 +894,7 @@ async function rescan() {
   }
 }
 
-function handleScroll(event: Event) {
-  const target = event.target as HTMLElement;
-  const { scrollTop, scrollHeight, clientHeight } = target;
-
+function handleLenisScroll(lenis: any) {
   // Dismiss tooltips while scrolling
   isScrolling.value = true;
   if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -892,12 +906,17 @@ function handleScroll(event: Event) {
   closeContextMenu();
 
   // Load more when scrolled near bottom
-  if (
-    scrollHeight - scrollTop - clientHeight < 200 &&
-    hasMore &&
-    !isLoadingMore.value
-  ) {
+  const remaining = lenis.limit - lenis.animatedScroll;
+  if (remaining < 200 && hasMore && !isLoadingMore.value) {
     loadCommits(false);
+  }
+}
+
+function setupLenisListener() {
+  if (!commitListRef.value) return;
+  const lenis = getLenisInstance(commitListRef.value);
+  if (lenis) {
+    lenis.on('scroll', handleLenisScroll);
   }
 }
 
