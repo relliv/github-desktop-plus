@@ -8,7 +8,56 @@
       class="shrink-0 h-[50px] px-6 border-b flex items-center justify-between"
     >
       <div class="flex items-center gap-4">
-        <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
+        <!-- Owner repo switcher -->
+        <Popover v-model:open="repoSwitcherOpen">
+          <PopoverTrigger as-child>
+            <button
+              class="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent/60 transition-colors"
+            >
+              <h1 class="text-xl font-bold">{{ currentRepository.name }}</h1>
+              <ChevronDown
+                class="size-4 text-muted-foreground shrink-0"
+                :stroke-width="1.5"
+              />
+            </button>
+          </PopoverTrigger>
+          <PopoverPortal>
+            <PopoverContent class="z-50 w-[260px] p-0" align="start" :side-offset="8">
+              <div class="bg-white dark:bg-card rounded-md shadow-md dark:shadow-lg border border-border">
+                <div class="px-3 py-2 border-b">
+                  <p class="text-xs font-medium text-muted-foreground">
+                    {{ currentOwner }} repositories
+                  </p>
+                </div>
+                <div class="max-h-[300px] overflow-y-auto" v-lenis>
+                  <button
+                    v-for="repo in ownerRepositories"
+                    :key="repo.id"
+                    @click="switchRepository(repo)"
+                    :class="[
+                      'w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2',
+                      repo.id === currentRepository.id ? 'bg-accent' : '',
+                    ]"
+                  >
+                    <GitBranch class="size-3.5 shrink-0 text-muted-foreground" :stroke-width="1" />
+                    <span class="truncate flex-1">{{ repo.name }}</span>
+                    <Check
+                      v-if="repo.id === currentRepository.id"
+                      class="size-3.5 shrink-0 text-primary"
+                      :stroke-width="2"
+                    />
+                  </button>
+                  <div
+                    v-if="ownerRepositories.length === 0"
+                    class="px-3 py-4 text-center text-xs text-muted-foreground"
+                  >
+                    No other repositories
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </PopoverPortal>
+        </Popover>
         <div class="w-px h-6 bg-border" />
         <BranchSelector />
       </div>
@@ -268,6 +317,8 @@ import {
   Download,
   Upload,
   ChevronRight,
+  ChevronDown,
+  Check,
   FilePlus,
   FolderOpen,
   FileDiff,
@@ -276,7 +327,9 @@ import {
   Settings,
   History,
 } from "lucide-vue-next";
+import { Popover, PopoverContent, PopoverPortal, PopoverTrigger } from "../components/ui/Popover";
 import { useRepositoriesStore } from "@/shared/stores";
+import type { RepositoryInfo } from "@/shared/types/git.types";
 import Button from "../components/ui/Button.vue";
 import {
   Tabs,
@@ -302,8 +355,35 @@ const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
 
 const activeTab = ref("history");
+const repoSwitcherOpen = ref(false);
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
+
+function getOwner(remoteUrl?: string): string {
+  if (!remoteUrl) return "Local";
+  const httpsMatch = remoteUrl.match(/https?:\/\/[^/]+\/([^/]+)\//);
+  if (httpsMatch) return httpsMatch[1];
+  const sshMatch = remoteUrl.match(/git@[^:]+:([^/]+)\//);
+  if (sshMatch) return sshMatch[1];
+  return "Local";
+}
+
+const currentOwner = computed(() =>
+  getOwner(currentRepository.value?.remoteUrl),
+);
+
+const ownerRepositories = computed(() =>
+  repositoriesStore.repositories
+    .filter((repo) => getOwner(repo.remoteUrl) === currentOwner.value)
+    .sort((a, b) => a.name.localeCompare(b.name)),
+);
+
+function switchRepository(repo: RepositoryInfo) {
+  repoSwitcherOpen.value = false;
+  if (repo.id !== currentRepository.value?.id) {
+    repositoriesStore.setCurrentRepository(repo);
+  }
+}
 
 // Rescan changes when window regains focus and changes tab is active
 const handleWindowFocus = () => {
