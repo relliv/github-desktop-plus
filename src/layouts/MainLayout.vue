@@ -31,18 +31,25 @@
       </SplitterPanel>
 
       <!-- Resize Handle -->
-      <SplitterResizeHandle
-        id="sidebar-handle"
-        class="w-0 relative z-10 group"
-      >
-        <div class="absolute inset-y-0 -left-0.5 -right-0.5 group-hover:bg-primary/30 group-data-[state=drag]:bg-primary transition-colors" />
+      <SplitterResizeHandle id="sidebar-handle" class="w-0 relative z-10 group">
+        <div
+          class="absolute inset-y-0 -left-0.5 -right-0.5 group-hover:bg-primary/30 group-data-[state=drag]:bg-primary transition-colors"
+        />
       </SplitterResizeHandle>
 
       <!-- Main Content Panel -->
       <SplitterPanel id="main-content" :min-size="50">
-        <div :class="['flex flex-col h-full py-2 pr-2', appStore.isSidebarCollapsed && 'pl-2']">
-          <div class="flex-1 flex flex-col bg-card rounded-xl shadow-sm border border-border/50 overflow-hidden">
+        <div
+          :class="[
+            'flex flex-col h-full py-2 pr-2',
+            appStore.isSidebarCollapsed && 'pl-2',
+          ]"
+        >
+          <div
+            class="flex-1 flex flex-col bg-card-translucent rounded-xl shadow-sm border border-border/50 overflow-hidden"
+          >
             <TitleBar />
+
             <main class="flex-1 flex flex-col overflow-hidden">
               <router-view />
             </main>
@@ -66,20 +73,23 @@ useAutoRefresh();
 const appStore = useAppStore();
 const sidebarPanel = ref<InstanceType<typeof SplitterPanel> | null>(null);
 
-watch(() => appStore.isSidebarCollapsed, (collapsed) => {
-  if (collapsed) {
-    sidebarPanel.value?.collapse();
-  } else {
-    sidebarPanel.value?.expand();
-  }
-});
+watch(
+  () => appStore.isSidebarCollapsed,
+  (collapsed) => {
+    if (collapsed) {
+      sidebarPanel.value?.collapse();
+    } else {
+      sidebarPanel.value?.expand();
+    }
+  },
+);
 
 function onLayoutChange(sizes: number[]) {
   // Update CSS variable so the top drag area matches sidebar width
   const sidebarPercent = sizes[0] ?? 20;
   document.documentElement.style.setProperty(
-    '--sidebar-width',
-    `${sidebarPercent}%`
+    "--sidebar-width",
+    `${sidebarPercent}%`,
   );
 }
 </script>
@@ -90,10 +100,14 @@ function onLayoutChange(sizes: number[]) {
 }
 
 :deep(#sidebar) {
-  transition: flex-grow 300ms ease-in-out, flex-basis 300ms ease-in-out;
+  transition:
+    flex-grow 300ms ease-in-out,
+    flex-basis 300ms ease-in-out;
 }
 
 :deep(#main-content) {
-  transition: flex-grow 300ms ease-in-out, flex-basis 300ms ease-in-out;
+  transition:
+    flex-grow 300ms ease-in-out,
+    flex-basis 300ms ease-in-out;
 }
 </style>

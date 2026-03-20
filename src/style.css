@@ -103,6 +103,7 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
 
   --color-card: hsl(var(--card));
+  --color-card-translucent: hsl(var(--card) / 0.6);
   --color-card-foreground: hsl(var(--card-foreground));
 
   --radius-lg: var(--radius);
@@ -177,6 +178,21 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* macOS vibrancy — make backgrounds fully transparent so native blur shows through.
+   Only #main-content keeps its opaque bg-card background. */
+html.vibrancy body,
+html.vibrancy #app {
+  background: transparent !important;
+}
+
+html.vibrancy.dark {
+  --background: 220 20% 4% / 0.75;
+}
+
+html.vibrancy:not(.dark) {
+  --background: 220 15% 90% / 0.5;
 }
 
 html {

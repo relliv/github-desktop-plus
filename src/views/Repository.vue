@@ -174,9 +174,13 @@
             class="flex flex-col overflow-hidden"
             :collapsible="false"
           >
-            <div class="shrink-0 px-4 py-3 border-b flex items-center justify-between">
+            <div
+              class="shrink-0 px-4 py-3 border-b flex items-center justify-between"
+            >
               <h2 class="font-semibold">Changes</h2>
-              <div class="flex items-center rounded-md border bg-muted/50 p-0.5">
+              <div
+                class="flex items-center rounded-md border bg-muted/50 p-0.5"
+              >
                 <button
                   @click="changesLayout = 'horizontal'"
                   class="p-1 rounded-sm transition-colors"
@@ -270,7 +274,7 @@
           <div class="grid grid-cols-3 gap-4">
             <button
               @click="createRepository"
-              class="p-6 bg-card border rounded-lg hover:bg-accent/50 transition-colors text-center"
+              class="p-6 bg-card-translucent/50 border rounded-lg hover:bg-accent/50 transition-colors text-center"
             >
               <FilePlus
                 class="w-8 h-8 mx-auto mb-2 text-primary"
@@ -282,7 +286,7 @@
 
             <button
               @click="cloneRepository"
-              class="p-6 bg-card border rounded-lg hover:bg-accent/50 transition-colors text-center"
+              class="p-6 bg-card-translucent/50 border rounded-lg hover:bg-accent/50 transition-colors text-center"
             >
               <GitBranch
                 class="w-8 h-8 mx-auto mb-2 text-primary"
@@ -294,7 +298,7 @@
 
             <button
               @click="openRepository"
-              class="p-6 bg-card border rounded-lg hover:bg-accent/50 transition-colors text-center"
+              class="p-6 bg-card-translucent/50 border rounded-lg hover:bg-accent/50 transition-colors text-center"
             >
               <FolderOpen
                 class="w-8 h-8 mx-auto mb-2 text-primary"
@@ -316,7 +320,7 @@
               v-for="repo in favoriteRepositories"
               :key="repo.id"
               @click="selectRepository(repo)"
-              class="p-4 bg-card border rounded-lg hover:bg-accent/50 transition-colors text-left group"
+              class="p-4 bg-card-translucent/50 border rounded-lg hover:bg-accent/50 transition-colors text-left group"
             >
               <div class="flex items-start justify-between">
                 <div class="flex-1 min-w-0">
@@ -428,7 +432,8 @@ const repoSwitcherOpen = ref(false);
 // Changes tab layout and file selection
 const CHANGES_LAYOUT_KEY = "changes-layout";
 const changesLayout = ref<"horizontal" | "vertical">(
-  (localStorage.getItem(CHANGES_LAYOUT_KEY) as "horizontal" | "vertical") || "horizontal",
+  (localStorage.getItem(CHANGES_LAYOUT_KEY) as "horizontal" | "vertical") ||
+    "horizontal",
 );
 watch(changesLayout, (v) => localStorage.setItem(CHANGES_LAYOUT_KEY, v));
 

@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 // Expose the API
 contextBridge.exposeInMainWorld('api', api)
 
+// Expose platform info for vibrancy CSS
+contextBridge.exposeInMainWorld('process', { platform: process.platform, env: {} })
+
 // --------- Preload scripts loading ---------
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise((resolve) => {
@@ -122,7 +125,16 @@ function useLoading() {
 // ----------------------------------------------------------------------
 
 const { appendLoading, removeLoading } = useLoading()
-domReady().then(appendLoading)
+domReady().then(() => {
+  appendLoading()
+  // Add vibrancy class on macOS so CSS can use transparent backgrounds
+  if (process.platform === 'darwin') {
+    document.documentElement.classList.add('vibrancy')
+    // Force transparent background on html + body immediately
+    document.documentElement.style.background = 'transparent'
+    document.body.style.background = 'transparent'
+  }
+})
 
 window.onmessage = (ev) => {
   ev.data.payload === 'removeLoading' && removeLoading()
