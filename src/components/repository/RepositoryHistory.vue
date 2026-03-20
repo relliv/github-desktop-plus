@@ -880,6 +880,11 @@ async function loadCommits(reset = false) {
       totalCommits.value = countResult.data;
     }
 
+    // Auto-select latest commit on initial load
+    if (isInitialLoad && !selectedCommit.value && commits.value.length > 0) {
+      selectCommit(commits.value[0]);
+    }
+
     // Fetch tags on initial load
     if (isInitialLoad && currentRepository.value) {
       window.api.git
