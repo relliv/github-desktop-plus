@@ -1,11 +1,11 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 /* Code viewer component styles — imported individually to avoid
    the theme package's duplicate @import 'tailwindcss' */
-@import '@ngeenx/nx-code-viewer-theme/src/atoms/index.css';
-@import '@ngeenx/nx-code-viewer-theme/src/molecules/index.css';
-@import '@ngeenx/nx-code-viewer-theme/src/organisms/index.css';
+@import "@ngeenx/nx-code-viewer-theme/src/atoms/index.css";
+@import "@ngeenx/nx-code-viewer-theme/src/molecules/index.css";
+@import "@ngeenx/nx-code-viewer-theme/src/organisms/index.css";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Code Viewer Theme Variables
@@ -43,8 +43,9 @@
   --nx-widget-padding: 4px;
 
   /* Font */
-  --nx-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+  --nx-font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   /* Light backgrounds — package defaults (neutral palette) */
   --nx-light-bg: #fafafa;
@@ -114,13 +115,21 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
   @keyframes accordion-down {
-    from { height: 0; }
-    to { height: var(--reka-accordion-content-height); }
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--reka-accordion-content-height);
+    }
   }
 
   @keyframes accordion-up {
-    from { height: var(--reka-accordion-content-height); }
-    to { height: 0; }
+    from {
+      height: var(--reka-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
   }
 }
 
@@ -188,11 +197,11 @@ html.vibrancy #app {
 }
 
 html.vibrancy.dark {
-  --background: 220 20% 4% / 0.75;
+  --background: 210 80% 2% / 0.4;
 }
 
 html.vibrancy:not(.dark) {
-  --background: 220 15% 90% / 0.5;
+  --background: 220 15% 95% / 0.9;
 }
 
 html {
