@@ -20,6 +20,7 @@
             :key="file"
             :file="file"
             :staged="true"
+            :status="getFileStatus(file)"
             @click="selectFile(file, true)"
             @unstage="unstageFile(file)"
           />
@@ -27,10 +28,10 @@
       </div>
 
       <!-- Unstaged changes -->
-      <div v-if="unstagedFiles.length > 0" class="flex flex-col min-h-0 flex-1">
+      <div v-if="unstagedEntries.length > 0" class="flex flex-col min-h-0 flex-1">
         <div class="shrink-0 flex items-center justify-between mb-2">
           <h3 class="text-sm font-medium">
-            Changes ({{ unstagedFiles.length }})
+            Changes ({{ unstagedEntries.length }})
           </h3>
           <Button variant="ghost" size="sm" @click="stageAll">
             Stage all
@@ -38,12 +39,13 @@
         </div>
         <div class="flex-1 min-h-0 space-y-1 overflow-y-auto" v-lenis>
           <FileItem
-            v-for="file in unstagedFiles"
-            :key="file"
-            :file="file"
+            v-for="entry in unstagedEntries"
+            :key="entry.path"
+            :file="entry.path"
             :staged="false"
-            @click="selectFile(file)"
-            @stage="stageFile(file)"
+            :status="entry.status"
+            @click="selectFile(entry.path)"
+            @stage="stageFile(entry.path)"
           />
         </div>
       </div>
@@ -100,8 +102,15 @@ import FileItem from "./FileItem.vue";
 const repositoriesStore = useRepositoriesStore();
 const commitMessage = ref("");
 const commitDescription = ref("");
+export type FileStatus = 'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted'
+
+export interface FileEntry {
+  path: string
+  status: FileStatus
+}
+
 const emit = defineEmits<{
-  fileSelected: [file: string, staged: boolean];
+  fileSelected: [file: string, staged: boolean, status: FileStatus];
 }>();
 
 const selectedFile = ref<string | null>(null);
@@ -111,22 +120,36 @@ const currentRepository = computed(() => repositoriesStore.currentRepository);
 const hasChanges = computed(() => repositoriesStore.hasChanges);
 
 const stagedFiles = computed(() => gitStatus.value?.staged || []);
-const unstagedFiles = computed(() => {
+
+const unstagedEntries = computed<FileEntry[]>(() => {
   if (!gitStatus.value) return [];
-  return [
-    ...gitStatus.value.modified,
-    ...gitStatus.value.added,
-    ...gitStatus.value.deleted,
-  ].filter((file) => !stagedFiles.value.includes(file));
+  const staged = new Set(stagedFiles.value);
+  const entries: FileEntry[] = [];
+  for (const f of gitStatus.value.modified) {
+    if (!staged.has(f)) entries.push({ path: f, status: 'modified' });
+  }
+  for (const f of gitStatus.value.added) {
+    if (!staged.has(f)) entries.push({ path: f, status: 'added' });
+  }
+  for (const f of gitStatus.value.deleted) {
+    if (!staged.has(f)) entries.push({ path: f, status: 'deleted' });
+  }
+  return entries;
 });
 
-const currentBranch = computed(
-  () => currentRepository.value?.currentBranch || "main"
-);
+const unstagedFiles = computed(() => unstagedEntries.value.map(e => e.path));
+
+const getFileStatus = (file: string): FileStatus => {
+  if (!gitStatus.value) return 'modified';
+  if (gitStatus.value.added.includes(file)) return 'added';
+  if (gitStatus.value.deleted.includes(file)) return 'deleted';
+  if (gitStatus.value.conflicted.includes(file)) return 'conflicted';
+  return 'modified';
+};
 
 const selectFile = (file: string, staged: boolean = false) => {
   selectedFile.value = file;
-  emit("fileSelected", file, staged);
+  emit("fileSelected", file, staged, getFileStatus(file));
 };
 
 const stageFile = async (file: string) => {

@@ -14,7 +14,7 @@
     />
     <FileIcon :filename="file" class="w-4 h-4 flex-shrink-0" />
     <span class="text-sm truncate flex-1">{{ file }}</span>
-    <StatusBadge :status="getFileStatus()" />
+    <StatusBadge :status="status" />
   </div>
 </template>
 
@@ -25,13 +25,11 @@ import StatusBadge from './StatusBadge.vue'
 interface Props {
   file: string
   staged: boolean
+  status?: 'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted'
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  status: 'modified'
+})
 defineEmits(['click', 'stage', 'unstage'])
-
-const getFileStatus = () => {
-  // TODO: Get actual file status from git
-  return 'modified'
-}
 </script>

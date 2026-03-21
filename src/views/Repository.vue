@@ -226,14 +226,21 @@
             :min-size="30"
             class="flex flex-col"
           >
-            <div class="px-4 py-3 border-b">
-              <h2 class="font-semibold truncate">
+            <div class="px-4 py-3 border-b flex items-center gap-2">
+              <h2 class="font-semibold truncate flex-1">
                 {{ changesSelectedFile || "Diff" }}
               </h2>
+              <span
+                v-if="changesSelectedFile && changesIsStaged"
+                class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+              >
+                STAGED
+              </span>
             </div>
             <DiffViewer
               :selected-file="changesSelectedFile"
               :is-staged="changesIsStaged"
+              :file-status="changesFileStatus"
             />
           </SplitterPanel>
         </SplitterGroup>
@@ -439,10 +446,12 @@ watch(changesLayout, (v) => localStorage.setItem(CHANGES_LAYOUT_KEY, v));
 
 const changesSelectedFile = ref<string | null>(null);
 const changesIsStaged = ref(false);
+const changesFileStatus = ref<'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted'>('modified');
 
-const onChangeFileSelected = (file: string, staged: boolean) => {
+const onChangeFileSelected = (file: string, staged: boolean, status: 'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted' = 'modified') => {
   changesSelectedFile.value = file;
   changesIsStaged.value = staged;
+  changesFileStatus.value = status;
 };
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);

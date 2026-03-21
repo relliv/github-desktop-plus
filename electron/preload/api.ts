@@ -24,6 +24,7 @@ export const api = {
     getTags: (path: string) => ipcRenderer.invoke('git:get-tags', path),
     diffFile: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-file', path, filePath),
     diffStaged: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-staged', path, filePath),
+    diffDeleted: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-deleted', path, filePath),
     onCloneProgress: (callback: (progress: any) => void) => {
       const handler = (_: any, progress: any) => callback(progress)
       ipcRenderer.on('git:clone:progress', handler)

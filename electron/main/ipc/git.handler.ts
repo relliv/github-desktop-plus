@@ -404,6 +404,30 @@ export function registerGitHandlers() {
     try {
       const repoGit = simpleGit(repoPath)
       const diff = await repoGit.diff([filePath])
+
+      // If diff is empty, the file may be untracked — generate a synthetic diff
+      if (!diff.trim()) {
+        const fullPath = path.join(repoPath, filePath)
+        try {
+          const content = await fs.readFile(fullPath, 'utf-8')
+          const lines = content.split('\n')
+          // Remove trailing empty line from split if file ends with newline
+          if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop()
+          const diffLines = [
+            `diff --git a/${filePath} b/${filePath}`,
+            'new file mode 100644',
+            '--- /dev/null',
+            `+++ b/${filePath}`,
+            `@@ -0,0 +1,${lines.length} @@`,
+            ...lines.map(l => `+${l}`)
+          ]
+          return { success: true, data: diffLines.join('\n') }
+        } catch {
+          // File might be deleted or binary — return empty
+          return { success: true, data: '' }
+        }
+      }
+
       return { success: true, data: diff }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : 'Failed to get diff' }
@@ -418,6 +442,28 @@ export function registerGitHandlers() {
       return { success: true, data: diff }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : 'Failed to get staged diff' }
+    }
+  })
+
+  // Get diff for a deleted file (show removed content)
+  perf.handle(ipcMain, 'git:diff-deleted', async (_, repoPath: string, filePath: string) => {
+    try {
+      const repoGit = simpleGit(repoPath)
+      // Show what the file looked like in HEAD
+      const content = await repoGit.show([`HEAD:${filePath}`])
+      const lines = content.split('\n')
+      if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop()
+      const diffLines = [
+        `diff --git a/${filePath} b/${filePath}`,
+        'deleted file mode 100644',
+        `--- a/${filePath}`,
+        '+++ /dev/null',
+        `@@ -1,${lines.length} +0,0 @@`,
+        ...lines.map(l => `-${l}`)
+      ]
+      return { success: true, data: diffLines.join('\n') }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to get deleted file diff' }
     }
   })
 
