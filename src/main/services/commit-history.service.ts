@@ -1,5 +1,5 @@
 import { db, schema } from '../db'
-import { eq, desc, count } from 'drizzle-orm'
+import { eq, desc, count, and, or, like } from 'drizzle-orm'
 import { simpleGit } from 'simple-git'
 import { perf } from '@shared/perf'
 
@@ -191,6 +191,51 @@ export class CommitHistoryService {
         .select({ count: count() })
         .from(schema.commits)
         .where(eq(schema.commits.repositoryId, repositoryId))
+
+      return result?.count ?? 0
+    })
+  }
+
+  async searchCommits(repositoryId: number, query: string, offset = 0, limit = 50) {
+    const pattern = `%${query}%`
+    const whereClause = and(
+      eq(schema.commits.repositoryId, repositoryId),
+      or(
+        like(schema.commits.message, pattern),
+        like(schema.commits.authorName, pattern),
+        like(schema.commits.hash, pattern),
+        like(schema.commits.abbreviatedHash, pattern),
+      ),
+    )
+
+    return perf.measure(`commits-db:search(repo:${repositoryId},q:${query})`, () =>
+      db
+        .select()
+        .from(schema.commits)
+        .where(whereClause!)
+        .orderBy(desc(schema.commits.date))
+        .offset(offset)
+        .limit(limit)
+    )
+  }
+
+  async searchCommitCount(repositoryId: number, query: string): Promise<number> {
+    const pattern = `%${query}%`
+    const whereClause = and(
+      eq(schema.commits.repositoryId, repositoryId),
+      or(
+        like(schema.commits.message, pattern),
+        like(schema.commits.authorName, pattern),
+        like(schema.commits.hash, pattern),
+        like(schema.commits.abbreviatedHash, pattern),
+      ),
+    )
+
+    return perf.measure(`commits-db:search-count(repo:${repositoryId},q:${query})`, async () => {
+      const [result] = await db
+        .select({ count: count() })
+        .from(schema.commits)
+        .where(whereClause!)
 
       return result?.count ?? 0
     })

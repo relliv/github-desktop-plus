@@ -74,6 +74,30 @@
           </div>
         </div>
 
+        <!-- Search bar -->
+        <div class="shrink-0 px-3 pb-2">
+          <div class="relative">
+            <Search
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none"
+              :stroke-width="1.5"
+            />
+            <input
+              ref="searchInputRef"
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search commits..."
+              class="w-full pl-8 pr-8 py-1.5 text-sm border rounded-md bg-background/70 placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
+            />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-accent transition-colors"
+            >
+              <X class="size-3 text-muted-foreground" :stroke-width="1.5" />
+            </button>
+          </div>
+        </div>
+
         <div
           v-if="commits.length > 0"
           class="flex-1 min-h-0 overflow-y-auto"
@@ -361,11 +385,28 @@
 
         <div v-else class="flex-1 flex items-center justify-center">
           <div class="text-center">
-            <GitCommitVertical
+            <Search
+              v-if="searchQuery.trim()"
               class="size-8 mx-auto mb-3 text-muted-foreground"
               :stroke-width="1"
             />
-            <p class="text-sm text-muted-foreground">No commits found</p>
+            <GitCommitVertical
+              v-else
+              class="size-8 mx-auto mb-3 text-muted-foreground"
+              :stroke-width="1"
+            />
+            <p class="text-sm text-muted-foreground">
+              {{
+                searchQuery.trim() ? "No matching commits" : "No commits found"
+              }}
+            </p>
+            <button
+              v-if="searchQuery.trim()"
+              @click="clearSearch"
+              class="mt-2 text-xs text-primary hover:underline"
+            >
+              Clear search
+            </button>
           </div>
         </div>
       </SplitterPanel>
@@ -618,6 +659,8 @@ import {
   Columns2,
   Rows2,
   Tag,
+  Search,
+  X,
 } from "lucide-vue-next";
 import NumberFlow from "@number-flow/vue";
 import { DiffViewer as NxDiffViewer } from "@ngeenx/nx-vue-code-viewer";
@@ -725,6 +768,12 @@ const tagMap = ref<Record<string, string[]>>({});
 
 const copiedHash = ref<string | null>(null);
 const hoveredCommit = ref<string | null>(null);
+
+// Search state
+const searchQuery = ref("");
+const isSearching = ref(false);
+const searchInputRef = ref<HTMLInputElement | null>(null);
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Dismiss tooltips on scroll
 const isScrolling = ref(false);
@@ -878,6 +927,73 @@ function resetState() {
   tagMap.value = {};
   currentOffset = 0;
   hasMore = true;
+  searchQuery.value = "";
+}
+
+// Search commits with debounce
+watch(searchQuery, (query) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    if (query.trim()) {
+      performSearch(true);
+    } else {
+      loadCommits(true);
+    }
+  }, 300);
+});
+
+async function performSearch(reset = false) {
+  if (!currentRepository.value) return;
+  const query = searchQuery.value.trim();
+  if (!query) return;
+
+  if (reset) {
+    currentOffset = 0;
+    hasMore = true;
+  }
+
+  if (!hasMore && !reset) return;
+
+  isSearching.value = true;
+  if (!reset) isLoadingMore.value = true;
+
+  try {
+    const result = await window.api.commits.search(
+      currentRepository.value.id,
+      query,
+      currentOffset,
+      PAGE_SIZE,
+    );
+
+    if (result.success && result.data) {
+      if (reset) {
+        commits.value = result.data.commits;
+      } else {
+        commits.value.push(...result.data.commits);
+      }
+      currentOffset += result.data.commits.length;
+      hasMore = result.data.commits.length === PAGE_SIZE;
+      totalCommits.value = result.data.total;
+
+      fetchAvatars(result.data.commits);
+
+      nextTick(() => {
+        if (commitListRef.value) {
+          getLenisInstance(commitListRef.value)?.resize();
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Failed to search commits:", error);
+  } finally {
+    isSearching.value = false;
+    isLoadingMore.value = false;
+  }
+}
+
+function clearSearch() {
+  searchQuery.value = "";
+  searchInputRef.value?.focus();
 }
 
 async function loadCommits(reset = false) {
@@ -1068,7 +1184,11 @@ function handleLenisScroll(lenis: any) {
   // Load more when scrolled near bottom
   const remaining = lenis.limit - lenis.animatedScroll;
   if (remaining < 200 && hasMore && !isLoadingMore.value) {
-    loadCommits(false);
+    if (searchQuery.value.trim()) {
+      performSearch(false);
+    } else {
+      loadCommits(false);
+    }
   }
 }
 

@@ -74,6 +74,7 @@ export const api = {
     fullScan: (repositoryId: number, repoPath: string) => ipcRenderer.invoke('commits:full-scan', repositoryId, repoPath),
     list: (repositoryId: number, offset?: number, limit?: number) => ipcRenderer.invoke('commits:list', repositoryId, offset, limit),
     count: (repositoryId: number) => ipcRenderer.invoke('commits:count', repositoryId),
+    search: (repositoryId: number, query: string, offset?: number, limit?: number) => ipcRenderer.invoke('commits:search', repositoryId, query, offset, limit),
     files: (repoPath: string, commitHash: string) => ipcRenderer.invoke('commits:files', repoPath, commitHash),
     fileDiff: (repoPath: string, commitHash: string, filePath: string) => ipcRenderer.invoke('commits:file-diff', repoPath, commitHash, filePath),
     onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => {

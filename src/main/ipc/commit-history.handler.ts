@@ -59,6 +59,19 @@ export function registerCommitHistoryHandlers() {
     }
   })
 
+  perf.handle(ipcMain, 'commits:search', async (_, repositoryId: number, query: string, offset?: number, limit?: number) => {
+    try {
+      const [commits, total] = await Promise.all([
+        commitHistoryService.searchCommits(repositoryId, query, offset, limit),
+        commitHistoryService.searchCommitCount(repositoryId, query),
+      ])
+      return { success: true, data: { commits, total } }
+    } catch (error) {
+      console.error('Error in commits:search:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
   perf.handle(ipcMain, 'commits:files', async (_, repoPath: string, commitHash: string) => {
     try {
       const files = await commitHistoryService.getCommitFiles(repoPath, commitHash)
