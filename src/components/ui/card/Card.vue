@@ -1,15 +1,22 @@
 <template>
-  <div :class="cn('rounded-lg border bg-card text-card-foreground shadow-sm', className)">
+  <div
+    :class="
+      cn(
+        'rounded-lg border bg-card-translucent text-card-foreground shadow-sm',
+        className,
+      )
+    "
+  >
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 interface Props {
-  className?: string
+  className?: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>

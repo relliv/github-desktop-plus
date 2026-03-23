@@ -4,7 +4,7 @@
       <Button
         variant="outline"
         size="sm"
-        class="flex flex-row items-center w-[245px] h-[30px]"
+        class="flex flex-row items-center w-[245px] h-[30px] bg-card-translucent hover:bg-card-translucent/10"
         @contextmenu.prevent="openContextMenu"
         @mouseenter="startTooltipDelay"
         @mouseleave="cancelTooltip"
@@ -26,13 +26,13 @@
     <PopoverPortal>
       <PopoverContent class="z-50 w-[245px] p-0" align="start">
         <div
-          class="bg-white dark:bg-card mt-1 rounded-md shadow-md dark:shadow-lg border border-border"
+          class="bg-white/90 dark:bg-card/90 mt-1 rounded-md shadow-md dark:shadow-lg border border-border backdrop-blur-lg"
         >
           <div class="p-2">
             <input
               v-model="searchQuery"
               placeholder="Find a branch..."
-              class="w-full px-2 py-1 text-sm border rounded bg-background text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              class="w-full px-2 py-1 text-sm border rounded bg-background/70 text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
           <div
@@ -134,7 +134,12 @@ import {
   GitBranch,
   Copy,
 } from "lucide-vue-next";
-import { Popover, PopoverContent, PopoverPortal, PopoverTrigger } from "../ui/Popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverPortal,
+  PopoverTrigger,
+} from "../ui/Popover";
 import {
   AlertDialog,
   AlertDialogAction,

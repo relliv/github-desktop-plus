@@ -243,14 +243,14 @@
                 <button
                   @click="selectRepository(repo)"
                   :class="[
-                    'w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-left',
+                    'w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors duration-200 ease-in-out text-left',
                     currentRepository?.id === repo.id
-                      ? 'bg-accent text-accent-foreground'
-                      : 'hover:bg-accent/50',
+                      ? 'bg-card-translucent/50 hover:bg-card-translucent/80 text-accent-foreground'
+                      : 'hover:bg-card-translucent/70',
                   ]"
                   :title="repo.name"
                 >
-                  <Folder class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
+                  <Folder class="w-4 h-4 shrink-0" :stroke-width="1" />
                   <div class="flex-1 min-w-0">
                     <div class="text-sm font-medium truncate">
                       {{ repo.name }}
@@ -261,7 +261,7 @@
                   </div>
                   <Star
                     v-if="repo.isFavorite"
-                    class="w-3 h-3 text-yellow-500 flex-shrink-0"
+                    class="w-3 h-3 text-yellow-500 shrink-0"
                     :stroke-width="1"
                   />
                 </button>
@@ -490,13 +490,17 @@ function applyPreloadedData(data: any) {
     ownerAvatars.value = { ...ownerAvatars.value, ...data.ownerAvatars };
   }
   if (data.accounts) {
-    try { accountsStore.accounts = JSON.parse(data.accounts); } catch {}
+    try {
+      accountsStore.accounts = JSON.parse(data.accounts);
+    } catch {}
   }
   if (data.activeAccountId) {
     accountsStore.activeAccountId = data.activeAccountId;
   }
   if (data.collapsedGroups) {
-    try { collapsedGroups.value = new Set(JSON.parse(data.collapsedGroups)); } catch {}
+    try {
+      collapsedGroups.value = new Set(JSON.parse(data.collapsedGroups));
+    } catch {}
   }
   // Apply repos LAST — triggers repositoriesByOwner watcher, which will see avatars already cached
   if (data.repos) {

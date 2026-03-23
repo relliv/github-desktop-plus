@@ -81,8 +81,17 @@
           v-lenis
         >
           <!-- List view -->
-          <TooltipProvider v-if="viewMode === 'list'" :delay-duration="isScrolling ? 999999 : 400" :skip-delay-duration="0">
-            <TooltipRoot v-for="commit in commits" :key="commit.hash" :open="isScrolling ? false : undefined" @update:open="(open) => open && (hoveredCommit = commit.hash)">
+          <TooltipProvider
+            v-if="viewMode === 'list'"
+            :delay-duration="isScrolling ? 999999 : 400"
+            :skip-delay-duration="0"
+          >
+            <TooltipRoot
+              v-for="commit in commits"
+              :key="commit.hash"
+              :open="isScrolling ? false : undefined"
+              @update:open="(open) => open && (hoveredCommit = commit.hash)"
+            >
               <TooltipTrigger as-child>
                 <button
                   @click="selectCommit(commit)"
@@ -142,7 +151,9 @@
                   </div>
                 </button>
               </TooltipTrigger>
-              <TooltipPortal v-if="!isScrolling && hoveredCommit === commit.hash">
+              <TooltipPortal
+                v-if="!isScrolling && hoveredCommit === commit.hash"
+              >
                 <TooltipContent
                   side="right"
                   :side-offset="8"
@@ -163,7 +174,10 @@
 
           <!-- Timeline view -->
           <div v-else class="px-4 py-3">
-            <TooltipProvider :delay-duration="isScrolling ? 999999 : 400" :skip-delay-duration="0">
+            <TooltipProvider
+              :delay-duration="isScrolling ? 999999 : 400"
+              :skip-delay-duration="0"
+            >
               <div class="relative">
                 <!-- Timeline line -->
                 <div
@@ -229,14 +243,20 @@
                     />
 
                     <!-- Commit content with tooltip -->
-                    <TooltipRoot :open="isScrolling ? false : undefined" @update:open="(open) => open && (hoveredCommit = commit.hash)">
+                    <TooltipRoot
+                      :open="isScrolling ? false : undefined"
+                      @update:open="
+                        (open) => open && (hoveredCommit = commit.hash)
+                      "
+                    >
                       <TooltipTrigger as-child>
                         <button
                           @click="selectCommit(commit)"
                           @contextmenu.prevent="openContextMenu($event, commit)"
-                          class="group/commit w-full text-left rounded-lg px-3 py-2 -mx-1 hover:bg-accent/50 transition-colors"
+                          class="group/commit w-full text-left rounded-lg px-3 py-2 -mx-1 border border-transparent hover:bg-card-translucent/80 transition-colors"
                           :class="{
-                            'bg-accent': selectedCommit?.hash === commit.hash,
+                            'bg-card-translucent/70 border-card-translucent/90':
+                              selectedCommit?.hash === commit.hash,
                           }"
                         >
                           <div class="flex items-center gap-1.5 flex-wrap">
@@ -291,7 +311,9 @@
                           </div>
                         </button>
                       </TooltipTrigger>
-                      <TooltipPortal v-if="!isScrolling && hoveredCommit === commit.hash">
+                      <TooltipPortal
+                        v-if="!isScrolling && hoveredCommit === commit.hash"
+                      >
                         <TooltipContent
                           side="right"
                           :side-offset="8"
@@ -387,7 +409,9 @@
                   ({{ commitFiles.length }})
                 </span>
               </h2>
-              <div class="flex items-center rounded-md border bg-muted/50 p-0.5">
+              <div
+                class="flex items-center rounded-md border bg-muted/50 p-0.5"
+              >
                 <button
                   @click="detailLayout = 'horizontal'"
                   class="p-1 rounded-sm transition-colors"
@@ -419,7 +443,9 @@
               v-if="isLoadingFiles"
               class="flex-1 flex items-center justify-center"
             >
-              <span class="text-xs text-muted-foreground">Loading files...</span>
+              <span class="text-xs text-muted-foreground"
+                >Loading files...</span
+              >
             </div>
 
             <div
@@ -632,13 +658,34 @@ const selectedFileLanguage = computed(() => {
   const ext = selectedFileExtension.value;
   if (!ext) return "plaintext";
   const map: Record<string, string> = {
-    ts: "typescript", tsx: "tsx", js: "javascript", jsx: "jsx",
-    vue: "vue", css: "css", scss: "scss", html: "html",
-    json: "json", md: "markdown", py: "python", rs: "rust",
-    go: "go", java: "java", rb: "ruby", sh: "bash",
-    yml: "yaml", yaml: "yaml", toml: "toml", xml: "xml",
-    sql: "sql", swift: "swift", kt: "kotlin", dart: "dart",
-    c: "c", cpp: "cpp", h: "c", hpp: "cpp",
+    ts: "typescript",
+    tsx: "tsx",
+    js: "javascript",
+    jsx: "jsx",
+    vue: "vue",
+    css: "css",
+    scss: "scss",
+    html: "html",
+    json: "json",
+    md: "markdown",
+    py: "python",
+    rs: "rust",
+    go: "go",
+    java: "java",
+    rb: "ruby",
+    sh: "bash",
+    yml: "yaml",
+    yaml: "yaml",
+    toml: "toml",
+    xml: "xml",
+    sql: "sql",
+    swift: "swift",
+    kt: "kotlin",
+    dart: "dart",
+    c: "c",
+    cpp: "cpp",
+    h: "c",
+    hpp: "cpp",
   };
   return map[ext] || "plaintext";
 });
@@ -658,7 +705,8 @@ watch(viewMode, (v) => localStorage.setItem(VIEW_MODE_KEY, v));
 
 const DETAIL_LAYOUT_KEY = "history-detail-layout";
 const detailLayout = ref<"horizontal" | "vertical">(
-  (localStorage.getItem(DETAIL_LAYOUT_KEY) as "horizontal" | "vertical") || "horizontal",
+  (localStorage.getItem(DETAIL_LAYOUT_KEY) as "horizontal" | "vertical") ||
+    "horizontal",
 );
 watch(detailLayout, (v) => localStorage.setItem(DETAIL_LAYOUT_KEY, v));
 
@@ -793,11 +841,14 @@ onMounted(() => {
 });
 
 // Re-attach Lenis listener when commit list appears (v-if becomes true)
-watch(() => commits.value.length, (len, oldLen) => {
-  if (len > 0 && oldLen === 0) {
-    nextTick(() => setupLenisListener());
-  }
-});
+watch(
+  () => commits.value.length,
+  (len, oldLen) => {
+    if (len > 0 && oldLen === 0) {
+      nextTick(() => setupLenisListener());
+    }
+  },
+);
 
 onUnmounted(() => {
   cleanupProgress?.();
@@ -1025,7 +1076,7 @@ function setupLenisListener() {
   if (!commitListRef.value) return;
   const lenis = getLenisInstance(commitListRef.value);
   if (lenis) {
-    lenis.on('scroll', handleLenisScroll);
+    lenis.on("scroll", handleLenisScroll);
   }
 }
 
