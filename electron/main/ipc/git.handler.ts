@@ -103,12 +103,13 @@ export function registerGitHandlers() {
 
       // Run local + remote branch queries in parallel
       const [localRaw, remoteRaw] = await Promise.all([
-        repoGit.raw(['branch', '--no-color']),
-        repoGit.raw(['branch', '-r', '--no-color']),
+        repoGit.raw(['branch', '--no-color', '--sort=-committerdate']),
+        repoGit.raw(['branch', '-r', '--no-color', '--sort=-committerdate']),
       ])
 
       let current = ''
       const local: string[] = []
+      const pinned = ['main', 'dev']
       for (const line of localRaw.split('\n')) {
         const trimmed = line.trim()
         if (!trimmed) continue
@@ -120,6 +121,11 @@ export function registerGitHandlers() {
         }
       }
 
+      // Pin main/dev to the top (in order), keep the rest sorted by date
+      const pinnedBranches = pinned.filter((b) => local.includes(b))
+      const rest = local.filter((b) => !pinned.includes(b))
+      const sortedLocal = [...pinnedBranches, ...rest]
+
       const remote: string[] = []
       for (const line of remoteRaw.split('\n')) {
         const trimmed = line.trim()
@@ -128,7 +134,7 @@ export function registerGitHandlers() {
         }
       }
 
-      return { current, local, remote }
+      return { current, local: sortedLocal, remote }
     } catch (error) {
       throw new Error(`Failed to get branches: ${error}`)
     }
