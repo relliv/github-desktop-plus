@@ -48,7 +48,7 @@
     "Courier New", monospace;
 
   /* Light backgrounds — package defaults (neutral palette) */
-  --nx-light-bg: #fafafa;
+  --nx-light-bg: #fafafa50;
   --nx-light-bg-secondary: #f5f5f5;
   --nx-light-bg-tertiary: #e5e5e5;
   --nx-light-border-color: #d4d4d4;
@@ -58,7 +58,7 @@
   --nx-light-line-number-bg: #ffffff;
 
   /* Dark backgrounds — package defaults (neutral palette) */
-  --nx-dark-bg: #171717;
+  --nx-dark-bg: #17171750;
   --nx-dark-bg-secondary: #262626;
   --nx-dark-bg-tertiary: #404040;
   --nx-dark-border-color: #404040;
