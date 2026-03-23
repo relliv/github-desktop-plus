@@ -59,11 +59,11 @@ export function registerCommitHistoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'commits:search', async (_, repositoryId: number, query: string, offset?: number, limit?: number) => {
+  perf.handle(ipcMain, 'commits:search', async (_, repositoryId: number, query: string, offset?: number, limit?: number, tagMatchHashes?: string[]) => {
     try {
       const [commits, total] = await Promise.all([
-        commitHistoryService.searchCommits(repositoryId, query, offset, limit),
-        commitHistoryService.searchCommitCount(repositoryId, query),
+        commitHistoryService.searchCommits(repositoryId, query, offset, limit, tagMatchHashes),
+        commitHistoryService.searchCommitCount(repositoryId, query, tagMatchHashes),
       ])
       return { success: true, data: { commits, total } }
     } catch (error) {

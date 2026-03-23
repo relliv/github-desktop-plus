@@ -958,11 +958,18 @@ async function performSearch(reset = false) {
   if (!reset) isLoadingMore.value = true;
 
   try {
+    // Find commit hashes that have tags matching the search query
+    const lowerQuery = query.toLowerCase();
+    const tagMatchHashes = Object.entries(tagMap.value)
+      .filter(([, tags]) => tags.some((tag) => tag.toLowerCase().includes(lowerQuery)))
+      .map(([hash]) => hash);
+
     const result = await window.api.commits.search(
       currentRepository.value.id,
       query,
       currentOffset,
       PAGE_SIZE,
+      tagMatchHashes.length > 0 ? tagMatchHashes : undefined,
     );
 
     if (result.success && result.data) {

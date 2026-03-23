@@ -1,5 +1,5 @@
 import { db, schema } from '../db'
-import { eq, desc, count, and, or, like } from 'drizzle-orm'
+import { eq, desc, count, and, or, like, inArray } from 'drizzle-orm'
 import { simpleGit } from 'simple-git'
 import { perf } from '@shared/perf'
 
@@ -196,46 +196,47 @@ export class CommitHistoryService {
     })
   }
 
-  async searchCommits(repositoryId: number, query: string, offset = 0, limit = 50) {
+  private buildSearchWhere(repositoryId: number, query: string, tagMatchHashes?: string[]) {
     const pattern = `%${query}%`
-    const whereClause = and(
+    const conditions = [
+      like(schema.commits.message, pattern),
+      like(schema.commits.authorName, pattern),
+      like(schema.commits.hash, pattern),
+      like(schema.commits.abbreviatedHash, pattern),
+    ]
+
+    if (tagMatchHashes && tagMatchHashes.length > 0) {
+      conditions.push(inArray(schema.commits.hash, tagMatchHashes))
+    }
+
+    return and(
       eq(schema.commits.repositoryId, repositoryId),
-      or(
-        like(schema.commits.message, pattern),
-        like(schema.commits.authorName, pattern),
-        like(schema.commits.hash, pattern),
-        like(schema.commits.abbreviatedHash, pattern),
-      ),
-    )
+      or(...conditions),
+    )!
+  }
+
+  async searchCommits(repositoryId: number, query: string, offset = 0, limit = 50, tagMatchHashes?: string[]) {
+    const whereClause = this.buildSearchWhere(repositoryId, query, tagMatchHashes)
 
     return perf.measure(`commits-db:search(repo:${repositoryId},q:${query})`, () =>
       db
         .select()
         .from(schema.commits)
-        .where(whereClause!)
+        .where(whereClause)
         .orderBy(desc(schema.commits.date))
         .offset(offset)
         .limit(limit)
     )
   }
 
-  async searchCommitCount(repositoryId: number, query: string): Promise<number> {
-    const pattern = `%${query}%`
-    const whereClause = and(
-      eq(schema.commits.repositoryId, repositoryId),
-      or(
-        like(schema.commits.message, pattern),
-        like(schema.commits.authorName, pattern),
-        like(schema.commits.hash, pattern),
-        like(schema.commits.abbreviatedHash, pattern),
-      ),
-    )
+  async searchCommitCount(repositoryId: number, query: string, tagMatchHashes?: string[]): Promise<number> {
+    const whereClause = this.buildSearchWhere(repositoryId, query, tagMatchHashes)
 
     return perf.measure(`commits-db:search-count(repo:${repositoryId},q:${query})`, async () => {
       const [result] = await db
         .select({ count: count() })
         .from(schema.commits)
-        .where(whereClause!)
+        .where(whereClause)
 
       return result?.count ?? 0
     })

@@ -20,7 +20,7 @@ export interface CommitsAPI {
   fullScan: (repositoryId: number, repoPath: string) => Promise<any>
   list: (repositoryId: number, offset?: number, limit?: number) => Promise<any>
   count: (repositoryId: number) => Promise<any>
-  search: (repositoryId: number, query: string, offset?: number, limit?: number) => Promise<any>
+  search: (repositoryId: number, query: string, offset?: number, limit?: number, tagMatchHashes?: string[]) => Promise<any>
   files: (repoPath: string, commitHash: string) => Promise<any>
   fileDiff: (repoPath: string, commitHash: string, filePath: string) => Promise<any>
   onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => () => void
