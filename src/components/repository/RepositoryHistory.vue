@@ -113,7 +113,7 @@
             <TooltipRoot
               v-for="commit in commits"
               :key="commit.hash"
-              :open="isScrolling ? false : undefined"
+              v-bind="isScrolling ? { open: false } : {}"
               @update:open="(open) => open && (hoveredCommit = commit.hash)"
             >
               <TooltipTrigger as-child>
@@ -268,7 +268,7 @@
 
                     <!-- Commit content with tooltip -->
                     <TooltipRoot
-                      :open="isScrolling ? false : undefined"
+                      v-bind="isScrolling ? { open: false } : {}"
                       @update:open="
                         (open) => open && (hoveredCommit = commit.hash)
                       "
