@@ -200,6 +200,7 @@ export class CommitHistoryService {
     const pattern = `%${query}%`
     const conditions = [
       like(schema.commits.message, pattern),
+      like(schema.commits.body, pattern),
       like(schema.commits.authorName, pattern),
       like(schema.commits.hash, pattern),
       like(schema.commits.abbreviatedHash, pattern),
