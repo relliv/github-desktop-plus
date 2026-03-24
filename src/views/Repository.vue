@@ -123,8 +123,8 @@
             <FileDiff class="size-4" :stroke-width="1.5" />
             Changes
             <span
-              v-if="changeCount > 0"
-              class="ml-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground flex items-center justify-center"
+              class="ml-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-all duration-300 origin-center"
+              :class="changeCount > 0 ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
             >
               <NumberFlow
                 :value="changeCount"
