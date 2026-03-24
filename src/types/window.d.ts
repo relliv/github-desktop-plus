@@ -31,6 +31,7 @@ declare global {
         isMaximized: () => Promise<boolean>
         onMaximized: (callback: (maximized: boolean) => void) => void
         onFullScreen: (callback: (fullscreen: boolean) => void) => void
+        newWindow: () => Promise<void>
       }
       dialog: {
         openDirectory: () => Promise<string | null>

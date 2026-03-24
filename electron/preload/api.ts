@@ -42,7 +42,8 @@ export const api = {
     },
     onFullScreen: (callback: (fullscreen: boolean) => void) => {
       ipcRenderer.on('window:fullscreen', (_, fullscreen) => callback(fullscreen))
-    }
+    },
+    newWindow: () => ipcRenderer.invoke('window:new'),
   },
   
   dialog: {
