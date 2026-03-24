@@ -66,7 +66,7 @@ export class WindowManager {
     return { x, y, width: base.width, height: base.height, isMaximized: false }
   }
 
-  async createWindow(): Promise<BrowserWindow> {
+  async createWindow(options?: { repositoryId?: number }): Promise<BrowserWindow> {
     const endCreateWindow = perf.start('main:create-window')
 
     // Determine bounds
@@ -185,6 +185,9 @@ export class WindowManager {
       win.webContents.send('main-process-message', new Date().toLocaleString())
       if (this.cachedSidebarData) {
         win.webContents.send('preloaded-sidebar-data', this.cachedSidebarData)
+      }
+      if (options?.repositoryId) {
+        win.webContents.send('open-repository', options.repositoryId)
       }
     })
 

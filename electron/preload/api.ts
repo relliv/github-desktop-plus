@@ -44,6 +44,10 @@ export const api = {
       ipcRenderer.on('window:fullscreen', (_, fullscreen) => callback(fullscreen))
     },
     newWindow: () => ipcRenderer.invoke('window:new'),
+    newWindowWithRepo: (repositoryId: number) => ipcRenderer.invoke('window:new-with-repo', repositoryId),
+    onOpenRepository: (callback: (repositoryId: number) => void) => {
+      ipcRenderer.on('open-repository', (_, repositoryId) => callback(repositoryId))
+    },
   },
   
   dialog: {

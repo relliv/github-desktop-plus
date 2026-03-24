@@ -38,6 +38,13 @@
       <ContextMenuSeparator />
       
       <!-- Repository actions -->
+      <ContextMenuItem @click="openInNewWindow">
+        <ExternalLink class="w-4 h-4 mr-2" />
+        Open in New Window
+      </ContextMenuItem>
+
+      <ContextMenuSeparator />
+
       <ContextMenuItem @click="openInFinder">
         <Folder class="w-4 h-4 mr-2" />
         Show in {{ finderName }}
@@ -98,6 +105,7 @@ import {
   Terminal,
   Star,
   Trash2,
+  ExternalLink,
 } from 'lucide-vue-next'
 
 interface Props {
@@ -147,6 +155,10 @@ const openInEditor = async (editor: any) => {
 
 const goToEditorSettings = () => {
   router.push('/external-editor')
+}
+
+const openInNewWindow = () => {
+  window.api.window.newWindowWithRepo(props.repository.id)
 }
 
 const openInFinder = async () => {

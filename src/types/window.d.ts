@@ -32,6 +32,8 @@ declare global {
         onMaximized: (callback: (maximized: boolean) => void) => void
         onFullScreen: (callback: (fullscreen: boolean) => void) => void
         newWindow: () => Promise<void>
+        newWindowWithRepo: (repositoryId: number) => Promise<void>
+        onOpenRepository: (callback: (repositoryId: number) => void) => void
       }
       dialog: {
         openDirectory: () => Promise<string | null>

@@ -135,9 +135,13 @@ app.whenReady().then(async () => {
   const { registerWindowHandlers } = await import("./ipc/window.handler");
   registerWindowHandlers();
 
-  // New window IPC handler
+  // New window IPC handlers
   ipcMain.handle("window:new", () => {
     windowManager.createWindow();
+  });
+
+  ipcMain.handle("window:new-with-repo", (_, repositoryId: number) => {
+    windowManager.createWindow({ repositoryId });
   });
 
   // Create first window
