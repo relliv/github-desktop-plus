@@ -98,45 +98,6 @@
         </CardContent>
       </Card>
 
-      <!-- Git Configuration -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-base flex items-center gap-2">
-            <Settings class="size-4 text-muted-foreground" :stroke-width="1.5" />
-            Git Configuration
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="space-y-2">
-              <Label htmlFor="git-name">User Name</Label>
-              <Input
-                id="git-name"
-                v-model="gitConfig.name"
-                placeholder="Your Name"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label htmlFor="git-email">User Email</Label>
-              <Input
-                id="git-email"
-                v-model="gitConfig.email"
-                type="email"
-                placeholder="your.email@example.com"
-              />
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            @click="updateGitConfig"
-            :disabled="!gitConfigChanged"
-          >
-            Update Git Config
-          </Button>
-        </CardContent>
-      </Card>
-
       <!-- Quick Actions -->
       <Card>
         <CardHeader>
@@ -239,7 +200,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Button from "@/components/ui/Button.vue";
-import Input from "@/components/ui/Input.vue";
 import Label from "@/components/ui/Label.vue";
 import Separator from "@/components/ui/Separator.vue";
 import {
@@ -257,7 +217,6 @@ import {
   ExternalLink,
   Info,
   GitBranch,
-  Settings,
   Zap,
   AlertTriangle,
 } from "lucide-vue-next";
@@ -271,40 +230,17 @@ const remoteUrl = ref<string>("");
 const showRemoveConfirm = ref(false);
 const defaultBranch = ref<string>("");
 
-const gitConfig = ref({
-  name: "",
-  email: "",
-});
-
-const originalGitConfig = ref({
-  name: "",
-  email: "",
-});
-
-const gitConfigChanged = computed(() => {
-  return (
-    gitConfig.value.name !== originalGitConfig.value.name ||
-    gitConfig.value.email !== originalGitConfig.value.email
-  );
-});
-
-// Load git config when repository changes
+// Load remote URL when repository changes
 watch(
   currentRepository,
   async (newRepo) => {
     if (newRepo) {
-      // Get remote URL
       try {
         remoteUrl.value =
           (await window.api.git.getRemoteUrl?.(newRepo.path)) || "";
       } catch {
         remoteUrl.value = "";
       }
-
-      // TODO: Get git config for this repository
-      // For now, use global git config
-      gitConfig.value = { name: "", email: "" };
-      originalGitConfig.value = { ...gitConfig.value };
     }
   },
   { immediate: true },
@@ -337,14 +273,6 @@ const copyRemoteUrl = async () => {
 const openRemoteInBrowser = () => {
   if (browsableRemoteUrl.value) {
     window.api.shell.openExternal(browsableRemoteUrl.value);
-  }
-};
-
-const updateGitConfig = async () => {
-  if (currentRepository.value) {
-    // TODO: Update git config for this repository
-    console.log("Update git config:", gitConfig.value);
-    originalGitConfig.value = { ...gitConfig.value };
   }
 };
 
