@@ -134,6 +134,7 @@ app.whenReady().then(async () => {
   // Register window handlers globally (no longer per-window)
   const { registerWindowHandlers } = await import("./ipc/window.handler");
   registerWindowHandlers();
+  windowManager.registerIpcHandlers();
 
   // New window IPC handlers
   ipcMain.handle("window:new", () => {
@@ -144,8 +145,11 @@ app.whenReady().then(async () => {
     windowManager.createWindow({ repositoryId });
   });
 
-  // Create first window
-  windowManager.createWindow();
+  // Restore previous session or create a fresh window
+  const restored = await windowManager.restoreSession();
+  if (!restored) {
+    windowManager.createWindow();
+  }
 
   // Register all other IPC handlers in parallel
   const endHandlers = perf.start("main:register-ipc-handlers");

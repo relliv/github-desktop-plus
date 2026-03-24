@@ -34,6 +34,7 @@ declare global {
         newWindow: () => Promise<void>
         newWindowWithRepo: (repositoryId: number) => Promise<void>
         onOpenRepository: (callback: (repositoryId: number) => void) => void
+        setRepository: (repositoryId: number | null) => void
       }
       dialog: {
         openDirectory: () => Promise<string | null>

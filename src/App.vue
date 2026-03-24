@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from './stores/app.store'
 import { useRepositoriesStore } from '@/shared/stores'
@@ -44,4 +44,12 @@ onMounted(() => {
     }
   })
 })
+
+// Report current repository to main process so window state can be persisted
+watch(
+  () => repositoriesStore.currentRepository?.id,
+  (id) => {
+    window.api.window.setRepository(id ?? null)
+  },
+)
 </script>

@@ -48,6 +48,7 @@ export const api = {
     onOpenRepository: (callback: (repositoryId: number) => void) => {
       ipcRenderer.on('open-repository', (_, repositoryId) => callback(repositoryId))
     },
+    setRepository: (repositoryId: number | null) => ipcRenderer.send('window:set-repository', repositoryId),
   },
   
   dialog: {

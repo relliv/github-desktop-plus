@@ -10,7 +10,12 @@ export interface WindowBounds {
   isMaximized?: boolean
 }
 
+export interface WindowState extends WindowBounds {
+  repositoryId?: number | null
+}
+
 const WINDOW_BOUNDS_KEY = 'window_bounds'
+const WINDOW_STATES_KEY = 'window_states'
 
 export class SettingsService {
   // Get a setting by key
@@ -74,6 +79,23 @@ export class SettingsService {
   // Save window bounds
   async saveWindowBounds(bounds: WindowBounds): Promise<void> {
     await this.setSetting(WINDOW_BOUNDS_KEY, JSON.stringify(bounds))
+  }
+
+  // Get saved window states (multi-window)
+  async getWindowStates(): Promise<WindowState[]> {
+    try {
+      const value = await this.getSetting(WINDOW_STATES_KEY)
+      if (!value) return []
+      return JSON.parse(value) as WindowState[]
+    } catch (error) {
+      console.error('Error parsing window states:', error)
+      return []
+    }
+  }
+
+  // Save all window states
+  async saveWindowStates(states: WindowState[]): Promise<void> {
+    await this.setSetting(WINDOW_STATES_KEY, JSON.stringify(states))
   }
 }
 
