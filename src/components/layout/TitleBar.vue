@@ -11,7 +11,7 @@
       >
         <PanelLeft class="size-4 text-muted-foreground" :stroke-width="1.5" />
       </button>
-      <span class="text-xs font-semibold text-foreground">
+      <span class="text-xs font-semibold text-foreground select-none">
         GitHub Desktop Plus
       </span>
     </div>
