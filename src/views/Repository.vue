@@ -126,7 +126,12 @@
               v-if="changeCount > 0"
               class="ml-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground flex items-center justify-center"
             >
-              {{ changeCount > 99 ? "99+" : changeCount }}
+              <NumberFlow
+                :value="changeCount"
+                :animated="true"
+                :transformTiming="{ duration: 400, easing: 'ease-out' }"
+                :spinTiming="{ duration: 400, easing: 'ease-out' }"
+              />
             </span>
           </TabsTrigger>
           <TabsTrigger
@@ -416,6 +421,7 @@ import ActivityCalendar from "../components/repository/ActivityCalendar.vue";
 import CloneDialog from "../components/dialogs/CloneDialog.vue";
 import OpenRepositoryDialog from "../components/dialogs/OpenRepositoryDialog.vue";
 import CreateRepositoryDialog from "../components/dialogs/CreateRepositoryDialog.vue";
+import NumberFlow from "@number-flow/vue";
 
 const repositoriesStore = useRepositoriesStore();
 const { toast } = useToast();
