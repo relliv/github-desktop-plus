@@ -64,79 +64,6 @@
         </CardContent>
       </Card>
 
-      <!-- Branch Settings -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-base flex items-center gap-2">
-            <GitBranch class="size-4 text-muted-foreground" :stroke-width="1.5" />
-            Branch Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <Label>Default Branch</Label>
-              <p class="text-sm text-muted-foreground">
-                The branch used for pull requests and comparisons
-              </p>
-            </div>
-            <Select v-model="defaultBranch">
-              <SelectTrigger class="w-[180px]">
-                <SelectValue placeholder="Select branch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  v-for="branch in branches"
-                  :key="branch"
-                  :value="branch"
-                >
-                  {{ branch }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      <!-- Quick Actions -->
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-base flex items-center gap-2">
-            <Zap class="size-4 text-muted-foreground" :stroke-width="1.5" />
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="space-y-0.5">
-              <Label>Open in Terminal</Label>
-              <p class="text-sm text-muted-foreground">
-                Open terminal in repository directory
-              </p>
-            </div>
-            <Button variant="outline" size="sm" @click="openInTerminal">
-              <Terminal class="w-4 h-4 mr-2" :stroke-width="1" />
-              Open
-            </Button>
-          </div>
-
-          <Separator />
-
-          <div class="flex items-center justify-between">
-            <div class="space-y-0.5">
-              <Label>Open in Editor</Label>
-              <p class="text-sm text-muted-foreground">
-                Open in external code editor
-              </p>
-            </div>
-            <Button variant="outline" size="sm" @click="openInEditor">
-              <FileCode class="w-4 h-4 mr-2" :stroke-width="1" />
-              Open
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       <!-- Danger Zone -->
       <Card class="border-destructive/50">
         <CardHeader>
@@ -201,23 +128,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Button from "@/components/ui/Button.vue";
 import Label from "@/components/ui/Label.vue";
-import Separator from "@/components/ui/Separator.vue";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   FolderOpen,
   Copy,
-  Terminal,
-  FileCode,
   ExternalLink,
   Info,
-  GitBranch,
-  Zap,
   AlertTriangle,
 } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
@@ -225,10 +140,8 @@ import { useRepositoriesStore } from "@/shared/stores";
 const repositoriesStore = useRepositoriesStore();
 
 const currentRepository = computed(() => repositoriesStore.currentRepository);
-const branches = computed(() => repositoriesStore.branches?.local || []);
 const remoteUrl = ref<string>("");
 const showRemoveConfirm = ref(false);
-const defaultBranch = ref<string>("");
 
 // Load remote URL when repository changes
 watch(
@@ -273,20 +186,6 @@ const copyRemoteUrl = async () => {
 const openRemoteInBrowser = () => {
   if (browsableRemoteUrl.value) {
     window.api.shell.openExternal(browsableRemoteUrl.value);
-  }
-};
-
-const openInTerminal = async () => {
-  if (currentRepository.value) {
-    // TODO: Open terminal in repository directory
-    console.log("Open terminal in:", currentRepository.value.path);
-  }
-};
-
-const openInEditor = async () => {
-  if (currentRepository.value) {
-    // TODO: Open in external editor
-    console.log("Open in editor:", currentRepository.value.path);
   }
 };
 
