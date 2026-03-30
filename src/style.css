@@ -57,6 +57,18 @@
   --nx-light-header-border: #e5e5e5;
   --nx-light-line-number-bg: #ffffff;
 
+  /* Light diff — added (green) */
+  --nx-light-diff-added-bg: rgba(220, 252, 231, 0.7);
+  --nx-light-diff-added-bg-highlighted: rgba(187, 247, 208, 0.7);
+  --nx-light-diff-added-border: rgba(22, 163, 74, 0.7);
+  --nx-light-diff-added-prefix: rgba(21, 128, 61, 0.7);
+
+  /* Light diff — removed (red) */
+  --nx-light-diff-removed-bg: rgba(254, 226, 226, 0.7);
+  --nx-light-diff-removed-bg-highlighted: rgba(254, 202, 202, 0.7);
+  --nx-light-diff-removed-border: rgba(220, 38, 38, 0.7);
+  --nx-light-diff-removed-prefix: rgba(185, 28, 28, 0.7);
+
   /* Dark backgrounds — package defaults (neutral palette) */
   --nx-dark-bg: #17171750;
   --nx-dark-bg-secondary: #262626;
@@ -66,6 +78,18 @@
   --nx-dark-header-text: #d4d4d4;
   --nx-dark-header-border: #404040;
   --nx-dark-line-number-bg: #171717;
+
+  /* Dark diff — added (green) */
+  --nx-dark-diff-added-bg: rgba(20, 83, 45, 0.21);
+  --nx-dark-diff-added-bg-highlighted: rgba(20, 83, 45, 0.35);
+  --nx-dark-diff-added-border: rgba(34, 197, 94, 0.7);
+  --nx-dark-diff-added-prefix: rgba(74, 222, 128, 0.7);
+
+  /* Dark diff — removed (red) */
+  --nx-dark-diff-removed-bg: rgba(127, 29, 29, 0.21);
+  --nx-dark-diff-removed-bg-highlighted: rgba(127, 29, 29, 0.35);
+  --nx-dark-diff-removed-border: rgba(239, 68, 68, 0.7);
+  --nx-dark-diff-removed-prefix: rgba(248, 113, 113, 0.7);
 
   /* Header layout */
   --nx-header-padding-x: 1rem;
