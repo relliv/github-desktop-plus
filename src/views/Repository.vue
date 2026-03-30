@@ -124,7 +124,7 @@
             Changes
             <span
               class="ml-0.5 min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-all duration-300 origin-center"
-              :class="changeCount > 0 ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+              v-if="changeCount > 0"
             >
               <NumberFlow
                 :value="changeCount"
@@ -454,9 +454,20 @@ watch(changesLayout, (v) => localStorage.setItem(CHANGES_LAYOUT_KEY, v));
 
 const changesSelectedFile = ref<string | null>(null);
 const changesIsStaged = ref(false);
-const changesFileStatus = ref<'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted'>('modified');
+const changesFileStatus = ref<
+  "modified" | "added" | "deleted" | "renamed" | "conflicted"
+>("modified");
 
-const onChangeFileSelected = (file: string, staged: boolean, status: 'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted' = 'modified') => {
+const onChangeFileSelected = (
+  file: string,
+  staged: boolean,
+  status:
+    | "modified"
+    | "added"
+    | "deleted"
+    | "renamed"
+    | "conflicted" = "modified",
+) => {
   changesSelectedFile.value = file;
   changesIsStaged.value = staged;
   changesFileStatus.value = status;
