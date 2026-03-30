@@ -439,7 +439,9 @@ const cloneDialog = ref<InstanceType<typeof CloneDialog>>();
 const openRepoDialog = ref<InstanceType<typeof OpenRepositoryDialog>>();
 const createRepoDialog = ref<InstanceType<typeof CreateRepositoryDialog>>();
 
-const activeTab = ref("history");
+const ACTIVE_TAB_KEY = "repository-active-tab";
+const activeTab = ref(localStorage.getItem(ACTIVE_TAB_KEY) || "history");
+watch(activeTab, (tab) => localStorage.setItem(ACTIVE_TAB_KEY, tab));
 const repoSwitcherOpen = ref(false);
 
 // Changes tab layout and file selection
