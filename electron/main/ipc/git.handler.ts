@@ -499,6 +499,8 @@ export function registerGitHandlers() {
       const endParseLog = perf.start('stats:parse-log')
       const authorCounts: Record<string, number> = {}
       const weeklyActivity: Record<string, number> = {}
+      // Per-author weekly activity: author -> week -> count
+      const authorWeekly: Record<string, Record<string, number>> = {}
       const twelveMonthsAgo = new Date()
       twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1)
       const cutoff = twelveMonthsAgo.toISOString().slice(0, 10)
@@ -521,6 +523,8 @@ export function registerGitHandlers() {
           const mondayDate = new Date(y, m - 1, d - dow + (dow === 0 ? -6 : 1))
           const key = `${mondayDate.getFullYear()}-${String(mondayDate.getMonth() + 1).padStart(2, '0')}-${String(mondayDate.getDate()).padStart(2, '0')}`
           weeklyActivity[key] = (weeklyActivity[key] || 0) + 1
+          if (!authorWeekly[author]) authorWeekly[author] = {}
+          authorWeekly[author][key] = (authorWeekly[author][key] || 0) + 1
         }
       }
 
@@ -530,9 +534,15 @@ export function registerGitHandlers() {
         .sort((a, b) => b.commits - a.commits)
 
       // Sort activity by date
-      const activityData = Object.entries(weeklyActivity)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([week, commits]) => ({ week, commits }))
+      const weeks = Object.keys(weeklyActivity).sort()
+      const activityData = weeks.map((week) => ({ week, commits: weeklyActivity[week] }))
+
+      // Build per-author activity keyed by week (top contributors only)
+      const topAuthors = contributors.slice(0, 8).map((c) => c.name)
+      const activityByUser: Record<string, number[]> = {}
+      for (const author of topAuthors) {
+        activityByUser[author] = weeks.map((w) => authorWeekly[author]?.[w] || 0)
+      }
       endParseLog()
 
       // Parse file extensions for language breakdown
@@ -569,6 +579,7 @@ export function registerGitHandlers() {
         data: {
           contributors,
           activityData,
+          activityByUser,
           languages,
           totalCommits: parseInt(totalCommitsRaw.trim()) || 0,
           totalFiles,

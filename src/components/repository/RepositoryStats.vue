@@ -49,7 +49,7 @@
             <VChart
               :option="activityChartOption"
               :autoresize="true"
-              style="width: 100%; height: 200px"
+              style="width: 100%; height: 240px"
             />
           </CardContent>
         </Card>
@@ -123,6 +123,7 @@ use([
 interface StatsData {
   contributors: Array<{ name: string; commits: number }>;
   activityData: Array<{ week: string; commits: number }>;
+  activityByUser: Record<string, number[]>;
   languages: Array<{ name: string; count: number }>;
   totalCommits: number;
   totalFiles: number;
@@ -188,10 +189,21 @@ const overviewCards = computed(() => {
   ];
 });
 
-// Commit activity line chart
+// Color palette for per-user series
+const seriesPalette = computed(() =>
+  appStore.isDark
+    ? ["#60a5fa", "#a78bfa", "#34d399", "#fbbf24", "#f87171", "#fb923c", "#e879f9", "#38bdf8"]
+    : ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#f97316", "#d946ef", "#0ea5e9"],
+);
+
+// Commit activity line chart — stacked by user
 const activityChartOption = computed(() => {
   if (!stats.value) return {};
   const data = stats.value.activityData;
+  const byUser = stats.value.activityByUser;
+  const authors = Object.keys(byUser);
+  const palette = seriesPalette.value;
+
   return {
     tooltip: {
       trigger: "axis",
@@ -199,7 +211,15 @@ const activityChartOption = computed(() => {
       borderColor: borderColor.value,
       textStyle: { color: textColor.value, fontSize: 12 },
     },
-    grid: { left: 40, right: 16, top: 12, bottom: 24 },
+    legend: {
+      data: authors,
+      bottom: 0,
+      textStyle: { color: textColor.value, fontSize: 10 },
+      icon: "circle",
+      itemWidth: 8,
+      itemHeight: 8,
+    },
+    grid: { left: 40, right: 16, top: 12, bottom: 36 },
     xAxis: {
       type: "category",
       data: data.map((d) => d.week),
@@ -220,25 +240,17 @@ const activityChartOption = computed(() => {
       splitLine: { lineStyle: { color: borderColor.value } },
       axisLabel: { color: textColor.value, fontSize: 10 },
     },
-    series: [
-      {
-        type: "line",
-        data: data.map((d) => d.commits),
-        smooth: true,
-        showSymbol: false,
-        lineStyle: { color: accentColor.value, width: 2 },
-        areaStyle: {
-          color: {
-            type: "linear",
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: appStore.isDark ? "rgba(96,165,250,0.25)" : "rgba(37,99,235,0.15)" },
-              { offset: 1, color: "transparent" },
-            ],
-          },
-        },
-      },
-    ],
+    series: authors.map((author, i) => ({
+      name: author,
+      type: "line",
+      stack: "total",
+      data: byUser[author],
+      smooth: true,
+      showSymbol: false,
+      lineStyle: { width: 1.5, color: palette[i % palette.length] },
+      areaStyle: { color: palette[i % palette.length], opacity: 0.15 },
+      emphasis: { focus: "series" },
+    })),
   };
 });
 
