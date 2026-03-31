@@ -473,6 +473,118 @@ export function registerGitHandlers() {
     }
   })
 
+  // Get repository statistics for the Stats tab
+  // All queries are capped with --max-count to prevent main-process freezes.
+  perf.handle(ipcMain, 'git:get-stats', async (_, repoPath: string) => {
+    try {
+      const repoGit = simpleGit(repoPath)
+
+      const [authorsAndDatesRaw, fileListRaw, totalCommitsRaw, branchData, tagsRaw] = await perf.measure('stats:git-queries', () => Promise.all([
+        // Single log call: author + date in one pass, capped at 3000 commits
+        repoGit.raw(['log', '--format=%aN|%aI', '--max-count=3000']),
+        // File list for language breakdown
+        repoGit.raw(['ls-files']),
+        // Total commit count on current branch
+        repoGit.raw(['rev-list', '--count', 'HEAD']),
+        // Branch counts
+        Promise.all([
+          repoGit.raw(['branch', '--no-color']),
+          repoGit.raw(['branch', '-r', '--no-color']),
+        ]),
+        // Tags count
+        repoGit.raw(['tag', '-l']),
+      ]))
+
+      // Parse authors + dates in a single pass
+      const endParseLog = perf.start('stats:parse-log')
+      const authorCounts: Record<string, number> = {}
+      const weeklyActivity: Record<string, number> = {}
+      const twelveMonthsAgo = new Date()
+      twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1)
+      const cutoff = twelveMonthsAgo.toISOString().slice(0, 10)
+
+      for (const line of authorsAndDatesRaw.split('\n')) {
+        if (!line) continue
+        const sepIdx = line.lastIndexOf('|')
+        if (sepIdx === -1) continue
+        const author = line.slice(0, sepIdx)
+        const dateStr = line.slice(sepIdx + 1, sepIdx + 11) // YYYY-MM-DD
+
+        // Count author
+        authorCounts[author] = (authorCounts[author] || 0) + 1
+
+        // Activity chart: only last 12 months
+        if (dateStr >= cutoff) {
+          const [y, m, d] = dateStr.split('-').map(Number)
+          const date = new Date(y, m - 1, d)
+          const dow = date.getDay()
+          const mondayDate = new Date(y, m - 1, d - dow + (dow === 0 ? -6 : 1))
+          const key = `${mondayDate.getFullYear()}-${String(mondayDate.getMonth() + 1).padStart(2, '0')}-${String(mondayDate.getDate()).padStart(2, '0')}`
+          weeklyActivity[key] = (weeklyActivity[key] || 0) + 1
+        }
+      }
+
+      // Build sorted contributors list
+      const contributors = Object.entries(authorCounts)
+        .map(([name, commits]) => ({ name, commits }))
+        .sort((a, b) => b.commits - a.commits)
+
+      // Sort activity by date
+      const activityData = Object.entries(weeklyActivity)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([week, commits]) => ({ week, commits }))
+      endParseLog()
+
+      // Parse file extensions for language breakdown
+      const endParseFiles = perf.start('stats:parse-files')
+      const extensionCounts: Record<string, number> = {}
+      let totalFiles = 0
+      for (const line of fileListRaw.split('\n')) {
+        if (!line) continue
+        totalFiles++
+        const dotIdx = line.lastIndexOf('.')
+        const slashIdx = line.lastIndexOf('/')
+        const ext = dotIdx > slashIdx ? line.slice(dotIdx).toLowerCase() : '(no ext)'
+        extensionCounts[ext] = (extensionCounts[ext] || 0) + 1
+      }
+
+      // Top extensions, rest grouped as "Other"
+      const sortedExts = Object.entries(extensionCounts)
+        .sort(([, a], [, b]) => b - a)
+      const topExts = sortedExts.slice(0, 8)
+      const otherCount = sortedExts.slice(8).reduce((sum, [, c]) => sum + c, 0)
+      const languages = topExts.map(([ext, count]) => ({ name: ext, count }))
+      if (otherCount > 0) languages.push({ name: 'Other', count: otherCount })
+      endParseFiles()
+
+      // Branch counts
+      const localBranches = branchData[0].split('\n').filter(l => l.trim()).length
+      const remoteBranches = branchData[1].split('\n').filter(l => l.trim() && !l.includes('HEAD')).length
+
+      // Tags count
+      const tagCount = tagsRaw.split('\n').filter(l => l.trim()).length
+
+      return {
+        success: true,
+        data: {
+          contributors,
+          activityData,
+          languages,
+          totalCommits: parseInt(totalCommitsRaw.trim()) || 0,
+          totalFiles,
+          localBranches,
+          remoteBranches,
+          tagCount,
+        },
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get stats',
+      }
+    }
+  })
+
   // Create new repository
   perf.handle(ipcMain, 'git:create', async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
     try {

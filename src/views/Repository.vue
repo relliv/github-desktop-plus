@@ -256,9 +256,9 @@
         <ActivityCalendar />
       </TabsContent>
 
-      <!-- Stats tab content -->
+      <!-- Stats tab content — lazy-rendered so charts get correct dimensions -->
       <TabsContent value="stats" class="flex-1 min-h-0 mt-0 overflow-hidden">
-        <RepositoryStats />
+        <RepositoryStats v-if="activeTab === 'stats'" />
       </TabsContent>
 
       <!-- Settings tab content -->

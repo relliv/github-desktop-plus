@@ -22,6 +22,7 @@ export const api = {
     create: (options: CreateRepositoryOptions) => ipcRenderer.invoke('git:create', options),
     getRemoteUrl: (path: string) => ipcRenderer.invoke('git:getRemoteUrl', path),
     getTags: (path: string) => ipcRenderer.invoke('git:get-tags', path),
+    getStats: (path: string) => ipcRenderer.invoke('git:get-stats', path),
     diffFile: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-file', path, filePath),
     diffStaged: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-staged', path, filePath),
     diffDeleted: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-deleted', path, filePath),

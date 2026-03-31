@@ -18,6 +18,7 @@ declare global {
         stash: (path: string, message?: string) => Promise<any>
         stashPop: (path: string) => Promise<any>
         getLog: (path: string, limit?: number) => Promise<any>
+        getStats: (path: string) => Promise<any>
         clone: (options: any) => Promise<any>
         validate: (path: string) => Promise<any>
         create: (options: any) => Promise<any>
