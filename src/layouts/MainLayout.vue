@@ -38,11 +38,12 @@
       </SplitterResizeHandle>
 
       <!-- Main Content Panel -->
-      <SplitterPanel id="main-content" :min-size="50">
+      <SplitterPanel id="main-content" :min-size="40">
         <div
           :class="[
-            'flex flex-col h-full py-2 pr-2',
+            'flex flex-col h-full py-2',
             appStore.isSidebarCollapsed && 'pl-2',
+            appStore.isAiPanelCollapsed && 'pr-2',
           ]"
         >
           <div
@@ -56,6 +57,35 @@
           </div>
         </div>
       </SplitterPanel>
+
+      <!-- AI Panel Resize Handle -->
+      <SplitterResizeHandle
+        v-if="!appStore.isAiPanelCollapsed"
+        id="ai-panel-handle"
+        class="w-0 relative z-10 group"
+      >
+        <div
+          class="absolute inset-y-0 -left-0.5 -right-0.5 group-hover:bg-primary/30 group-data-[state=drag]:bg-primary transition-colors"
+        />
+      </SplitterResizeHandle>
+
+      <!-- AI Chat Panel -->
+      <SplitterPanel
+        v-if="!appStore.isAiPanelCollapsed"
+        id="ai-panel"
+        ref="aiPanel"
+        :default-size="22"
+        :min-size="18"
+        :max-size="40"
+      >
+        <div class="flex flex-col h-full py-2 pr-2">
+          <div
+            class="flex-1 flex flex-col bg-card-translucent rounded-xl shadow-sm border border-border/50 overflow-hidden"
+          >
+            <AiPanel class="h-full" />
+          </div>
+        </div>
+      </SplitterPanel>
     </SplitterGroup>
   </div>
 </template>
@@ -65,6 +95,7 @@ import { ref, watch } from "vue";
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
 import TitleBar from "../components/layout/TitleBar.vue";
 import Sidebar from "../components/layout/Sidebar.vue";
+import AiPanel from "../components/layout/AiPanel.vue";
 import { useAutoRefresh } from "../composables/useAutoRefresh";
 import { useAppStore } from "../stores/app.store";
 
@@ -106,6 +137,12 @@ function onLayoutChange(sizes: number[]) {
 }
 
 :deep(#main-content) {
+  transition:
+    flex-grow 300ms ease-in-out,
+    flex-basis 300ms ease-in-out;
+}
+
+:deep(#ai-panel) {
   transition:
     flex-grow 300ms ease-in-out,
     flex-basis 300ms ease-in-out;

@@ -69,6 +69,9 @@ export const useAppStore = defineStore("app", () => {
 
   // Sidebar state
   const isSidebarCollapsed = ref(false);
+
+  // AI panel state
+  const isAiPanelCollapsed = ref(true);
   const sidebarSize = ref(20); // percentage of viewport width
   const minSidebarSize = 20;
   const maxSidebarSize = 30;
@@ -80,6 +83,10 @@ export const useAppStore = defineStore("app", () => {
   // Actions
   const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  };
+
+  const toggleAiPanel = () => {
+    isAiPanelCollapsed.value = !isAiPanelCollapsed.value;
   };
 
   const setSidebarSize = (size: number) => {
@@ -138,6 +145,7 @@ export const useAppStore = defineStore("app", () => {
     actualTheme,
     isDark,
     isSidebarCollapsed,
+    isAiPanelCollapsed,
     sidebarSize,
     minSidebarSize,
     maxSidebarSize,
@@ -148,6 +156,7 @@ export const useAppStore = defineStore("app", () => {
     setTheme,
     toggleTheme,
     toggleSidebar,
+    toggleAiPanel,
     setSidebarSize,
     initializeSidebarSize,
     setMaximized,
