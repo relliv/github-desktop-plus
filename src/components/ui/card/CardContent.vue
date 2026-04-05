@@ -1,15 +1,15 @@
 <template>
-  <div :class="cn('p-6 pt-0', className)">
+  <div :class="cn('p-6', className)">
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 interface Props {
-  className?: string
+  className?: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>

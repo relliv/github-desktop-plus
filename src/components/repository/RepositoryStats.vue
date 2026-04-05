@@ -27,12 +27,26 @@
     <!-- Stats content -->
     <div v-else-if="stats" class="space-y-4 pb-6">
       <!-- Overview cards -->
-      <div class="grid grid-cols-4 gap-3">
-        <Card v-for="card in overviewCards" :key="card.label">
-          <CardContent class="p-4">
-            <div class="text-2xl font-bold">{{ card.value }}</div>
-            <div class="text-xs text-muted-foreground mt-1">
-              {{ card.label }}
+      <div class="grid grid-cols-5 gap-3">
+        <Card
+          v-for="card in overviewCards"
+          :key="card.label"
+          class="overflow-hidden"
+        >
+          <CardContent class="flex items-center gap-3 p-4">
+            <div
+              class="flex items-center justify-center size-9 rounded-lg shrink-0"
+              :class="card.iconBg"
+            >
+              <component :is="card.icon" class="size-4" :class="card.iconColor" />
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs text-muted-foreground leading-none">
+                {{ card.label }}
+              </div>
+              <div class="text-lg font-semibold leading-tight mt-0.5 truncate">
+                {{ card.value }}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -96,7 +110,15 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertTriangle } from "lucide-vue-next";
+import {
+  Loader2,
+  AlertTriangle,
+  GitCommitHorizontal,
+  Users,
+  FileCode,
+  GitBranch,
+  Tag,
+} from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import { useAppStore } from "@/stores/app.store";
 import VChart from "vue-echarts";
@@ -179,12 +201,40 @@ const accentColor = computed(() =>
 const overviewCards = computed(() => {
   if (!stats.value) return [];
   return [
-    { label: "Total Commits", value: stats.value.totalCommits.toLocaleString() },
-    { label: "Contributors", value: stats.value.contributors.length },
-    { label: "Files", value: stats.value.totalFiles.toLocaleString() },
+    {
+      label: "Commits",
+      value: stats.value.totalCommits.toLocaleString(),
+      icon: GitCommitHorizontal,
+      iconBg: "bg-blue-500/10 dark:bg-blue-400/10",
+      iconColor: "text-blue-600 dark:text-blue-400",
+    },
+    {
+      label: "Contributors",
+      value: stats.value.contributors.length,
+      icon: Users,
+      iconBg: "bg-violet-500/10 dark:bg-violet-400/10",
+      iconColor: "text-violet-600 dark:text-violet-400",
+    },
+    {
+      label: "Files",
+      value: stats.value.totalFiles.toLocaleString(),
+      icon: FileCode,
+      iconBg: "bg-emerald-500/10 dark:bg-emerald-400/10",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
+    },
     {
       label: "Branches",
       value: `${stats.value.localBranches} / ${stats.value.remoteBranches}`,
+      icon: GitBranch,
+      iconBg: "bg-amber-500/10 dark:bg-amber-400/10",
+      iconColor: "text-amber-600 dark:text-amber-400",
+    },
+    {
+      label: "Tags",
+      value: stats.value.tagCount,
+      icon: Tag,
+      iconBg: "bg-rose-500/10 dark:bg-rose-400/10",
+      iconColor: "text-rose-600 dark:text-rose-400",
     },
   ];
 });
