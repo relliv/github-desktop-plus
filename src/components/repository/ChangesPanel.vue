@@ -21,6 +21,7 @@
             :file="file"
             :staged="true"
             :status="getFileStatus(file)"
+            :renamed-from="renamedMap.get(file)"
             @click="selectFile(file, true)"
             @unstage="unstageFile(file)"
           />
@@ -121,6 +122,15 @@ const hasChanges = computed(() => repositoriesStore.hasChanges);
 
 const stagedFiles = computed(() => gitStatus.value?.staged || []);
 
+// Map of renamed files: new path → old path
+const renamedMap = computed(() => {
+  const map = new Map<string, string>();
+  for (const r of gitStatus.value?.renamed || []) {
+    map.set(r.to, r.from);
+  }
+  return map;
+});
+
 const unstagedEntries = computed<FileEntry[]>(() => {
   if (!gitStatus.value) return [];
   const staged = new Set(stagedFiles.value);
@@ -141,6 +151,7 @@ const unstagedFiles = computed(() => unstagedEntries.value.map(e => e.path));
 
 const getFileStatus = (file: string): FileStatus => {
   if (!gitStatus.value) return 'modified';
+  if (renamedMap.value.has(file)) return 'renamed';
   if (gitStatus.value.added.includes(file)) return 'added';
   if (gitStatus.value.deleted.includes(file)) return 'deleted';
   if (gitStatus.value.conflicted.includes(file)) return 'conflicted';

@@ -50,11 +50,10 @@ export function registerGitHandlers() {
       // Run porcelain status + ahead/behind in parallel
       const [porcelainOutput, aheadBehind] = await Promise.all([
         // --porcelain=v1: machine-readable, fast
-        // --no-renames: skip expensive rename detection
         // -unormal: show untracked files but don't recurse into untracked dirs
-        repoGit.raw(['status', '--porcelain=v1', '--no-renames', '-unormal']),
+        repoGit.raw(['status', '--porcelain=v1', '-unormal']),
         // Get ahead/behind from status --branch --porcelain (first line only)
-        repoGit.raw(['status', '--branch', '--porcelain=v1', '--no-renames', '-unormal']).then(out => {
+        repoGit.raw(['status', '--branch', '--porcelain=v1', '-unormal']).then(out => {
           const firstLine = out.split('\n')[0] || ''
           const abMatch = firstLine.match(/\[ahead (\d+)(?:, behind (\d+))?\]|\[behind (\d+)\]/)
           return {
@@ -78,7 +77,20 @@ export function registerGitHandlers() {
         const file = line.slice(3)
 
         // Staged changes
-        if (x === 'M' || x === 'A' || x === 'D' || x === 'R') staged.push(file)
+        if (x === 'R') {
+          // Rename format: "old_path -> new_path"
+          const arrowIdx = file.indexOf(' -> ')
+          if (arrowIdx !== -1) {
+            const from = file.slice(0, arrowIdx)
+            const to = file.slice(arrowIdx + 4)
+            renamed.push({ from, to })
+            staged.push(to)
+          } else {
+            staged.push(file)
+          }
+        } else if (x === 'M' || x === 'A' || x === 'D') {
+          staged.push(file)
+        }
 
         // Working tree changes
         if (y === 'M') modified.push(file)

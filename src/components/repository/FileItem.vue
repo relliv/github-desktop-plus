@@ -13,7 +13,12 @@
       class="rounded border-gray-300"
     />
     <FileIcon :filename="file" class="w-4 h-4 flex-shrink-0" />
-    <span class="text-sm truncate flex-1">{{ file }}</span>
+    <span v-if="renamedFrom" class="text-sm truncate flex-1">
+      <span class="text-muted-foreground">{{ renamedFrom }}</span>
+      <span class="text-muted-foreground mx-1">→</span>
+      <span>{{ file }}</span>
+    </span>
+    <span v-else class="text-sm truncate flex-1">{{ file }}</span>
     <StatusBadge :status="status" />
   </div>
 </template>
@@ -26,10 +31,12 @@ interface Props {
   file: string
   staged: boolean
   status?: 'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted'
+  renamedFrom?: string
 }
 
 withDefaults(defineProps<Props>(), {
-  status: 'modified'
+  status: 'modified',
+  renamedFrom: undefined,
 })
 defineEmits(['click', 'stage', 'unstage'])
 </script>
