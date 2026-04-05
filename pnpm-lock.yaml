@@ -53,6 +53,9 @@ importers:
       simple-git:
         specifier: ^3.31.1
         version: 3.31.1
+      simple-icons:
+        specifier: ^16.14.0
+        version: 16.14.0
       tailwind-merge:
         specifier: ^3.4.1
         version: 3.4.1
@@ -2571,6 +2574,10 @@ packages:
 
   simple-git@3.31.1:
     resolution: {integrity: sha512-oiWP4Q9+kO8q9hHqkX35uuHmxiEbZNTrZ5IPxgMGrJwN76pzjm/jabkZO0ItEcqxAincqGAzL3QHSaHt4+knBg==}
+
+  simple-icons@16.14.0:
+    resolution: {integrity: sha512-2Nvs3jJpCfMWQerD4zdv91g/MpnWn81a7uhyAC0reuhrjmS2MtSmwIKwewOJR6Xe97ZmfltDntCDqKJIBawQOw==}
+    engines: {node: '>=0.12.18'}
 
   simple-update-notifier@2.0.0:
     resolution: {integrity: sha512-a2B9Y0KlNXl9u/vsW6sTIu9vGEpfKu2wRV6l1H3XEas/0gUIzGzBoP/IouTcUQbm9JWZLH3COxyn03TYlFax6w==}
@@ -5434,6 +5441,8 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
+
+  simple-icons@16.14.0: {}
 
   simple-update-notifier@2.0.0:
     dependencies:

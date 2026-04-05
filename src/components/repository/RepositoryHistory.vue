@@ -501,6 +501,7 @@
                 class="w-full text-left px-4 py-2 border-b hover:bg-accent/50 transition-colors flex items-center gap-2"
                 :class="{ 'bg-accent': selectedFile?.file === file.file }"
               >
+                <FileIcon :filename="file.file" class="size-4 shrink-0" />
                 <span
                   class="shrink-0 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded"
                   :class="fileStatusClass(file.status)"
@@ -646,6 +647,7 @@ import {
 } from "reka-ui";
 import AvatarStack from "@/components/ui/AvatarStack.vue";
 import TimelineNode from "./TimelineNode.vue";
+import FileIcon from "./FileIcon.vue";
 import type { AvatarAuthor } from "@/components/ui/AvatarStack.vue";
 import {
   RefreshCw,

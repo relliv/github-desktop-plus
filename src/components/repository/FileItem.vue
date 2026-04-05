@@ -12,7 +12,7 @@
       @click.stop="staged ? $emit('unstage') : $emit('stage')"
       class="rounded border-gray-300"
     />
-    <FileIcon :filename="file" class="w-4 h-4 flex-shrink-0" />
+    <FileIcon :filename="file" class="size-4 shrink-0" />
     <span v-if="renamedFrom" class="text-sm truncate flex-1">
       <span class="text-muted-foreground">{{ renamedFrom }}</span>
       <span class="text-muted-foreground mx-1">→</span>
