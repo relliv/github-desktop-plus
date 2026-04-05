@@ -492,8 +492,9 @@ export function registerGitHandlers() {
       const repoGit = simpleGit(repoPath)
 
       const [authorsAndDatesRaw, fileListRaw, totalCommitsRaw, branchData, tagsRaw] = await perf.measure('stats:git-queries', () => Promise.all([
-        // Single log call: author + date in one pass, capped at 3000 commits
-        repoGit.raw(['log', '--format=%aN|%aI', '--max-count=3000']),
+        // Log: author + date + body (for co-authors), capped at 3000 commits
+        // Use record separator (\x1e) to delimit commits, unit separator (\x1f) for fields
+        repoGit.raw(['log', '--format=%x1e%aN%x1f%aI%x1f%b', '--max-count=3000']),
         // File list for language breakdown
         repoGit.raw(['ls-files']),
         // Total commit count on current branch
@@ -517,17 +518,11 @@ export function registerGitHandlers() {
       twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1)
       const cutoff = twelveMonthsAgo.toISOString().slice(0, 10)
 
-      for (const line of authorsAndDatesRaw.split('\n')) {
-        if (!line) continue
-        const sepIdx = line.lastIndexOf('|')
-        if (sepIdx === -1) continue
-        const author = line.slice(0, sepIdx)
-        const dateStr = line.slice(sepIdx + 1, sepIdx + 11) // YYYY-MM-DD
+      const coAuthorRe = /Co-authored-by:\s*(.+?)\s*<[^>]*>/gi
 
-        // Count author
-        authorCounts[author] = (authorCounts[author] || 0) + 1
+      function countAuthor(name: string, dateStr: string) {
+        authorCounts[name] = (authorCounts[name] || 0) + 1
 
-        // Activity chart: only last 12 months
         if (dateStr >= cutoff) {
           const [y, m, d] = dateStr.split('-').map(Number)
           const date = new Date(y, m - 1, d)
@@ -535,8 +530,29 @@ export function registerGitHandlers() {
           const mondayDate = new Date(y, m - 1, d - dow + (dow === 0 ? -6 : 1))
           const key = `${mondayDate.getFullYear()}-${String(mondayDate.getMonth() + 1).padStart(2, '0')}-${String(mondayDate.getDate()).padStart(2, '0')}`
           weeklyActivity[key] = (weeklyActivity[key] || 0) + 1
-          if (!authorWeekly[author]) authorWeekly[author] = {}
-          authorWeekly[author][key] = (authorWeekly[author][key] || 0) + 1
+          if (!authorWeekly[name]) authorWeekly[name] = {}
+          authorWeekly[name][key] = (authorWeekly[name][key] || 0) + 1
+        }
+      }
+
+      for (const record of authorsAndDatesRaw.split('\x1e')) {
+        if (!record.trim()) continue
+        const fields = record.split('\x1f')
+        if (fields.length < 2) continue
+        const author = fields[0].trim()
+        const dateStr = fields[1].trim().slice(0, 10) // YYYY-MM-DD
+        const body = fields[2] || ''
+
+        countAuthor(author, dateStr)
+
+        // Extract co-authors from commit body
+        let match
+        coAuthorRe.lastIndex = 0
+        while ((match = coAuthorRe.exec(body)) !== null) {
+          const coAuthor = match[1].trim()
+          if (coAuthor && coAuthor !== author) {
+            countAuthor(coAuthor, dateStr)
+          }
         }
       }
 
