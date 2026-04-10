@@ -230,7 +230,7 @@
             <!-- Repositories in group -->
             <div
               v-if="!isGroupCollapsed(group.owner) || searchQuery"
-              class="space-y-0.5 ml-2"
+              class="space-y-0.5 ml-6"
             >
               <RepositoryContextMenu
                 v-for="repo in group.repos"
