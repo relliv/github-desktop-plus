@@ -251,13 +251,8 @@
                   :title="repo.name"
                 >
                   <Folder class="w-4 h-4 shrink-0" :stroke-width="1" />
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium truncate">
-                      {{ repo.name }}
-                    </div>
-                    <div class="text-xs text-muted-foreground truncate">
-                      {{ repo.currentBranch || "No branch" }}
-                    </div>
+                  <div class="flex-1 min-w-0 text-sm font-medium truncate">
+                    {{ repo.name }}
                   </div>
                   <Star
                     v-if="repo.isFavorite"
