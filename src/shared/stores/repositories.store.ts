@@ -314,6 +314,46 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     }
   }
 
+  // Folder scanning state
+  const isScanning = ref(false)
+  const scanProgress = ref<{ found: number; added: number; current: string } | null>(null)
+
+  const scanFolder = async (folderPath?: string) => {
+    if (isScanning.value) return
+    isScanning.value = true
+    scanProgress.value = null
+
+    // Listen for progress updates
+    const removeScanProgress = window.api.repository.onScanProgress((data) => {
+      scanProgress.value = data
+    })
+    const removeScanComplete = window.api.repository.onScanComplete(() => {
+      isScanning.value = false
+      scanProgress.value = null
+    })
+
+    try {
+      const result = await window.api.repository.scanFolder(folderPath)
+      if (result.success && result.data) {
+        // Reload full list to pick up all newly added repos
+        await loadRepositories()
+        return result.data
+      } else if (result.canceled) {
+        return null
+      } else {
+        throw new Error(result.error || 'Failed to scan folder')
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to scan folder'
+      throw err
+    } finally {
+      isScanning.value = false
+      scanProgress.value = null
+      removeScanProgress()
+      removeScanComplete()
+    }
+  }
+
   const clearError = () => {
     error.value = null
   }
@@ -335,6 +375,10 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     hasChanges,
     repositoryById,
 
+    // Scan state
+    isScanning,
+    scanProgress,
+
     // Actions
     loadRepositories,
     addRepository,
@@ -345,6 +389,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     fetchGitStatus,
     fetchBranches,
     updateRepositoryBranch,
+    scanFolder,
     clearError,
   }
 })

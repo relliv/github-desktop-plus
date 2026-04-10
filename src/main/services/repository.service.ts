@@ -222,6 +222,99 @@ export class RepositoryService {
     }
   }
 
+  // Scan a folder for git repositories (one level deep).
+  // Lists immediate subdirectories, excludes already-imported repos, and adds the rest.
+  // Progress is reported via the onProgress callback.
+  async scanFolder(
+    folderPath: string,
+    onProgress?: (data: { found: number; added: number; current: string }) => void
+  ): Promise<{ added: number; skipped: number; errors: string[] }> {
+    const endScan = perf.start(`repo-service:scan-folder(${folderPath})`)
+    try {
+      // Get already-imported repo paths to exclude them from scanning
+      const existingRepos = await db
+        .select({ path: schema.repositories.path })
+        .from(schema.repositories)
+      const existingPaths = new Set(existingRepos.map(r => r.path))
+
+      // Discover git repos off the main thread (one level deep only)
+      const repoPaths = await this.runFolderScanWorker(folderPath)
+
+      // Filter out already-imported repos
+      const newRepoPaths = repoPaths.filter(p => !existingPaths.has(p))
+      const skipped = repoPaths.length - newRepoPaths.length
+      perf.mark(`repo-service:scan-found(${repoPaths.length} repos, ${skipped} already imported)`)
+
+      let added = 0
+      const errors: string[] = []
+
+      // Add repos one at a time, yielding between each to keep UI responsive
+      for (let i = 0; i < newRepoPaths.length; i++) {
+        const repoPath = newRepoPaths[i]
+        onProgress?.({ found: newRepoPaths.length, added: added, current: repoPath })
+
+        try {
+          await this.addRepository(repoPath)
+          added++
+        } catch (err) {
+          errors.push(`${repoPath}: ${(err as Error).message}`)
+        }
+
+        // Yield event loop between each repo so IPC stays responsive
+        await new Promise(resolve => setTimeout(resolve, 0))
+      }
+
+      return { added, skipped, errors }
+    } finally {
+      endScan()
+    }
+  }
+
+  private runFolderScanWorker(folderPath: string): Promise<string[]> {
+    const workerCode = `
+      const { parentPort } = require('worker_threads');
+      const fs = require('fs');
+      const path = require('path');
+
+      parentPort.on('message', (folderPath) => {
+        const results = [];
+        try {
+          const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+          for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            if (entry.name.startsWith('.')) continue;
+            if (entry.name === 'node_modules') continue;
+            const fullPath = path.join(folderPath, entry.name);
+            // Check if this immediate subdirectory is a git repo
+            const gitPath = path.join(fullPath, '.git');
+            try {
+              fs.statSync(gitPath);
+              results.push(fullPath);
+            } catch {
+              // not a git repo — skip
+            }
+          }
+        } catch {
+          // permission denied or other fs error — skip
+        }
+        parentPort.postMessage(results);
+      });
+    `
+
+    return new Promise((resolve, reject) => {
+      const worker = new Worker(workerCode, { eval: true })
+      worker.on('message', (results) => {
+        resolve(results)
+        worker.terminate()
+      })
+      worker.on('error', (err) => {
+        reject(err)
+        worker.terminate()
+      })
+      worker.postMessage(folderPath)
+    })
+  }
+
   private runRemoteRefreshWorker(
     repos: Array<{ id: number; path: string; remoteUrl: string | null }>
   ): Promise<Array<{ id: number; remoteUrl: string | null; changed: boolean }>> {

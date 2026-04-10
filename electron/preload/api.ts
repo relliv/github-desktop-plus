@@ -66,6 +66,17 @@ export const api = {
     delete: (id: number) => ipcRenderer.invoke('repository:delete', id),
     updateBranch: (id: number, branch: string) => ipcRenderer.invoke('repository:update-branch', id, branch),
     refreshRemotes: () => ipcRenderer.invoke('repository:refresh-remotes'),
+    scanFolder: (folderPath?: string) => ipcRenderer.invoke('repository:scan-folder', folderPath),
+    onScanProgress: (callback: (data: { found: number; added: number; current: string }) => void) => {
+      const handler = (_: any, data: any) => callback(data)
+      ipcRenderer.on('repository:scan-progress', handler)
+      return () => ipcRenderer.removeListener('repository:scan-progress', handler)
+    },
+    onScanComplete: (callback: (data: { added: number; skipped: number; errors: string[] }) => void) => {
+      const handler = (_: any, data: any) => callback(data)
+      ipcRenderer.on('repository:scan-complete', handler)
+      return () => ipcRenderer.removeListener('repository:scan-complete', handler)
+    },
   },
   
   shell: {

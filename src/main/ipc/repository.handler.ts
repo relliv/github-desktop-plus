@@ -3,6 +3,39 @@ import { repositoryService } from '../services/repository.service'
 import { perf } from '@shared/perf'
 
 export function registerRepositoryHandlers() {
+  // Scan a folder for git repositories — runs off main thread, adds sequentially
+  perf.handle(ipcMain, 'repository:scan-folder', async (event, folderPath?: string) => {
+    try {
+      let targetPath = folderPath
+      if (!targetPath) {
+        const result = await dialog.showOpenDialog({
+          properties: ['openDirectory'],
+          title: 'Select Folder to Scan for Repositories'
+        })
+        if (result.canceled || !result.filePaths[0]) {
+          return { success: false, canceled: true }
+        }
+        targetPath = result.filePaths[0]
+      }
+
+      const sender = event.sender
+      const scanResult = await repositoryService.scanFolder(targetPath, (progress) => {
+        if (!sender.isDestroyed()) {
+          sender.send('repository:scan-progress', progress)
+        }
+      })
+
+      if (!sender.isDestroyed()) {
+        sender.send('repository:scan-complete', scanResult)
+      }
+
+      return { success: true, data: scanResult }
+    } catch (error) {
+      console.error('Error in repository:scan-folder:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
   // Manual refresh remote URLs — triggered by user via context menu
   perf.handle(ipcMain, 'repository:refresh-remotes', async () => {
     try {

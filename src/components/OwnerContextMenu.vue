@@ -23,7 +23,12 @@
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
-      <ContextMenuSeparator v-if="githubUrl && props.repos.length > 0" />
+      <ContextMenuSeparator />
+      <ContextMenuItem :disabled="repositoriesStore.isScanning" @click="scanFolder">
+        <FolderSearch class="w-4 h-4 mr-2" />
+        {{ repositoriesStore.isScanning ? 'Scanning...' : 'Scan Folder' }}
+      </ContextMenuItem>
+      <ContextMenuSeparator v-if="githubUrl" />
       <ContextMenuItem v-if="githubUrl" @click="viewOnGitHub">
         <ExternalLink class="w-4 h-4 mr-2" />
         View on GitHub
@@ -39,7 +44,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ExternalLink, FolderOpen, RefreshCw } from 'lucide-vue-next'
+import { ExternalLink, FolderOpen, FolderSearch, RefreshCw } from 'lucide-vue-next'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -50,6 +55,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
+import { useRepositoriesStore } from '@/shared/stores'
 
 interface Props {
   owner: string
@@ -57,6 +63,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const repositoriesStore = useRepositoriesStore()
 
 const parentFolder = computed(() => {
   if (props.repos.length === 0) return null
@@ -84,5 +91,10 @@ const viewOnGitHub = () => {
 
 const refreshRemotes = () => {
   window.api.repository.refreshRemotes().catch(console.error)
+}
+
+const scanFolder = () => {
+  // Use the parent folder as default scan target if available
+  repositoriesStore.scanFolder(parentFolder.value || undefined).catch(console.error)
 }
 </script>
