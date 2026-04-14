@@ -74,6 +74,7 @@
         v-if="!appStore.isAiPanelCollapsed"
         id="ai-panel"
         ref="aiPanel"
+        class="ml-1"
         :default-size="22"
         :min-size="18"
         :max-size="40"
