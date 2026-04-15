@@ -75,7 +75,7 @@
             <VChart
               :option="activityChartOption"
               :autoresize="true"
-              style="width: 100%; height: 240px"
+              style="width: 100%; height: 280px"
             />
           </CardContent>
         </Card>
@@ -143,6 +143,7 @@ import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
+  DataZoomComponent,
 } from "echarts/components";
 
 use([
@@ -153,6 +154,7 @@ use([
   GridComponent,
   TooltipComponent,
   LegendComponent,
+  DataZoomComponent,
 ]);
 
 interface StatsData {
@@ -260,24 +262,33 @@ const seriesPalette = computed(() =>
     : ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#f97316", "#d946ef", "#0ea5e9"],
 );
 
-// Commit activity line chart — stacked by user
+// Commit activity chart
 const activityChartOption = computed(() => {
   if (!stats.value) return {};
   const data = stats.value.activityData;
   const byUser = stats.value.activityByUser;
-  const authors = Object.keys(byUser);
+  // Filter out authors with all-zero data — ECharts crashes on highlight
+  // when a stacked line series has no rendered polygon element
+  const authors = Object.keys(byUser).filter((a) =>
+    byUser[a].some((v) => v > 0),
+  );
   const palette = seriesPalette.value;
   const isMonthly = stats.value.granularity === "month";
 
-  const formatLabel = (v: string) => {
+  // Format a bucket key string (YYYY-MM or YYYY-MM-DD) into a readable label
+  const formatKey = (v: string) => {
     if (isMonthly) {
-      // v is YYYY-MM — parse without assuming a day to avoid timezone shifts
       const [y, m] = v.split("-").map(Number);
       const d = new Date(y, m - 1, 1);
       return `${d.toLocaleString("default", { month: "short" })} ${y}`;
     }
-    const d = new Date(v);
+    const d = new Date(v + "T00:00:00");
     return `${d.toLocaleString("default", { month: "short" })} ${d.getDate()}`;
+  };
+  // dataZoom labelFormatter receives a numeric category index, not the string value
+  const formatLabel = (idx: number) => {
+    const key = data[Math.round(idx)]?.week;
+    return key ? formatKey(key) : "";
   };
 
   return {
@@ -289,20 +300,40 @@ const activityChartOption = computed(() => {
     },
     legend: {
       data: authors,
-      bottom: 0,
+      top: 4,
+      left: "center",
       textStyle: { color: textColor.value, fontSize: 10 },
       icon: "circle",
       itemWidth: 8,
       itemHeight: 8,
     },
-    grid: { left: 40, right: 16, top: 12, bottom: 36 },
+    grid: { left: 40, right: 16, top: 30, bottom: 56 },
+    dataZoom: [
+      {
+        type: "slider",
+        xAxisIndex: 0,
+        bottom: 4,
+        height: 22,
+        borderColor: "transparent",
+        backgroundColor: appStore.isDark
+          ? "rgba(255,255,255,0.05)"
+          : "rgba(0,0,0,0.05)",
+        fillerColor: appStore.isDark
+          ? "rgba(96,165,250,0.2)"
+          : "rgba(59,130,246,0.15)",
+        handleStyle: { color: accentColor.value },
+        textStyle: { color: textColor.value, fontSize: 9 },
+        labelFormatter: formatLabel,
+        brushSelect: false,
+      },
+    ],
     xAxis: {
       type: "category",
       data: data.map((d) => d.week),
       axisLabel: {
         color: textColor.value,
         fontSize: 10,
-        formatter: formatLabel,
+        formatter: formatKey,
         interval: Math.max(Math.floor(data.length / 8) - 1, 0),
       },
       axisLine: { lineStyle: { color: borderColor.value } },
@@ -313,17 +344,31 @@ const activityChartOption = computed(() => {
       splitLine: { lineStyle: { color: borderColor.value } },
       axisLabel: { color: textColor.value, fontSize: 10 },
     },
-    series: authors.map((author, i) => ({
-      name: author,
-      type: "line",
-      stack: "total",
-      data: byUser[author],
-      smooth: true,
-      showSymbol: false,
-      lineStyle: { width: 1.5, color: palette[i % palette.length] },
-      areaStyle: { color: palette[i % palette.length], opacity: 0.15 },
-      emphasis: { focus: "series" },
-    })),
+    series: authors.length
+      ? authors.map((author, i) => ({
+          name: author,
+          type: "line",
+          stack: "total",
+          smooth: true,
+          smoothMonotone: "x",
+          data: byUser[author],
+          showSymbol: false,
+          lineStyle: { width: 1.5, color: palette[i % palette.length] },
+          areaStyle: { color: palette[i % palette.length], opacity: 0.25 },
+          emphasis: { disabled: true },
+        }))
+      : [
+          {
+            type: "line",
+            smooth: true,
+            smoothMonotone: "x",
+            data: data.map((d) => d.commits),
+            showSymbol: false,
+            lineStyle: { width: 1.5, color: accentColor.value },
+            areaStyle: { color: accentColor.value, opacity: 0.25 },
+            emphasis: { disabled: true },
+          },
+        ],
   };
 });
 
