@@ -511,29 +511,11 @@ export function registerGitHandlers() {
       // Parse authors + dates in a single pass
       const endParseLog = perf.start('stats:parse-log')
       const authorCounts: Record<string, number> = {}
-      const weeklyActivity: Record<string, number> = {}
-      // Per-author weekly activity: author -> week -> count
-      const authorWeekly: Record<string, Record<string, number>> = {}
-      const twelveMonthsAgo = new Date()
-      twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1)
-      const cutoff = twelveMonthsAgo.toISOString().slice(0, 10)
-
       const coAuthorRe = /Co-authored-by:\s*(.+?)\s*<[^>]*>/gi
 
-      function countAuthor(name: string, dateStr: string) {
-        authorCounts[name] = (authorCounts[name] || 0) + 1
-
-        if (dateStr >= cutoff) {
-          const [y, m, d] = dateStr.split('-').map(Number)
-          const date = new Date(y, m - 1, d)
-          const dow = date.getDay()
-          const mondayDate = new Date(y, m - 1, d - dow + (dow === 0 ? -6 : 1))
-          const key = `${mondayDate.getFullYear()}-${String(mondayDate.getMonth() + 1).padStart(2, '0')}-${String(mondayDate.getDate()).padStart(2, '0')}`
-          weeklyActivity[key] = (weeklyActivity[key] || 0) + 1
-          if (!authorWeekly[name]) authorWeekly[name] = {}
-          authorWeekly[name][key] = (authorWeekly[name][key] || 0) + 1
-        }
-      }
+      // Collect all (name, dateStr) pairs so we can determine the full date range
+      // before choosing weekly vs monthly aggregation
+      const datedEntries: Array<{ name: string; dateStr: string }> = []
 
       for (const record of authorsAndDatesRaw.split('\x1e')) {
         if (!record.trim()) continue
@@ -543,7 +525,8 @@ export function registerGitHandlers() {
         const dateStr = fields[1].trim().slice(0, 10) // YYYY-MM-DD
         const body = fields[2] || ''
 
-        countAuthor(author, dateStr)
+        authorCounts[author] = (authorCounts[author] || 0) + 1
+        if (dateStr) datedEntries.push({ name: author, dateStr })
 
         // Extract co-authors from commit body
         let match
@@ -551,9 +534,39 @@ export function registerGitHandlers() {
         while ((match = coAuthorRe.exec(body)) !== null) {
           const coAuthor = match[1].trim()
           if (coAuthor && coAuthor !== author) {
-            countAuthor(coAuthor, dateStr)
+            authorCounts[coAuthor] = (authorCounts[coAuthor] || 0) + 1
+            if (dateStr) datedEntries.push({ name: coAuthor, dateStr })
           }
         }
+      }
+
+      // Determine date range → use monthly buckets for repos > 1 year old,
+      // weekly buckets for newer/shorter histories
+      const sortedDates = datedEntries.map(e => e.dateStr).sort()
+      const firstDate = sortedDates[0]
+      const lastDate = sortedDates[sortedDates.length - 1]
+      const dayRange = firstDate && lastDate
+        ? (new Date(lastDate).getTime() - new Date(firstDate).getTime()) / 86400000
+        : 0
+      const granularity: 'week' | 'month' = dayRange > 365 ? 'month' : 'week'
+
+      function getBucketKey(dateStr: string): string {
+        if (granularity === 'month') return dateStr.slice(0, 7) // YYYY-MM
+        const [y, m, d] = dateStr.split('-').map(Number)
+        const date = new Date(y, m - 1, d)
+        const dow = date.getDay()
+        const monday = new Date(y, m - 1, d - dow + (dow === 0 ? -6 : 1))
+        return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
+      }
+
+      const totalBuckets: Record<string, number> = {}
+      const authorBuckets: Record<string, Record<string, number>> = {}
+
+      for (const { name, dateStr } of datedEntries) {
+        const key = getBucketKey(dateStr)
+        totalBuckets[key] = (totalBuckets[key] || 0) + 1
+        if (!authorBuckets[name]) authorBuckets[name] = {}
+        authorBuckets[name][key] = (authorBuckets[name][key] || 0) + 1
       }
 
       // Build sorted contributors list
@@ -562,14 +575,14 @@ export function registerGitHandlers() {
         .sort((a, b) => b.commits - a.commits)
 
       // Sort activity by date
-      const weeks = Object.keys(weeklyActivity).sort()
-      const activityData = weeks.map((week) => ({ week, commits: weeklyActivity[week] }))
+      const bucketKeys = Object.keys(totalBuckets).sort()
+      const activityData = bucketKeys.map((week) => ({ week, commits: totalBuckets[week] }))
 
-      // Build per-author activity keyed by week (top contributors only)
+      // Build per-author activity keyed by bucket (top 8 contributors only)
       const topAuthors = contributors.slice(0, 8).map((c) => c.name)
       const activityByUser: Record<string, number[]> = {}
       for (const author of topAuthors) {
-        activityByUser[author] = weeks.map((w) => authorWeekly[author]?.[w] || 0)
+        activityByUser[author] = bucketKeys.map((k) => authorBuckets[author]?.[k] || 0)
       }
       endParseLog()
 
@@ -608,6 +621,7 @@ export function registerGitHandlers() {
           contributors,
           activityData,
           activityByUser,
+          granularity,
           languages,
           totalCommits: parseInt(totalCommitsRaw.trim()) || 0,
           totalFiles,

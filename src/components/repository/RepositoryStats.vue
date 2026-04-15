@@ -26,6 +26,18 @@
 
     <!-- Stats content -->
     <div v-else-if="stats" class="space-y-4 pb-6">
+      <!-- Header with rescan button -->
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold text-sm">Repository Statistics</h2>
+        <button
+          @click="loadStats"
+          class="p-1 rounded hover:bg-accent transition-colors"
+          title="Rescan statistics"
+        >
+          <RefreshCw class="size-3.5 text-muted-foreground" :stroke-width="1.5" />
+        </button>
+      </div>
+
       <!-- Overview cards -->
       <div class="grid grid-cols-5 gap-3">
         <Card
@@ -113,6 +125,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Loader2,
   AlertTriangle,
+  RefreshCw,
   GitCommitHorizontal,
   Users,
   FileCode,
@@ -146,6 +159,7 @@ interface StatsData {
   contributors: Array<{ name: string; commits: number }>;
   activityData: Array<{ week: string; commits: number }>;
   activityByUser: Record<string, number[]>;
+  granularity: "week" | "month";
   languages: Array<{ name: string; count: number }>;
   totalCommits: number;
   totalFiles: number;
@@ -253,6 +267,18 @@ const activityChartOption = computed(() => {
   const byUser = stats.value.activityByUser;
   const authors = Object.keys(byUser);
   const palette = seriesPalette.value;
+  const isMonthly = stats.value.granularity === "month";
+
+  const formatLabel = (v: string) => {
+    if (isMonthly) {
+      // v is YYYY-MM — parse without assuming a day to avoid timezone shifts
+      const [y, m] = v.split("-").map(Number);
+      const d = new Date(y, m - 1, 1);
+      return `${d.toLocaleString("default", { month: "short" })} ${y}`;
+    }
+    const d = new Date(v);
+    return `${d.toLocaleString("default", { month: "short" })} ${d.getDate()}`;
+  };
 
   return {
     tooltip: {
@@ -276,10 +302,7 @@ const activityChartOption = computed(() => {
       axisLabel: {
         color: textColor.value,
         fontSize: 10,
-        formatter: (v: string) => {
-          const d = new Date(v);
-          return `${d.toLocaleString("default", { month: "short" })} ${d.getDate()}`;
-        },
+        formatter: formatLabel,
         interval: Math.max(Math.floor(data.length / 8) - 1, 0),
       },
       axisLine: { lineStyle: { color: borderColor.value } },
