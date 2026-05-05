@@ -196,6 +196,48 @@ export function registerGitHandlers() {
     }
   })
 
+  // Discard changes — restore tracked files to HEAD, delete untracked / staged-added
+  perf.handle(
+    ipcMain,
+    'git:discard',
+    async (
+      _,
+      repoPath: string,
+      files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>
+    ) => {
+      try {
+        const repoGit = simpleGit(repoPath)
+        const tracked = files.filter((f) => f.mode === 'tracked').map((f) => f.path)
+        const stagedAdds = files.filter((f) => f.mode === 'staged-add').map((f) => f.path)
+        const untracked = files.filter((f) => f.mode === 'untracked').map((f) => f.path)
+
+        if (tracked.length > 0) {
+          await repoGit.raw([
+            'restore',
+            '--source=HEAD',
+            '--staged',
+            '--worktree',
+            '--',
+            ...tracked,
+          ])
+        }
+
+        if (stagedAdds.length > 0) {
+          await repoGit.raw(['reset', 'HEAD', '--', ...stagedAdds])
+        }
+
+        for (const rel of [...stagedAdds, ...untracked]) {
+          const abs = path.join(repoPath, rel)
+          await fs.rm(abs, { force: true, recursive: true })
+        }
+
+        return { success: true }
+      } catch (error) {
+        throw new Error(`Failed to discard changes: ${error}`)
+      }
+    }
+  )
+
   // Commit
   perf.handle(ipcMain, 'git:commit', async (_, repoPath: string, message: string) => {
     try {

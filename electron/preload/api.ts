@@ -10,6 +10,10 @@ export const api = {
     createBranch: (path: string, name: string) => ipcRenderer.invoke('git:create-branch', path, name),
     stage: (path: string, files: string[]) => ipcRenderer.invoke('git:stage', path, files),
     unstage: (path: string, files: string[]) => ipcRenderer.invoke('git:unstage', path, files),
+    discard: (
+      path: string,
+      files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>
+    ) => ipcRenderer.invoke('git:discard', path, files),
     commit: (path: string, message: string) => ipcRenderer.invoke('git:commit', path, message),
     push: (path: string) => ipcRenderer.invoke('git:push', path),
     pull: (path: string) => ipcRenderer.invoke('git:pull', path),

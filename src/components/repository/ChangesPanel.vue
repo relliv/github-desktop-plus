@@ -24,6 +24,7 @@
             :renamed-from="renamedMap.get(file)"
             @click="selectFile(file, true)"
             @unstage="unstageFile(file)"
+            @discard="requestDiscard(file, getFileStatus(file), true)"
           />
         </div>
       </div>
@@ -47,6 +48,7 @@
             :status="entry.status"
             @click="selectFile(entry.path)"
             @stage="stageFile(entry.path)"
+            @discard="requestDiscard(entry.path, entry.status, false)"
           />
         </div>
       </div>
@@ -62,6 +64,28 @@
         <p class="text-sm text-muted-foreground">No changes in repository</p>
       </div>
     </div>
+
+    <!-- Discard confirmation -->
+    <AlertDialog v-model:open="discardDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to discard all changes to
+            <strong>{{ pendingDiscard?.path }}</strong>? This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="confirmDiscard"
+          >
+            Discard Changes
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
 
     <!-- Commit section -->
     <div v-if="hasChanges" class="shrink-0 border-t p-3 space-y-2">
@@ -99,6 +123,16 @@ import { FileText, GitCommit } from "lucide-vue-next";
 import { useRepositoriesStore } from "@/shared/stores";
 import Button from "../ui/Button.vue";
 import FileItem from "./FileItem.vue";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 const repositoriesStore = useRepositoriesStore();
 const commitMessage = ref("");
@@ -193,6 +227,40 @@ const stageAll = async () => {
     await repositoriesStore.fetchGitStatus();
   } catch (error) {
     console.error("Failed to stage all:", error);
+  }
+};
+
+type DiscardMode = 'untracked' | 'staged-add' | 'tracked';
+const discardDialogOpen = ref(false);
+const pendingDiscard = ref<{ path: string; status: FileStatus; staged: boolean } | null>(null);
+
+const requestDiscard = (path: string, status: FileStatus, staged: boolean) => {
+  pendingDiscard.value = { path, status, staged };
+  discardDialogOpen.value = true;
+};
+
+const getDiscardMode = (status: FileStatus, staged: boolean): DiscardMode => {
+  if (status === 'added') return staged ? 'staged-add' : 'untracked';
+  return 'tracked';
+};
+
+const confirmDiscard = async () => {
+  if (!currentRepository.value || !pendingDiscard.value) return;
+  const { path, status, staged } = pendingDiscard.value;
+  const renamedFrom = renamedMap.value.get(path);
+  const targets: Array<{ path: string; mode: DiscardMode }> = [
+    { path, mode: getDiscardMode(status, staged) },
+  ];
+  if (renamedFrom) targets.push({ path: renamedFrom, mode: 'tracked' });
+
+  try {
+    await window.api.git.discard(currentRepository.value.path, targets);
+    await repositoriesStore.fetchGitStatus();
+  } catch (error) {
+    console.error("Failed to discard changes:", error);
+  } finally {
+    pendingDiscard.value = null;
+    discardDialogOpen.value = false;
   }
 };
 

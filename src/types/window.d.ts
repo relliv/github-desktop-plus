@@ -11,6 +11,10 @@ declare global {
         createBranch: (path: string, name: string) => Promise<any>
         stage: (path: string, files: string[]) => Promise<any>
         unstage: (path: string, files: string[]) => Promise<any>
+        discard: (
+          path: string,
+          files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>
+        ) => Promise<any>
         commit: (path: string, message: string) => Promise<any>
         push: (path: string) => Promise<any>
         pull: (path: string) => Promise<any>
