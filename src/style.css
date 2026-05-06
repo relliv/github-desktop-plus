@@ -256,3 +256,21 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(155, 155, 155, 0.7);
 }
+
+/* Translucent blurred layer used by popovers/menus.
+   Lives behind the content (z-index -1) so backdrop-filter
+   does not become a containing block for the element itself,
+   which would break submenu positioning. */
+.popover-blur-layer {
+  position: relative;
+  isolation: isolate;
+}
+.popover-blur-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: hsl(var(--card) / 0.9);
+  backdrop-filter: blur(2px);
+}
