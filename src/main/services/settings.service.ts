@@ -1,4 +1,4 @@
-import { db, schema } from '../db'
+import { db, schema, isDbClosing, trackDbOp } from '../db'
 import { eq } from 'drizzle-orm'
 import { perf } from '@shared/perf'
 
@@ -20,13 +20,16 @@ const WINDOW_STATES_KEY = 'window_states'
 export class SettingsService {
   // Get a setting by key
   async getSetting(key: string): Promise<string | null> {
+    if (isDbClosing()) return null
     return perf.measure(`settings-service:get(${key})`, async () => {
       try {
-        const [setting] = await db
-          .select()
-          .from(schema.appSettings)
-          .where(eq(schema.appSettings.key, key))
-          .limit(1)
+        const [setting] = await trackDbOp(
+          db
+            .select()
+            .from(schema.appSettings)
+            .where(eq(schema.appSettings.key, key))
+            .limit(1),
+        )
 
         return setting?.value ?? null
       } catch (error) {
@@ -38,24 +41,29 @@ export class SettingsService {
 
   // Set a setting value
   async setSetting(key: string, value: string): Promise<void> {
+    if (isDbClosing()) return
     return perf.measure(`settings-service:set(${key})`, async () => {
       try {
         const existing = await this.getSetting(key)
 
         if (existing !== null) {
-          await db
-            .update(schema.appSettings)
-            .set({
+          await trackDbOp(
+            db
+              .update(schema.appSettings)
+              .set({
+                value,
+                updatedAt: new Date(),
+              })
+              .where(eq(schema.appSettings.key, key)),
+          )
+        } else {
+          await trackDbOp(
+            db.insert(schema.appSettings).values({
+              key,
               value,
               updatedAt: new Date(),
-            })
-            .where(eq(schema.appSettings.key, key))
-        } else {
-          await db.insert(schema.appSettings).values({
-            key,
-            value,
-            updatedAt: new Date(),
-          })
+            }),
+          )
         }
       } catch (error) {
         console.error('Error setting value:', error)

@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from './stores/app.store'
 import { useRepositoriesStore } from '@/shared/stores'
@@ -14,6 +14,20 @@ import { perf } from '@/shared/perf'
 const appStore = useAppStore()
 const repositoriesStore = useRepositoriesStore()
 const router = useRouter()
+
+const pendingRepositoryId = ref<number | null>(null)
+
+function tryOpenPendingRepository() {
+  const id = pendingRepositoryId.value
+  if (id == null) return
+  const repo = repositoriesStore.repositories.find((r) => r.id === id)
+  if (!repo) return
+  pendingRepositoryId.value = null
+  repositoriesStore.setCurrentRepository(repo)
+  router.push('/repository')
+}
+
+watch(() => repositoriesStore.repositories.length, tryOpenPendingRepository)
 
 onMounted(() => {
   perf.mark('app:mounted')
@@ -37,11 +51,8 @@ onMounted(() => {
 
   // Handle open-repository event from main process (new window with repo)
   window.api.window.onOpenRepository((repositoryId) => {
-    const repo = repositoriesStore.repositories.find((r) => r.id === repositoryId)
-    if (repo) {
-      repositoriesStore.setCurrentRepository(repo)
-      router.push('/repository')
-    }
+    pendingRepositoryId.value = repositoryId
+    tryOpenPendingRepository()
   })
 })
 

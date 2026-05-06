@@ -23,6 +23,31 @@ export class WindowManager {
   private cachedSidebarData: any = null
   private saveTimer: ReturnType<typeof setTimeout> | null = null
   private isRestoringSession = false
+  private isShuttingDown = false
+
+  beginShutdown() {
+    this.isShuttingDown = true
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer)
+      this.saveTimer = null
+    }
+  }
+
+  async flushPendingSave(): Promise<void> {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer)
+      this.saveTimer = null
+    }
+    // If all windows already closed, the per-window 'close' handler has
+    // already persisted the final state — don't overwrite it with [].
+    if (this.windows.size === 0) return
+    const states = this.collectWindowStates()
+    try {
+      await settingsService.saveWindowStates(states)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   setCachedSidebarData(data: any) {
     this.cachedSidebarData = data
@@ -104,8 +129,11 @@ export class WindowManager {
   }
 
   private scheduleSaveStates() {
+    if (this.isShuttingDown) return
     if (this.saveTimer) clearTimeout(this.saveTimer)
     this.saveTimer = setTimeout(() => {
+      this.saveTimer = null
+      if (this.isShuttingDown) return
       const states = this.collectWindowStates()
       settingsService.saveWindowStates(states).catch(console.error)
     }, SAVE_DEBOUNCE_MS)
@@ -214,6 +242,7 @@ export class WindowManager {
 
     // On close: save states immediately, then remove from tracking
     win.on('close', () => {
+      if (this.isShuttingDown) return
       const states = this.collectWindowStates()
       settingsService.saveWindowStates(states).catch(console.error)
     })
@@ -221,6 +250,7 @@ export class WindowManager {
     win.on('closed', () => {
       this.windows.delete(win)
       this.windowRepoMap.delete(win)
+      if (this.isShuttingDown) return
       // Save updated states after removal (remaining windows)
       this.scheduleSaveStates()
     })

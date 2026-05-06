@@ -86,9 +86,36 @@ try {
 
 perf.mark('db:ready')
 
-// Close database connection when app quits
-app.on('before-quit', () => {
-  sqlite.close()
-})
+let isClosing = false
+let pendingOps = 0
+const drainResolvers: Array<() => void> = []
+
+export function isDbClosing(): boolean {
+  return isClosing
+}
+
+export function trackDbOp<T>(p: PromiseLike<T>): Promise<T> {
+  pendingOps++
+  return Promise.resolve(p).finally(() => {
+    pendingOps--
+    if (pendingOps === 0 && drainResolvers.length > 0) {
+      const resolvers = drainResolvers.splice(0)
+      for (const r of resolvers) r()
+    }
+  })
+}
+
+export async function closeDatabase(): Promise<void> {
+  if (isClosing) return
+  isClosing = true
+  if (pendingOps > 0) {
+    await new Promise<void>((resolve) => drainResolvers.push(resolve))
+  }
+  try {
+    sqlite.close()
+  } catch (err) {
+    console.error('Error closing database:', err)
+  }
+}
 
 export { schema }

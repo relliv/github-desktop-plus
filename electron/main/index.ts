@@ -219,9 +219,49 @@ app.whenReady().then(async () => {
   perf.mark("main:sidebar-data-pushed");
 });
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+let isShuttingDown = false;
+
+async function gracefulShutdown() {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  windowManager.beginShutdown();
+
+  try {
+    await windowManager.flushPendingSave();
+  } catch (err) {
+    console.error("Error flushing window state:", err);
+  }
+
+  try {
+    const { closeDatabase } = await import("../../src/main/db");
+    await closeDatabase();
+  } catch (err) {
+    console.error("Error closing database:", err);
+  }
+}
+
+app.on("before-quit", (event) => {
+  if (isShuttingDown) return;
+  event.preventDefault();
+  gracefulShutdown().finally(() => app.exit(0));
 });
+
+app.on("window-all-closed", () => {
+  app.quit();
+});
+
+const handleSignal = () => {
+  if (isShuttingDown) {
+    app.exit(0);
+    return;
+  }
+  app.quit();
+};
+
+process.on("SIGINT", handleSignal);
+process.on("SIGTERM", handleSignal);
+process.on("SIGHUP", handleSignal);
 
 app.on("second-instance", () => {
   // Open a new window when a second instance is attempted
