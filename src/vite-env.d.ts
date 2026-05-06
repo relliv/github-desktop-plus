@@ -58,6 +58,11 @@ interface Window {
       openFile: (params: { editor: any; filePath: string; lineNumber?: number }) => Promise<{ success: boolean; error?: string }>
       openFileDefault: (params: { filePath: string; lineNumber?: number }) => Promise<{ success: boolean; error?: string }>
     }
+    terminal: {
+      detect: () => Promise<any[]>
+      getAvailable: () => Promise<any[]>
+      open: (params: { terminal: any; cwd: string }) => Promise<{ success: boolean; error?: string }>
+    }
     settings: {
       get: (key: string) => Promise<{ success: boolean; data: string | null }>
       set: (key: string, value: string) => Promise<{ success: boolean; error?: string }>

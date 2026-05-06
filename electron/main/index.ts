@@ -281,7 +281,9 @@ app.on("activate", () => {
 import { registerGitHandlers } from "./ipc/git.handler";
 import { registerShellHandlers } from "./ipc/shell.handler";
 import { registerEditorHandlers } from "./ipc/editor.handler";
+import { registerTerminalHandlers } from "./ipc/terminal.handler";
 
 registerGitHandlers();
 registerShellHandlers();
 registerEditorHandlers();
+registerTerminalHandlers();

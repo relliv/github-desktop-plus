@@ -1,11 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Editor } from '@/composables/useEditor'
+import type { Terminal } from '@/composables/useTerminal'
 
 export interface Settings {
   theme: 'light' | 'dark' | 'system'
   discoveredEditors: Editor[] // Editors found on the system
   selectedEditors: string[] // Array of selected editor IDs
+  discoveredTerminals: Terminal[] // Terminals found on the system
+  selectedTerminals: string[] // Array of selected terminal IDs
   defaultClonePath?: string
   autoFetch: boolean
   autoFetchInterval: number // minutes
@@ -21,6 +24,8 @@ export const useSettingsStore = defineStore('settings', () => {
     theme: 'system',
     discoveredEditors: [],
     selectedEditors: [],
+    discoveredTerminals: [],
+    selectedTerminals: [],
     defaultClonePath: undefined,
     autoFetch: true,
     autoFetchInterval: 5,
@@ -34,6 +39,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const theme = computed(() => settings.value.theme)
   const discoveredEditors = computed(() => settings.value.discoveredEditors)
   const selectedEditors = computed(() => settings.value.selectedEditors)
+  const discoveredTerminals = computed(() => settings.value.discoveredTerminals)
+  const selectedTerminals = computed(() => settings.value.selectedTerminals)
   const defaultClonePath = computed(() => settings.value.defaultClonePath)
   const autoFetch = computed(() => settings.value.autoFetch)
   const autoFetchInterval = computed(() => settings.value.autoFetchInterval)
@@ -67,6 +74,30 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function isEditorSelected(editorId: string) {
     return settings.value.selectedEditors.includes(editorId)
+  }
+
+  function toggleTerminal(terminalId: string) {
+    const current = settings.value.selectedTerminals
+    if (current.includes(terminalId)) {
+      settings.value.selectedTerminals = current.filter((id) => id !== terminalId)
+    } else {
+      settings.value.selectedTerminals = [...current, terminalId]
+    }
+    saveSettings()
+  }
+
+  function setDiscoveredTerminals(terminals: Terminal[]) {
+    settings.value.discoveredTerminals = terminals
+    saveSettings()
+  }
+
+  function setSelectedTerminals(terminalIds: string[]) {
+    settings.value.selectedTerminals = terminalIds
+    saveSettings()
+  }
+
+  function isTerminalSelected(terminalId: string) {
+    return settings.value.selectedTerminals.includes(terminalId)
   }
 
   function setDefaultClonePath(path: string | undefined) {
@@ -134,6 +165,8 @@ export const useSettingsStore = defineStore('settings', () => {
     theme,
     discoveredEditors,
     selectedEditors,
+    discoveredTerminals,
+    selectedTerminals,
     defaultClonePath,
     autoFetch,
     autoFetchInterval,
@@ -143,6 +176,10 @@ export const useSettingsStore = defineStore('settings', () => {
     setDiscoveredEditors,
     setSelectedEditors,
     isEditorSelected,
+    toggleTerminal,
+    setDiscoveredTerminals,
+    setSelectedTerminals,
+    isTerminalSelected,
     setDefaultClonePath,
     setAutoFetch,
     setAutoFetchInterval,

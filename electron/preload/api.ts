@@ -126,6 +126,13 @@ export const api = {
       ipcRenderer.invoke('editor:open-file-default', params),
   },
 
+  terminal: {
+    detect: () => ipcRenderer.invoke('terminal:detect'),
+    getAvailable: () => ipcRenderer.invoke('terminal:get-available'),
+    open: (params: { terminal: any; cwd: string }) =>
+      ipcRenderer.invoke('terminal:open', params),
+  },
+
   settings: {
     get: (key: string) => ipcRenderer.invoke('settings:get', key),
     set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),

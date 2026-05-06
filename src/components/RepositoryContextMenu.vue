@@ -50,7 +50,29 @@
         Show in {{ finderName }}
       </ContextMenuItem>
       
-      <ContextMenuItem @click="openInTerminal">
+      <!-- Open in Terminal: submenu when multiple selected, single click otherwise -->
+      <ContextMenuSub v-if="contextMenuTerminals.length > 1">
+        <ContextMenuSubTrigger>
+          <Terminal class="w-4 h-4 mr-2" />
+          Open in Terminal
+        </ContextMenuSubTrigger>
+        <ContextMenuSubContent class="w-48">
+          <ContextMenuItem
+            v-for="terminal in contextMenuTerminals"
+            :key="terminal.id"
+            @click="() => openInSelectedTerminal(terminal)"
+          >
+            <img
+              :src="getTerminalIconUrl(terminal)"
+              :alt="terminal.name"
+              class="w-4 h-4 mr-2"
+            />
+            {{ terminal.name }}
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+
+      <ContextMenuItem v-else @click="openInTerminal">
         <Terminal class="w-4 h-4 mr-2" />
         Open in Terminal
       </ContextMenuItem>
@@ -87,6 +109,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useEditorContextMenu } from '@/composables/useEditorContextMenu'
+import { useTerminalContextMenu } from '@/composables/useTerminalContextMenu'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -128,6 +151,11 @@ const emit = defineEmits<{
 const router = useRouter()
 const { toast } = useToast()
 const { contextMenuEditors, hasSelectedEditors, openFileInEditor, getEditorIconUrl } = useEditorContextMenu()
+const {
+  contextMenuTerminals,
+  openInTerminal: openInTerminalById,
+  getTerminalIconUrl,
+} = useTerminalContextMenu()
 
 // Platform-specific finder name
 const finderName = computed(() => {
@@ -173,7 +201,29 @@ const openInFinder = async () => {
   }
 }
 
+const openInSelectedTerminal = async (terminal: any) => {
+  try {
+    await openInTerminalById(props.repository.path, terminal)
+    toast({
+      title: 'Terminal opened',
+      description: `Opened in ${terminal.name}`,
+    })
+  } catch (error) {
+    toast({
+      title: 'Failed to open terminal',
+      description: error instanceof Error ? error.message : 'Could not open terminal',
+      variant: 'destructive',
+    })
+  }
+}
+
 const openInTerminal = async () => {
+  // If exactly one terminal is selected, use it; otherwise fall back to OS default.
+  const [selected] = contextMenuTerminals.value
+  if (selected) {
+    await openInSelectedTerminal(selected)
+    return
+  }
   try {
     const result = await window.api.shell.openTerminal(props.repository.path)
     if (!result.success) {
@@ -187,6 +237,7 @@ const openInTerminal = async () => {
     })
   }
 }
+
 
 const copyPath = async () => {
   try {

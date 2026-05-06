@@ -204,7 +204,7 @@
               </CardContent>
             </Card>
           </div>
-          
+
           <!-- Advanced Settings -->
           <div v-if="activeCategory === 'advanced'" class="space-y-6">
             <Card>
@@ -332,7 +332,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { 
+import {
   Settings,
   GitBranch,
   FileText,

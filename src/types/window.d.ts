@@ -75,6 +75,15 @@ declare global {
         openFile: (params: { editor: any; filePath: string; lineNumber?: number }) => Promise<any>
         openFileDefault: (params: { filePath: string; lineNumber?: number }) => Promise<any>
       }
+      terminal: {
+        detect: () => Promise<any>
+        getAvailable: () => Promise<any>
+        open: (params: { terminal: any; cwd: string }) => Promise<{ success: boolean; error?: string }>
+      }
+      settings?: {
+        get: (key: string) => Promise<any>
+        set: (key: string, value: string) => Promise<any>
+      }
     }
   }
 }

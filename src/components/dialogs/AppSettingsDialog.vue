@@ -211,6 +211,79 @@
             </Card>
           </div>
 
+          <!-- Terminal Settings -->
+          <div v-if="activeCategory === 'terminal'" class="space-y-6">
+            <Card>
+              <CardHeader class="pb-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0 mt-0.5">
+                      <TerminalIcon class="w-4 h-4 text-primary" :stroke-width="1.5" />
+                    </div>
+                    <div>
+                      <CardTitle class="text-base">Detected Terminals</CardTitle>
+                      <CardDescription class="mt-0.5">
+                        Select which terminals appear in the "Open in Terminal" menu
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="shrink-0"
+                    @click="detectTerminals"
+                    :disabled="terminalLoading"
+                  >
+                    <Loader2 v-if="terminalLoading" class="w-4 h-4 mr-2 animate-spin" :stroke-width="1" />
+                    <Search v-else class="w-4 h-4 mr-2" :stroke-width="1" />
+                    Discover Terminals
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent class="pt-0">
+                <div v-if="terminalLoading && availableTerminals.length === 0" class="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <Loader2 class="w-6 h-6 mb-3 animate-spin" :stroke-width="1" />
+                  <span class="text-sm">Scanning for terminals…</span>
+                </div>
+
+                <div v-else-if="availableTerminals.length === 0" class="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <Search class="w-8 h-8 mb-3 opacity-40" :stroke-width="1" />
+                  <span class="text-sm font-medium">No terminals detected</span>
+                  <span class="text-xs mt-1">Click "Discover Terminals" to scan your system</span>
+                </div>
+
+                <div v-else class="border rounded-lg divide-y">
+                  <label
+                    v-for="terminal in availableTerminals"
+                    :key="terminal.id"
+                    class="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50 first:rounded-t-lg last:rounded-b-lg"
+                    :class="{ 'bg-accent/30': settingsStore.isTerminalSelected(terminal.id) }"
+                  >
+                    <Checkbox
+                      :model-value="settingsStore.isTerminalSelected(terminal.id)"
+                      @update:model-value="settingsStore.toggleTerminal(terminal.id)"
+                    />
+                    <div class="flex items-center justify-center w-8 h-8 rounded-md bg-muted shrink-0">
+                      <img :src="getTerminalIconUrl(terminal)" :alt="terminal.name" class="w-4 h-4" />
+                    </div>
+                    <div class="flex flex-col min-w-0 flex-1">
+                      <span class="text-sm font-medium leading-tight">{{ terminal.name }}</span>
+                      <span class="text-xs text-muted-foreground truncate">{{ terminal.executable }}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      class="shrink-0"
+                      @click.prevent="testTerminal(terminal)"
+                    >
+                      Test
+                    </Button>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <!-- Advanced Settings -->
           <div v-if="activeCategory === 'advanced'" class="space-y-6">
             <Card>
@@ -327,6 +400,7 @@ import {
   Github,
   Loader2,
   Search,
+  Terminal as TerminalIcon,
 } from "lucide-vue-next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
@@ -353,11 +427,19 @@ import { Badge } from "@/components/ui/badge";
 import { useAppStore, type Theme } from "@/stores/app.store";
 import { useSettingsStore } from "@/stores/settings.store";
 import { useEditor } from "@/composables/useEditor";
+import { useTerminal } from "@/composables/useTerminal";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
 const { defaultEditor, loading: editorLoading, detectEditors, getEditorIconUrl } = useEditor();
 const availableEditors = computed(() => settingsStore.discoveredEditors);
+const {
+  loading: terminalLoading,
+  detectTerminals,
+  getTerminalIconUrl,
+  openInTerminal,
+} = useTerminal();
+const availableTerminals = computed(() => settingsStore.discoveredTerminals);
 
 const isOpen = ref(false);
 
@@ -365,6 +447,7 @@ const categories = [
   { id: "general", label: "General", icon: SettingsIcon },
   { id: "git", label: "Git", icon: GitBranch },
   { id: "editor", label: "Editor", icon: FileText },
+  { id: "terminal", label: "Terminal", icon: TerminalIcon },
   { id: "advanced", label: "Advanced", icon: Wrench },
   { id: "about", label: "About", icon: Info },
 ];
@@ -393,8 +476,9 @@ const mergeStrategy = ref("merge");
 
 // Editor settings
 const editorsScanned = ref(false);
+const terminalsScanned = ref(false);
 
-// Auto-scan editors when the Editor tab is first shown
+// Auto-scan editors / terminals the first time their tab is shown
 watch(activeCategory, (val) => {
   if (val === 'editor' && !editorsScanned.value) {
     editorsScanned.value = true;
@@ -402,7 +486,22 @@ watch(activeCategory, (val) => {
       detectEditors();
     }
   }
+  if (val === 'terminal' && !terminalsScanned.value) {
+    terminalsScanned.value = true;
+    if (availableTerminals.value.length === 0) {
+      detectTerminals();
+    }
+  }
 });
+
+const testTerminal = async (terminal: any) => {
+  try {
+    const home = await window.api.shell.getHomePath();
+    await openInTerminal(home, terminal);
+  } catch (err) {
+    console.error('Failed to open terminal:', err);
+  }
+};
 
 // Advanced settings
 const gpgSign = ref(false);
