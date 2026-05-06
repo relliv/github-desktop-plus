@@ -124,7 +124,7 @@
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
-  --color-popover: hsl(var(--popover));
+  --color-popover: hsl(var(--card) / 0.9);
   --color-popover-foreground: hsl(var(--popover-foreground));
 
   --color-card: hsl(var(--card));
