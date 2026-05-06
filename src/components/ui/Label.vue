@@ -1,10 +1,12 @@
 <template>
   <label
     :for="htmlFor"
-    :class="cn(
-      'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-      className
-    )"
+    :class="
+      cn(
+        'text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+        className,
+      )
+    "
   >
     <slot />
   </label>

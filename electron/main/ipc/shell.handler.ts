@@ -25,7 +25,7 @@ export function registerShellHandlers() {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to open path'
+        error: error instanceof Error ? error.message : 'Failed to open path',
       }
     }
   })
@@ -38,7 +38,7 @@ export function registerShellHandlers() {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to open URL'
+        error: error instanceof Error ? error.message : 'Failed to open URL',
       }
     }
   })
@@ -47,7 +47,7 @@ export function registerShellHandlers() {
   ipcMain.handle('shell:open-terminal', async (_, path: string) => {
     try {
       const os = platform()
-      
+
       if (os === 'darwin') {
         // macOS: Open Terminal.app
         exec(`open -a Terminal "${path}"`)
@@ -58,7 +58,7 @@ export function registerShellHandlers() {
         // Linux: Try common terminal emulators
         const terminals = ['gnome-terminal', 'konsole', 'xterm', 'terminator']
         let opened = false
-        
+
         for (const terminal of terminals) {
           try {
             exec(`${terminal} --working-directory="${path}"`)
@@ -68,17 +68,17 @@ export function registerShellHandlers() {
             // Try next terminal
           }
         }
-        
+
         if (!opened) {
           throw new Error('No supported terminal found')
         }
       }
-      
+
       return { success: true }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to open terminal'
+        error: error instanceof Error ? error.message : 'Failed to open terminal',
       }
     }
   })

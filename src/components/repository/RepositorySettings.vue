@@ -4,8 +4,8 @@
       <!-- Repository Info -->
       <Card>
         <CardHeader>
-          <CardTitle class="text-base flex items-center gap-2">
-            <Info class="size-4 text-muted-foreground" :stroke-width="1.5" />
+          <CardTitle class="flex items-center gap-2 text-base">
+            <Info class="text-muted-foreground size-4" :stroke-width="1.5" />
             Repository Information
           </CardTitle>
         </CardHeader>
@@ -18,7 +18,7 @@
           <div class="grid grid-cols-[100px_1fr] items-center gap-2">
             <Label class="text-muted-foreground">Path</Label>
             <div class="flex items-center gap-2">
-              <div class="text-sm truncate">{{ currentRepository.path }}</div>
+              <div class="truncate text-sm">{{ currentRepository.path }}</div>
               <Button
                 variant="ghost"
                 size="icon"
@@ -26,20 +26,20 @@
                 @click="openInExplorer"
                 title="Open in file explorer"
               >
-                <FolderOpen class="w-3.5 h-3.5" :stroke-width="1" />
+                <FolderOpen class="h-3.5 w-3.5" :stroke-width="1" />
               </Button>
             </div>
           </div>
 
           <div class="grid grid-cols-[100px_1fr] items-center gap-2">
             <Label class="text-muted-foreground">Branch</Label>
-            <div class="text-sm">{{ currentRepository.currentBranch || "None" }}</div>
+            <div class="text-sm">{{ currentRepository.currentBranch || 'None' }}</div>
           </div>
 
           <div v-if="remoteUrl" class="grid grid-cols-[100px_1fr] items-center gap-2">
             <Label class="text-muted-foreground">Remote</Label>
             <div class="flex items-center gap-2">
-              <div class="text-sm truncate">{{ remoteUrl }}</div>
+              <div class="truncate text-sm">{{ remoteUrl }}</div>
               <Button
                 v-if="browsableRemoteUrl"
                 variant="ghost"
@@ -48,7 +48,7 @@
                 @click="openRemoteInBrowser"
                 title="Open in browser"
               >
-                <ExternalLink class="w-3.5 h-3.5" :stroke-width="1" />
+                <ExternalLink class="h-3.5 w-3.5" :stroke-width="1" />
               </Button>
               <Button
                 variant="ghost"
@@ -57,7 +57,7 @@
                 @click="copyRemoteUrl"
                 title="Copy remote URL"
               >
-                <Copy class="w-3.5 h-3.5" :stroke-width="1" />
+                <Copy class="h-3.5 w-3.5" :stroke-width="1" />
               </Button>
             </div>
           </div>
@@ -67,7 +67,7 @@
       <!-- Danger Zone -->
       <Card class="border-destructive/50">
         <CardHeader>
-          <CardTitle class="text-base text-destructive flex items-center gap-2">
+          <CardTitle class="text-destructive flex items-center gap-2 text-base">
             <AlertTriangle class="size-4" :stroke-width="1.5" />
             Danger Zone
           </CardTitle>
@@ -76,13 +76,9 @@
           <div class="flex items-center justify-between">
             <div class="space-y-0.5">
               <Label>Remove Repository</Label>
-              <p class="text-sm text-muted-foreground">
-                Remove from app (files remain on disk)
-              </p>
+              <p class="text-muted-foreground text-sm">Remove from app (files remain on disk)</p>
             </div>
-            <Button variant="destructive" size="sm" @click="confirmRemove">
-              Remove
-            </Button>
+            <Button variant="destructive" size="sm" @click="confirmRemove"> Remove </Button>
           </div>
         </CardContent>
       </Card>
@@ -94,9 +90,8 @@
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Repository?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to remove "{{ currentRepository?.name }}" from
-            GitHub Desktop Plus? This action will not delete the repository from
-            your disk.
+            Are you sure you want to remove "{{ currentRepository?.name }}" from GitHub Desktop
+            Plus? This action will not delete the repository from your disk.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -114,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch } from 'vue'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -124,24 +119,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Button from "@/components/ui/Button.vue";
-import Label from "@/components/ui/Label.vue";
-import {
-  FolderOpen,
-  Copy,
-  ExternalLink,
-  Info,
-  AlertTriangle,
-} from "lucide-vue-next";
-import { useRepositoriesStore } from "@/shared/stores";
+} from '@/components/ui/alert-dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Button from '@/components/ui/Button.vue'
+import Label from '@/components/ui/Label.vue'
+import { FolderOpen, Copy, ExternalLink, Info, AlertTriangle } from 'lucide-vue-next'
+import { useRepositoriesStore } from '@/shared/stores'
 
-const repositoriesStore = useRepositoriesStore();
+const repositoriesStore = useRepositoriesStore()
 
-const currentRepository = computed(() => repositoriesStore.currentRepository);
-const remoteUrl = ref<string>("");
-const showRemoveConfirm = ref(false);
+const currentRepository = computed(() => repositoriesStore.currentRepository)
+const remoteUrl = ref<string>('')
+const showRemoveConfirm = ref(false)
 
 // Load remote URL when repository changes
 watch(
@@ -149,54 +138,53 @@ watch(
   async (newRepo) => {
     if (newRepo) {
       try {
-        remoteUrl.value =
-          (await window.api.git.getRemoteUrl?.(newRepo.path)) || "";
+        remoteUrl.value = (await window.api.git.getRemoteUrl?.(newRepo.path)) || ''
       } catch {
-        remoteUrl.value = "";
+        remoteUrl.value = ''
       }
     }
   },
   { immediate: true },
-);
+)
 
 const openInExplorer = async () => {
   if (currentRepository.value) {
-    await window.api.shell?.openPath(currentRepository.value.path);
+    await window.api.shell?.openPath(currentRepository.value.path)
   }
-};
+}
 
 const browsableRemoteUrl = computed(() => {
-  const url = remoteUrl.value;
-  if (!url) return null;
-  if (url.startsWith("https://") || url.startsWith("http://")) {
-    return url.replace(/\.git$/, "");
+  const url = remoteUrl.value
+  if (!url) return null
+  if (url.startsWith('https://') || url.startsWith('http://')) {
+    return url.replace(/\.git$/, '')
   }
   // Convert SSH to HTTPS: git@github.com:user/repo.git -> https://github.com/user/repo
-  const sshMatch = url.match(/git@([^:]+):(.+?)(?:\.git)?$/);
-  if (sshMatch) return `https://${sshMatch[1]}/${sshMatch[2]}`;
-  return null;
-});
+  const sshMatch = url.match(/git@([^:]+):(.+?)(?:\.git)?$/)
+  if (sshMatch) return `https://${sshMatch[1]}/${sshMatch[2]}`
+  return null
+})
 
 const copyRemoteUrl = async () => {
   if (remoteUrl.value) {
-    await navigator.clipboard.writeText(remoteUrl.value);
+    await navigator.clipboard.writeText(remoteUrl.value)
   }
-};
+}
 
 const openRemoteInBrowser = () => {
   if (browsableRemoteUrl.value) {
-    window.api.shell.openExternal(browsableRemoteUrl.value);
+    window.api.shell.openExternal(browsableRemoteUrl.value)
   }
-};
+}
 
 const confirmRemove = () => {
-  showRemoveConfirm.value = true;
-};
+  showRemoveConfirm.value = true
+}
 
 const removeRepository = async () => {
   if (currentRepository.value) {
-    await repositoriesStore.removeRepository(currentRepository.value.id);
-    showRemoveConfirm.value = false;
+    await repositoriesStore.removeRepository(currentRepository.value.id)
+    showRemoveConfirm.value = false
   }
-};
+}
 </script>

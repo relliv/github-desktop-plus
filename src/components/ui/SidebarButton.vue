@@ -2,12 +2,12 @@
   <button
     @click="$emit('click')"
     :class="[
-      'w-full flex items-center gap-2 px-2 py-2 rounded-md transition-colors hover:bg-accent',
-      collapsed ? 'justify-center' : ''
+      'hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-2 transition-colors',
+      collapsed ? 'justify-center' : '',
     ]"
     :title="label"
   >
-    <component :is="icon" class="w-4 h-4 flex-shrink-0" :stroke-width="1" />
+    <component :is="icon" class="h-4 w-4 flex-shrink-0" :stroke-width="1" />
     <span v-if="!collapsed" class="text-sm">{{ label }}</span>
   </button>
 </template>

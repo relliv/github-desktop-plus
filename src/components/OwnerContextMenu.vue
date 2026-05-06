@@ -5,12 +5,12 @@
     </ContextMenuTrigger>
     <ContextMenuContent class="w-56">
       <ContextMenuItem v-if="parentFolder" @click="openInFolder(parentFolder)">
-        <FolderOpen class="w-4 h-4 mr-2" />
+        <FolderOpen class="mr-2 h-4 w-4" />
         Open in Parent Folder
       </ContextMenuItem>
       <ContextMenuSub v-if="props.repos.length > 0">
         <ContextMenuSubTrigger>
-          <FolderOpen class="w-4 h-4 mr-2" />
+          <FolderOpen class="mr-2 h-4 w-4" />
           Open in Folder
         </ContextMenuSubTrigger>
         <ContextMenuSubContent class="w-48">
@@ -25,17 +25,17 @@
       </ContextMenuSub>
       <ContextMenuSeparator />
       <ContextMenuItem :disabled="repositoriesStore.isScanning" @click="scanFolder">
-        <FolderSearch class="w-4 h-4 mr-2" />
+        <FolderSearch class="mr-2 h-4 w-4" />
         {{ repositoriesStore.isScanning ? 'Scanning...' : 'Scan Folder' }}
       </ContextMenuItem>
       <ContextMenuSeparator v-if="githubUrl" />
       <ContextMenuItem v-if="githubUrl" @click="viewOnGitHub">
-        <ExternalLink class="w-4 h-4 mr-2" />
+        <ExternalLink class="mr-2 h-4 w-4" />
         View on GitHub
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem @click="refreshRemotes">
-        <RefreshCw class="w-4 h-4 mr-2" />
+        <RefreshCw class="mr-2 h-4 w-4" />
         Refresh Remotes
       </ContextMenuItem>
     </ContextMenuContent>
@@ -74,7 +74,7 @@ const parentFolder = computed(() => {
 
 const githubUrl = computed(() => {
   const hasGitHub = props.repos.some(
-    (repo) => repo.remoteUrl && repo.remoteUrl.includes('github.com')
+    (repo) => repo.remoteUrl && repo.remoteUrl.includes('github.com'),
   )
   return hasGitHub ? `https://github.com/${props.owner}` : null
 })

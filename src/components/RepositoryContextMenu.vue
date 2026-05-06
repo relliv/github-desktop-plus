@@ -7,7 +7,7 @@
       <!-- Open in Editor submenu -->
       <ContextMenuSub v-if="hasSelectedEditors">
         <ContextMenuSubTrigger>
-          <FileCode2 class="w-4 h-4 mr-2" />
+          <FileCode2 class="mr-2 h-4 w-4" />
           Open in Editor
         </ContextMenuSubTrigger>
         <ContextMenuSubContent class="w-48">
@@ -16,44 +16,37 @@
             :key="editor.id"
             @click="() => openInEditor(editor)"
           >
-            <img
-              :src="getEditorIconUrl(editor)"
-              :alt="editor.name"
-              class="w-4 h-4 mr-2"
-            />
+            <img :src="getEditorIconUrl(editor)" :alt="editor.name" class="mr-2 h-4 w-4" />
             {{ editor.name }}
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
-      
+
       <!-- Fallback if no editors selected -->
-      <ContextMenuItem 
-        v-else 
-        @click="goToEditorSettings"
-      >
-        <Settings class="w-4 h-4 mr-2" />
+      <ContextMenuItem v-else @click="goToEditorSettings">
+        <Settings class="mr-2 h-4 w-4" />
         Configure Editors...
       </ContextMenuItem>
-      
+
       <ContextMenuSeparator />
-      
+
       <!-- Repository actions -->
       <ContextMenuItem @click="openInNewWindow">
-        <ExternalLink class="w-4 h-4 mr-2" />
+        <ExternalLink class="mr-2 h-4 w-4" />
         Open in New Window
       </ContextMenuItem>
 
       <ContextMenuSeparator />
 
       <ContextMenuItem @click="openInFinder">
-        <Folder class="w-4 h-4 mr-2" />
+        <Folder class="mr-2 h-4 w-4" />
         Show in {{ finderName }}
       </ContextMenuItem>
-      
+
       <!-- Open in Terminal: submenu when multiple selected, single click otherwise -->
       <ContextMenuSub v-if="contextMenuTerminals.length > 1">
         <ContextMenuSubTrigger>
-          <Terminal class="w-4 h-4 mr-2" />
+          <Terminal class="mr-2 h-4 w-4" />
           Open in Terminal
         </ContextMenuSubTrigger>
         <ContextMenuSubContent class="w-48">
@@ -62,42 +55,35 @@
             :key="terminal.id"
             @click="() => openInSelectedTerminal(terminal)"
           >
-            <img
-              :src="getTerminalIconUrl(terminal)"
-              :alt="terminal.name"
-              class="w-4 h-4 mr-2"
-            />
+            <img :src="getTerminalIconUrl(terminal)" :alt="terminal.name" class="mr-2 h-4 w-4" />
             {{ terminal.name }}
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
 
       <ContextMenuItem v-else @click="openInTerminal">
-        <Terminal class="w-4 h-4 mr-2" />
+        <Terminal class="mr-2 h-4 w-4" />
         Open in Terminal
       </ContextMenuItem>
-      
+
       <ContextMenuItem @click="copyPath">
-        <Copy class="w-4 h-4 mr-2" />
+        <Copy class="mr-2 h-4 w-4" />
         Copy Path
       </ContextMenuItem>
-      
+
       <ContextMenuSeparator />
-      
+
       <ContextMenuItem @click="toggleFavorite">
-        <Star 
-          :class="[
-            'w-4 h-4 mr-2',
-            repository.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''
-          ]"
+        <Star
+          :class="['mr-2 h-4 w-4', repository.isFavorite ? 'fill-yellow-500 text-yellow-500' : '']"
         />
         {{ repository.isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
       </ContextMenuItem>
-      
+
       <ContextMenuSeparator />
 
       <ContextMenuItem @click="removeRepository" class="text-destructive">
-        <Trash2 class="w-4 h-4 mr-2" />
+        <Trash2 class="mr-2 h-4 w-4" />
         Remove
       </ContextMenuItem>
     </ContextMenuContent>
@@ -150,7 +136,8 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const { toast } = useToast()
-const { contextMenuEditors, hasSelectedEditors, openFileInEditor, getEditorIconUrl } = useEditorContextMenu()
+const { contextMenuEditors, hasSelectedEditors, openFileInEditor, getEditorIconUrl } =
+  useEditorContextMenu()
 const {
   contextMenuTerminals,
   openInTerminal: openInTerminalById,
@@ -232,12 +219,12 @@ const openInTerminal = async () => {
   } catch (error) {
     toast({
       title: 'Failed to open terminal',
-      description: error instanceof Error ? error.message : 'Could not open terminal at repository location',
+      description:
+        error instanceof Error ? error.message : 'Could not open terminal at repository location',
       variant: 'destructive',
     })
   }
 }
-
 
 const copyPath = async () => {
   try {

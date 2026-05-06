@@ -1,30 +1,30 @@
 <template>
-  <div class="flex-1 flex flex-col">
+  <div class="flex flex-1 flex-col">
     <!-- Header -->
-    <div class="h-[50px] px-6 border-b flex items-center">
+    <div class="flex h-[50px] items-center border-b px-6">
       <h1 class="text-lg font-semibold">Settings</h1>
     </div>
-    
+
     <!-- Settings Content -->
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex flex-1 overflow-hidden">
       <!-- Settings Navigation -->
-      <nav class="w-64 border-r p-4 space-y-1">
+      <nav class="w-64 space-y-1 border-r p-4">
         <button
           v-for="category in categories"
           :key="category.id"
           @click="activeCategory = category.id"
           :class="[
-            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+            'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
             activeCategory === category.id
               ? 'bg-accent text-accent-foreground'
-              : 'hover:bg-accent/50'
+              : 'hover:bg-accent/50',
           ]"
         >
-          <component :is="category.icon" class="w-4 h-4" :stroke-width="1" />
+          <component :is="category.icon" class="h-4 w-4" :stroke-width="1" />
           {{ category.label }}
         </button>
       </nav>
-      
+
       <!-- Settings Panel -->
       <div class="flex-1 overflow-y-auto" v-lenis>
         <div class="mx-auto p-6">
@@ -44,11 +44,11 @@
                         type="button"
                         @click="theme = 'light'"
                         :class="[
-                          'w-4 h-4 rounded-full border-2 flex items-center justify-center',
-                          theme === 'light' ? 'border-primary' : 'border-muted-foreground'
+                          'flex h-4 w-4 items-center justify-center rounded-full border-2',
+                          theme === 'light' ? 'border-primary' : 'border-muted-foreground',
                         ]"
                       >
-                        <div v-if="theme === 'light'" class="w-2 h-2 rounded-full bg-primary" />
+                        <div v-if="theme === 'light'" class="bg-primary h-2 w-2 rounded-full" />
                       </button>
                       <Label @click="theme = 'light'" class="cursor-pointer">Light</Label>
                     </div>
@@ -57,11 +57,11 @@
                         type="button"
                         @click="theme = 'dark'"
                         :class="[
-                          'w-4 h-4 rounded-full border-2 flex items-center justify-center',
-                          theme === 'dark' ? 'border-primary' : 'border-muted-foreground'
+                          'flex h-4 w-4 items-center justify-center rounded-full border-2',
+                          theme === 'dark' ? 'border-primary' : 'border-muted-foreground',
                         ]"
                       >
-                        <div v-if="theme === 'dark'" class="w-2 h-2 rounded-full bg-primary" />
+                        <div v-if="theme === 'dark'" class="bg-primary h-2 w-2 rounded-full" />
                       </button>
                       <Label @click="theme = 'dark'" class="cursor-pointer">Dark</Label>
                     </div>
@@ -70,17 +70,17 @@
                         type="button"
                         @click="theme = 'system'"
                         :class="[
-                          'w-4 h-4 rounded-full border-2 flex items-center justify-center',
-                          theme === 'system' ? 'border-primary' : 'border-muted-foreground'
+                          'flex h-4 w-4 items-center justify-center rounded-full border-2',
+                          theme === 'system' ? 'border-primary' : 'border-muted-foreground',
                         ]"
                       >
-                        <div v-if="theme === 'system'" class="w-2 h-2 rounded-full bg-primary" />
+                        <div v-if="theme === 'system'" class="bg-primary h-2 w-2 rounded-full" />
                       </button>
                       <Label @click="theme = 'system'" class="cursor-pointer">System</Label>
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="space-y-2">
                   <Label htmlFor="language">Language</Label>
                   <Select v-model="language">
@@ -96,18 +96,20 @@
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div class="flex items-center justify-between">
                   <div class="space-y-1">
                     <Label>Auto-launch at startup</Label>
-                    <p class="text-sm text-muted-foreground">Start GitHub Desktop Plus when system starts</p>
+                    <p class="text-muted-foreground text-sm">
+                      Start GitHub Desktop Plus when system starts
+                    </p>
                   </div>
                   <Switch v-model="autoLaunch" />
                 </div>
               </CardContent>
             </Card>
           </div>
-          
+
           <!-- Git Settings -->
           <div v-if="activeCategory === 'git'" class="space-y-6">
             <Card>
@@ -118,34 +120,26 @@
               <CardContent class="space-y-4">
                 <div class="space-y-2">
                   <Label htmlFor="git-name">Name</Label>
-                  <Input 
-                    id="git-name" 
-                    v-model="gitName" 
-                    placeholder="Your Name"
-                  />
+                  <Input id="git-name" v-model="gitName" placeholder="Your Name" />
                 </div>
-                
+
                 <div class="space-y-2">
                   <Label htmlFor="git-email">Email</Label>
-                  <Input 
-                    id="git-email" 
-                    v-model="gitEmail" 
+                  <Input
+                    id="git-email"
+                    v-model="gitEmail"
                     type="email"
                     placeholder="your.email@example.com"
                   />
                 </div>
-                
+
                 <div class="space-y-2">
                   <Label htmlFor="default-branch">Default Branch Name</Label>
-                  <Input 
-                    id="default-branch" 
-                    v-model="defaultBranch" 
-                    placeholder="main"
-                  />
+                  <Input id="default-branch" v-model="defaultBranch" placeholder="main" />
                 </div>
-                
+
                 <Separator />
-                
+
                 <div class="space-y-2">
                   <Label>Merge Strategy</Label>
                   <Select v-model="mergeStrategy">
@@ -162,7 +156,7 @@
               </CardContent>
             </Card>
           </div>
-          
+
           <!-- Editor Settings -->
           <div v-if="activeCategory === 'editor'" class="space-y-6">
             <Card>
@@ -171,32 +165,37 @@
                 <CardDescription>Configure your preferred external editor</CardDescription>
               </CardHeader>
               <CardContent class="space-y-4">
-                <div class="p-4 bg-muted rounded-lg">
-                  <p class="text-sm mb-3">
-                    Manage your external editor preferences and view all detected editors on your system.
+                <div class="bg-muted rounded-lg p-4">
+                  <p class="mb-3 text-sm">
+                    Manage your external editor preferences and view all detected editors on your
+                    system.
                   </p>
                   <Button @click="$router.push('/external-editor')" variant="default">
-                    <FileText class="w-4 h-4 mr-2" />
+                    <FileText class="mr-2 h-4 w-4" />
                     Manage External Editors
                   </Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div class="space-y-2">
                   <h3 class="text-sm font-medium">Quick Settings</h3>
                   <div class="flex items-center justify-between">
                     <div class="space-y-1">
                       <Label>Open files in editor tabs</Label>
-                      <p class="text-sm text-muted-foreground">Open multiple files in tabs instead of new windows</p>
+                      <p class="text-muted-foreground text-sm">
+                        Open multiple files in tabs instead of new windows
+                      </p>
                     </div>
                     <Switch v-model="openInTabs" />
                   </div>
-                  
+
                   <div class="flex items-center justify-between">
                     <div class="space-y-1">
                       <Label>Wait for editor to close</Label>
-                      <p class="text-sm text-muted-foreground">Wait for file to be closed before continuing</p>
+                      <p class="text-muted-foreground text-sm">
+                        Wait for file to be closed before continuing
+                      </p>
                     </div>
                     <Switch v-model="waitForClose" />
                   </div>
@@ -216,45 +215,39 @@
                 <div class="flex items-center justify-between">
                   <div class="space-y-1">
                     <Label>Enable GPG signing</Label>
-                    <p class="text-sm text-muted-foreground">Sign commits with GPG key</p>
+                    <p class="text-muted-foreground text-sm">Sign commits with GPG key</p>
                   </div>
                   <Switch v-model="gpgSign" />
                 </div>
-                
+
                 <div class="flex items-center justify-between">
                   <div class="space-y-1">
                     <Label>Verbose commit messages</Label>
-                    <p class="text-sm text-muted-foreground">Show diff in commit message editor</p>
+                    <p class="text-muted-foreground text-sm">Show diff in commit message editor</p>
                   </div>
                   <Switch v-model="verboseCommit" />
                 </div>
-                
+
                 <div class="flex items-center justify-between">
                   <div class="space-y-1">
                     <Label>Auto-fetch</Label>
-                    <p class="text-sm text-muted-foreground">Automatically fetch from remotes</p>
+                    <p class="text-muted-foreground text-sm">Automatically fetch from remotes</p>
                   </div>
                   <Switch v-model="autoFetch" />
                 </div>
-                
+
                 <Separator />
-                
+
                 <div class="space-y-2">
                   <Label>Repository scan depth</Label>
                   <div class="flex items-center gap-4">
-                    <Slider 
-                      v-model="scanDepth" 
-                      :min="1" 
-                      :max="10" 
-                      :step="1"
-                      class="flex-1"
-                    />
-                    <span class="w-12 text-sm text-muted-foreground">{{ scanDepth[0] }}</span>
+                    <Slider v-model="scanDepth" :min="1" :max="10" :step="1" class="flex-1" />
+                    <span class="text-muted-foreground w-12 text-sm">{{ scanDepth[0] }}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Proxy Settings</CardTitle>
@@ -265,22 +258,22 @@
                   <Label>Use proxy</Label>
                   <Switch v-model="useProxy" />
                 </div>
-                
+
                 <div v-if="useProxy" class="space-y-4">
                   <div class="space-y-2">
                     <Label htmlFor="proxy-url">Proxy URL</Label>
-                    <Input 
-                      id="proxy-url" 
-                      v-model="proxyUrl" 
+                    <Input
+                      id="proxy-url"
+                      v-model="proxyUrl"
                       placeholder="http://proxy.example.com:8080"
                     />
                   </div>
-                  
+
                   <div class="space-y-2">
                     <Label htmlFor="proxy-bypass">Bypass proxy for</Label>
-                    <Textarea 
-                      id="proxy-bypass" 
-                      v-model="proxyBypass" 
+                    <Textarea
+                      id="proxy-bypass"
+                      v-model="proxyBypass"
                       placeholder="localhost, 127.0.0.1, .local"
                       rows="3"
                     />
@@ -289,7 +282,7 @@
               </CardContent>
             </Card>
           </div>
-          
+
           <!-- About -->
           <div v-if="activeCategory === 'about'" class="space-y-6">
             <Card>
@@ -298,23 +291,25 @@
               </CardHeader>
               <CardContent class="space-y-4">
                 <div class="flex items-center gap-4">
-                  <GitBranch class="w-16 h-16 text-primary" :stroke-width="1" />
+                  <GitBranch class="text-primary h-16 w-16" :stroke-width="1" />
                   <div>
                     <h2 class="text-xl font-semibold">GitHub Desktop Plus</h2>
-                    <p class="text-sm text-muted-foreground">Version 1.0.0</p>
+                    <p class="text-muted-foreground text-sm">Version 1.0.0</p>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div class="space-y-2">
                   <p class="text-sm">A powerful Git client built with Electron and Vue 3</p>
-                  <p class="text-sm text-muted-foreground">© 2025 GitHub Desktop Plus. All rights reserved.</p>
+                  <p class="text-muted-foreground text-sm">
+                    © 2025 GitHub Desktop Plus. All rights reserved.
+                  </p>
                 </div>
-                
+
                 <div class="flex gap-2">
                   <Button variant="outline" size="sm" @click="openGithub">
-                    <Github class="w-4 h-4 mr-2" :stroke-width="1" />
+                    <Github class="mr-2 h-4 w-4" :stroke-width="1" />
                     GitHub
                   </Button>
                   <Button variant="outline" size="sm" @click="checkUpdates">
@@ -332,21 +327,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import {
-  Settings,
-  GitBranch,
-  FileText,
-  Wrench,
-  Info,
-  Github
-} from 'lucide-vue-next'
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle 
-} from '@/components/ui/card'
+import { Settings, GitBranch, FileText, Wrench, Info, Github } from 'lucide-vue-next'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Label from '@/components/ui/Label.vue'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
@@ -378,7 +360,7 @@ const activeCategory = ref('general')
 // General settings
 const theme = computed<Theme>({
   get: () => appStore.theme,
-  set: (value: Theme) => appStore.setTheme(value)
+  set: (value: Theme) => appStore.setTheme(value),
 })
 const language = ref('en')
 const autoLaunch = ref(false)
@@ -417,5 +399,4 @@ const checkUpdates = () => {
   // TODO: Implement update check
   console.log('Checking for updates...')
 }
-
 </script>

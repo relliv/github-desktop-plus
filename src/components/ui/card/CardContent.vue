@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils'
 
 interface Props {
-  className?: string;
+  className?: string
 }
 
-defineProps<Props>();
+defineProps<Props>()
 </script>

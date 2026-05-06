@@ -1,6 +1,6 @@
 <template>
   <div
-    class="absolute size-[18px] rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors"
+    class="absolute flex size-[18px] cursor-pointer items-center justify-center rounded-full border-2 transition-colors"
     :class="[
       active
         ? 'bg-primary border-primary'
@@ -18,10 +18,10 @@
 
 <script setup lang="ts">
 defineProps<{
-  active?: boolean;
-}>();
+  active?: boolean
+}>()
 
 defineEmits<{
-  click: [];
-}>();
+  click: []
+}>()
 </script>

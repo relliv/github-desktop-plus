@@ -1,8 +1,5 @@
 <template>
-  <ToastTitle
-    v-bind="forwarded"
-    :class="cn('text-sm font-semibold', props.class)"
-  >
+  <ToastTitle v-bind="forwarded" :class="cn('text-sm font-semibold', props.class)">
     <slot />
   </ToastTitle>
 </template>

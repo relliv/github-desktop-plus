@@ -1,11 +1,11 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 /* Code viewer component styles — imported individually to avoid
    the theme package's duplicate @import 'tailwindcss' */
-@import "@ngeenx/nx-code-viewer-theme/src/atoms/index.css";
-@import "@ngeenx/nx-code-viewer-theme/src/molecules/index.css";
-@import "@ngeenx/nx-code-viewer-theme/src/organisms/index.css";
+@import '@ngeenx/nx-code-viewer-theme/src/atoms/index.css';
+@import '@ngeenx/nx-code-viewer-theme/src/molecules/index.css';
+@import '@ngeenx/nx-code-viewer-theme/src/organisms/index.css';
 
 /* ─────────────────────────────────────────────────────────────────────────
    Code Viewer Theme Variables
@@ -44,8 +44,8 @@
 
   /* Font */
   --nx-font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
 
   /* Light backgrounds — package defaults (neutral palette) */
   --nx-light-bg: #fafafa50;
@@ -236,7 +236,7 @@ html {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  @apply w-full h-screen overflow-hidden;
+  @apply h-screen w-full overflow-hidden;
 }
 
 ::-webkit-scrollbar {

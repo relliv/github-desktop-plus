@@ -7,7 +7,7 @@
       <!-- Open in Editor submenu -->
       <ContextMenuSub v-if="hasSelectedEditors">
         <ContextMenuSubTrigger>
-          <FileCode2 class="w-4 h-4 mr-2" />
+          <FileCode2 class="mr-2 h-4 w-4" />
           Open in Editor
         </ContextMenuSubTrigger>
         <ContextMenuSubContent class="w-48">
@@ -16,37 +16,31 @@
             :key="editor.id"
             @click="() => openInEditor(editor)"
           >
-            <component 
-              :is="getEditorIconComponent(editor)" 
-              class="w-4 h-4 mr-2"
-            />
+            <component :is="getEditorIconComponent(editor)" class="mr-2 h-4 w-4" />
             {{ editor.name }}
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
-      
+
       <!-- Fallback if no editors selected -->
-      <ContextMenuItem 
-        v-else 
-        @click="goToEditorSettings"
-      >
-        <Settings class="w-4 h-4 mr-2" />
+      <ContextMenuItem v-else @click="goToEditorSettings">
+        <Settings class="mr-2 h-4 w-4" />
         Configure Editors...
       </ContextMenuItem>
-      
+
       <ContextMenuSeparator />
-      
+
       <!-- Other file operations -->
       <ContextMenuItem @click="copyPath">
-        <Copy class="w-4 h-4 mr-2" />
+        <Copy class="mr-2 h-4 w-4" />
         Copy Path
       </ContextMenuItem>
-      
+
       <ContextMenuItem @click="showInFolder">
-        <Folder class="w-4 h-4 mr-2" />
+        <Folder class="mr-2 h-4 w-4" />
         Show in Folder
       </ContextMenuItem>
-      
+
       <slot name="extra-items" />
     </ContextMenuContent>
   </ContextMenu>
@@ -66,19 +60,19 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { 
-  FileCode2, 
-  Settings, 
-  Copy, 
+import {
+  FileCode2,
+  Settings,
+  Copy,
   Folder,
-  FileText, 
-  Globe, 
-  Lightbulb, 
-  Terminal, 
-  Zap, 
+  FileText,
+  Globe,
+  Lightbulb,
+  Terminal,
+  Zap,
   Hammer,
   MousePointer2,
-  Wind
+  Wind,
 } from 'lucide-vue-next'
 
 interface Props {
@@ -89,22 +83,23 @@ interface Props {
 const props = defineProps<Props>()
 const router = useRouter()
 const { toast } = useToast()
-const { contextMenuEditors, hasSelectedEditors, openFileInEditor, getEditorIcon } = useEditorContextMenu()
+const { contextMenuEditors, hasSelectedEditors, openFileInEditor, getEditorIcon } =
+  useEditorContextMenu()
 
 const getEditorIconComponent = (editor: any) => {
   const iconName = getEditorIcon(editor)
   const iconMap: Record<string, any> = {
-    'FileCode2': FileCode2,
-    'MousePointer2': MousePointer2,
-    'FileText': FileText,
-    'Globe': Globe,
-    'Lightbulb': Lightbulb,
-    'Terminal': Terminal,
-    'Zap': Zap,
-    'Hammer': Hammer,
-    'Wind': Wind,
+    FileCode2: FileCode2,
+    MousePointer2: MousePointer2,
+    FileText: FileText,
+    Globe: Globe,
+    Lightbulb: Lightbulb,
+    Terminal: Terminal,
+    Zap: Zap,
+    Hammer: Hammer,
+    Wind: Wind,
   }
-  
+
   return iconMap[iconName] || FileText
 }
 

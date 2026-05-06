@@ -23,12 +23,10 @@ interface TerminalConfig {
 }
 
 // macOS: most native terminals are launched via `open -a "App" <cwd>`
-const macAppLaunch =
-  (appName: string) =>
-  (_executable: string, cwd: string) => ({
-    command: 'open',
-    args: ['-a', appName, cwd],
-  })
+const macAppLaunch = (appName: string) => (_executable: string, cwd: string) => ({
+  command: 'open',
+  args: ['-a', appName, cwd],
+})
 
 const macBinaryLaunch =
   (extraArgs: (cwd: string) => string[] = (cwd) => ['--working-directory', cwd]) =>
@@ -38,8 +36,7 @@ const macBinaryLaunch =
   })
 
 const linuxBinaryLaunch =
-  (argsBuilder: (cwd: string) => string[]) =>
-  (executable: string, cwd: string) => ({
+  (argsBuilder: (cwd: string) => string[]) => (executable: string, cwd: string) => ({
     command: executable,
     args: argsBuilder(cwd),
   })
@@ -49,7 +46,10 @@ const TERMINAL_CONFIGS: Record<NodeJS.Platform | string, TerminalConfig[]> = {
     {
       id: 'terminal',
       name: 'Terminal',
-      paths: ['/System/Applications/Utilities/Terminal.app', '/Applications/Utilities/Terminal.app'],
+      paths: [
+        '/System/Applications/Utilities/Terminal.app',
+        '/Applications/Utilities/Terminal.app',
+      ],
       launch: macAppLaunch('Terminal'),
     },
     {
@@ -88,9 +88,7 @@ const TERMINAL_CONFIGS: Record<NodeJS.Platform | string, TerminalConfig[]> = {
       paths: ['/Applications/Alacritty.app'],
       command: 'alacritty',
       launch: (executable, cwd) => ({
-        command: executable.endsWith('.app')
-          ? 'open'
-          : executable,
+        command: executable.endsWith('.app') ? 'open' : executable,
         args: executable.endsWith('.app')
           ? ['-a', 'Alacritty', '--args', '--working-directory', cwd]
           : ['--working-directory', cwd],
@@ -296,7 +294,10 @@ function findExecutable(config: TerminalConfig): string | null {
   if (!config.command) return null
   try {
     const which = process.platform === 'win32' ? 'where' : 'which'
-    const result = execSync(`${which} ${config.command}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    const result = execSync(`${which} ${config.command}`, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
       .trim()
       .split(/\r?\n/)[0]
     return result || null

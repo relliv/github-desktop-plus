@@ -7,7 +7,7 @@ export enum LogLevel {
   INFO = 2,
   WARN = 3,
   ERROR = 4,
-  FATAL = 5
+  FATAL = 5,
 }
 
 // Process type
@@ -157,24 +157,24 @@ export interface MonitoringConfig {
   enabled: boolean
   logLevel: LogLevel
   samplingRate: number // 0-1
-  
+
   // Buffer settings
   bufferSize: number
   flushInterval: number // ms
-  
+
   // Privacy settings
   privacy: PrivacyConfig
-  
+
   // Provider configurations
   providers: {
     console?: ConsoleProviderConfig
     file?: FileProviderConfig
     remote?: RemoteProviderConfig
   }
-  
+
   // Feature flags
   features: MonitoringFeatures
-  
+
   // Performance settings
   performance: {
     maxExecutionTime: number // ms - operations taking longer will be logged
@@ -189,18 +189,18 @@ export interface IMonitoringProvider {
   id: string
   type: 'console' | 'file' | 'remote'
   capabilities: ProviderCapabilities
-  
+
   // Provider methods
   log?(entry: LogEntry): Promise<void>
   metric?(metric: MetricEntry): Promise<void>
   trace?(trace: TraceEntry): Promise<void>
   error?(error: ErrorEntry): Promise<void>
-  
+
   // Lifecycle
   connect(config: ProviderConfig): Promise<void>
   disconnect(): Promise<void>
   flush(): Promise<void>
-  
+
   // Health check
   isHealthy(): Promise<boolean>
 }
@@ -212,20 +212,20 @@ export interface IMonitoringService {
   metric(name: string, value: number, tags?: Record<string, string>): void
   trace<T>(operation: string, fn: () => T | Promise<T>): Promise<T>
   error(error: Error, context?: Partial<ErrorContext>): void
-  
+
   // Lifecycle management
   initialize(config: MonitoringConfig): Promise<void>
   shutdown(): Promise<void>
-  
+
   // Provider management
   addProvider(provider: IMonitoringProvider): void
   removeProvider(providerId: string): void
   getProviders(): IMonitoringProvider[]
-  
+
   // Configuration
   updateConfig(config: Partial<MonitoringConfig>): void
   getConfig(): MonitoringConfig
-  
+
   // Utilities
   createChildLogger(module: string): IModuleLogger
   flush(): Promise<void>
@@ -310,34 +310,44 @@ export interface SanitizationOptions {
 
 // Export type guards
 export function isLogEntry(entry: any): entry is LogEntry {
-  return entry && 
+  return (
+    entry &&
     typeof entry.timestamp === 'number' &&
     typeof entry.level === 'number' &&
     typeof entry.message === 'string' &&
-    entry.context && typeof entry.context === 'object'
+    entry.context &&
+    typeof entry.context === 'object'
+  )
 }
 
 export function isMetricEntry(entry: any): entry is MetricEntry {
-  return entry &&
+  return (
+    entry &&
     typeof entry.timestamp === 'number' &&
     typeof entry.name === 'string' &&
     typeof entry.value === 'number' &&
     typeof entry.type === 'string'
+  )
 }
 
 export function isTraceEntry(entry: any): entry is TraceEntry {
-  return entry &&
+  return (
+    entry &&
     typeof entry.traceId === 'string' &&
     typeof entry.spanId === 'string' &&
     typeof entry.operation === 'string' &&
     typeof entry.startTime === 'number' &&
     typeof entry.endTime === 'number'
+  )
 }
 
 export function isErrorEntry(entry: any): entry is ErrorEntry {
-  return entry &&
+  return (
+    entry &&
     typeof entry.timestamp === 'number' &&
-    entry.error && typeof entry.error === 'object' &&
+    entry.error &&
+    typeof entry.error === 'object' &&
     typeof entry.error.name === 'string' &&
     typeof entry.error.message === 'string'
+  )
 }

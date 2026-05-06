@@ -7,12 +7,13 @@ export const api = {
     getStatus: (path: string) => ipcRenderer.invoke('git:get-status', path),
     getBranches: (path: string) => ipcRenderer.invoke('git:get-branches', path),
     checkout: (path: string, branch: string) => ipcRenderer.invoke('git:checkout', path, branch),
-    createBranch: (path: string, name: string) => ipcRenderer.invoke('git:create-branch', path, name),
+    createBranch: (path: string, name: string) =>
+      ipcRenderer.invoke('git:create-branch', path, name),
     stage: (path: string, files: string[]) => ipcRenderer.invoke('git:stage', path, files),
     unstage: (path: string, files: string[]) => ipcRenderer.invoke('git:unstage', path, files),
     discard: (
       path: string,
-      files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>
+      files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>,
     ) => ipcRenderer.invoke('git:discard', path, files),
     commit: (path: string, message: string) => ipcRenderer.invoke('git:commit', path, message),
     push: (path: string) => ipcRenderer.invoke('git:push', path),
@@ -27,16 +28,19 @@ export const api = {
     getRemoteUrl: (path: string) => ipcRenderer.invoke('git:getRemoteUrl', path),
     getTags: (path: string) => ipcRenderer.invoke('git:get-tags', path),
     getStats: (path: string) => ipcRenderer.invoke('git:get-stats', path),
-    diffFile: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-file', path, filePath),
-    diffStaged: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-staged', path, filePath),
-    diffDeleted: (path: string, filePath: string) => ipcRenderer.invoke('git:diff-deleted', path, filePath),
+    diffFile: (path: string, filePath: string) =>
+      ipcRenderer.invoke('git:diff-file', path, filePath),
+    diffStaged: (path: string, filePath: string) =>
+      ipcRenderer.invoke('git:diff-staged', path, filePath),
+    diffDeleted: (path: string, filePath: string) =>
+      ipcRenderer.invoke('git:diff-deleted', path, filePath),
     onCloneProgress: (callback: (progress: any) => void) => {
       const handler = (_: any, progress: any) => callback(progress)
       ipcRenderer.on('git:clone:progress', handler)
       return () => ipcRenderer.removeListener('git:clone:progress', handler)
     },
   },
-  
+
   window: {
     minimize: () => ipcRenderer.invoke('window:minimize'),
     maximize: () => ipcRenderer.invoke('window:maximize'),
@@ -49,18 +53,20 @@ export const api = {
       ipcRenderer.on('window:fullscreen', (_, fullscreen) => callback(fullscreen))
     },
     newWindow: () => ipcRenderer.invoke('window:new'),
-    newWindowWithRepo: (repositoryId: number) => ipcRenderer.invoke('window:new-with-repo', repositoryId),
+    newWindowWithRepo: (repositoryId: number) =>
+      ipcRenderer.invoke('window:new-with-repo', repositoryId),
     onOpenRepository: (callback: (repositoryId: number) => void) => {
       ipcRenderer.on('open-repository', (_, repositoryId) => callback(repositoryId))
     },
-    setRepository: (repositoryId: number | null) => ipcRenderer.send('window:set-repository', repositoryId),
+    setRepository: (repositoryId: number | null) =>
+      ipcRenderer.send('window:set-repository', repositoryId),
   },
-  
+
   dialog: {
     openDirectory: () => ipcRenderer.invoke('dialog:open-directory'),
     showMessage: (options: any) => ipcRenderer.invoke('dialog:show-message', options),
   },
-  
+
   repository: {
     list: () => ipcRenderer.invoke('repository:list'),
     add: (path: string) => ipcRenderer.invoke('repository:add', path),
@@ -68,21 +74,26 @@ export const api = {
     update: (id: number, updates: any) => ipcRenderer.invoke('repository:update', id, updates),
     toggleFavorite: (id: number) => ipcRenderer.invoke('repository:toggle-favorite', id),
     delete: (id: number) => ipcRenderer.invoke('repository:delete', id),
-    updateBranch: (id: number, branch: string) => ipcRenderer.invoke('repository:update-branch', id, branch),
+    updateBranch: (id: number, branch: string) =>
+      ipcRenderer.invoke('repository:update-branch', id, branch),
     refreshRemotes: () => ipcRenderer.invoke('repository:refresh-remotes'),
     scanFolder: (folderPath?: string) => ipcRenderer.invoke('repository:scan-folder', folderPath),
-    onScanProgress: (callback: (data: { found: number; added: number; current: string }) => void) => {
+    onScanProgress: (
+      callback: (data: { found: number; added: number; current: string }) => void,
+    ) => {
       const handler = (_: any, data: any) => callback(data)
       ipcRenderer.on('repository:scan-progress', handler)
       return () => ipcRenderer.removeListener('repository:scan-progress', handler)
     },
-    onScanComplete: (callback: (data: { added: number; skipped: number; errors: string[] }) => void) => {
+    onScanComplete: (
+      callback: (data: { added: number; skipped: number; errors: string[] }) => void,
+    ) => {
       const handler = (_: any, data: any) => callback(data)
       ipcRenderer.on('repository:scan-complete', handler)
       return () => ipcRenderer.removeListener('repository:scan-complete', handler)
     },
   },
-  
+
   shell: {
     openPath: (path: string) => ipcRenderer.invoke('shell:open-path', path),
     openTerminal: (path: string) => ipcRenderer.invoke('shell:open-terminal', path),
@@ -90,16 +101,29 @@ export const api = {
     getHomePath: () => ipcRenderer.invoke('shell:get-home-path'),
     pathExists: (path: string) => ipcRenderer.invoke('shell:path-exists', path),
   },
-  
+
   commits: {
-    scan: (repositoryId: number, repoPath: string) => ipcRenderer.invoke('commits:scan', repositoryId, repoPath),
-    fullScan: (repositoryId: number, repoPath: string) => ipcRenderer.invoke('commits:full-scan', repositoryId, repoPath),
-    list: (repositoryId: number, offset?: number, limit?: number) => ipcRenderer.invoke('commits:list', repositoryId, offset, limit),
+    scan: (repositoryId: number, repoPath: string) =>
+      ipcRenderer.invoke('commits:scan', repositoryId, repoPath),
+    fullScan: (repositoryId: number, repoPath: string) =>
+      ipcRenderer.invoke('commits:full-scan', repositoryId, repoPath),
+    list: (repositoryId: number, offset?: number, limit?: number) =>
+      ipcRenderer.invoke('commits:list', repositoryId, offset, limit),
     count: (repositoryId: number) => ipcRenderer.invoke('commits:count', repositoryId),
-    search: (repositoryId: number, query: string, offset?: number, limit?: number, tagMatchHashes?: string[]) => ipcRenderer.invoke('commits:search', repositoryId, query, offset, limit, tagMatchHashes),
-    files: (repoPath: string, commitHash: string) => ipcRenderer.invoke('commits:files', repoPath, commitHash),
-    fileDiff: (repoPath: string, commitHash: string, filePath: string) => ipcRenderer.invoke('commits:file-diff', repoPath, commitHash, filePath),
-    onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => {
+    search: (
+      repositoryId: number,
+      query: string,
+      offset?: number,
+      limit?: number,
+      tagMatchHashes?: string[],
+    ) => ipcRenderer.invoke('commits:search', repositoryId, query, offset, limit, tagMatchHashes),
+    files: (repoPath: string, commitHash: string) =>
+      ipcRenderer.invoke('commits:files', repoPath, commitHash),
+    fileDiff: (repoPath: string, commitHash: string, filePath: string) =>
+      ipcRenderer.invoke('commits:file-diff', repoPath, commitHash, filePath),
+    onScanProgress: (
+      callback: (data: { repositoryId: number; scanned: number; total: number }) => void,
+    ) => {
       ipcRenderer.on('commits:scan-progress', (_, data) => callback(data))
       return () => ipcRenderer.removeListener('commits:scan-progress', callback)
     },
@@ -129,8 +153,7 @@ export const api = {
   terminal: {
     detect: () => ipcRenderer.invoke('terminal:detect'),
     getAvailable: () => ipcRenderer.invoke('terminal:get-available'),
-    open: (params: { terminal: any; cwd: string }) =>
-      ipcRenderer.invoke('terminal:open', params),
+    open: (params: { terminal: any; cwd: string }) => ipcRenderer.invoke('terminal:open', params),
   },
 
   settings: {

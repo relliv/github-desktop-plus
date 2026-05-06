@@ -1,12 +1,12 @@
 import { simpleGit, SimpleGit, CloneOptions as SimpleGitCloneOptions } from 'simple-git'
 import * as path from 'path'
 import * as fs from 'fs/promises'
-import { 
-  CloneOptions, 
-  CloneResult, 
+import {
+  CloneOptions,
+  CloneResult,
   CloneProgress,
   RepositoryValidation,
-  CreateRepositoryOptions
+  CreateRepositoryOptions,
 } from '../../shared/types/git.types'
 
 export class GitService {
@@ -18,7 +18,7 @@ export class GitService {
 
   async cloneRepository(
     options: CloneOptions,
-    onProgress?: (progress: CloneProgress) => void
+    onProgress?: (progress: CloneProgress) => void,
   ): Promise<CloneResult> {
     try {
       // Validate directory doesn't exist or is empty
@@ -27,7 +27,7 @@ export class GitService {
         if (files.length > 0) {
           return {
             success: false,
-            error: 'Directory is not empty'
+            error: 'Directory is not empty',
           }
         }
       } catch {
@@ -51,7 +51,7 @@ export class GitService {
           if (progress && onProgress) {
             onProgress(progress)
           }
-        }
+        },
       }
 
       // Configure authentication if provided
@@ -59,7 +59,7 @@ export class GitService {
         // For HTTPS authentication
         const authUrl = options.url.replace(
           /^https:\/\//,
-          `https://${encodeURIComponent(options.username)}:${encodeURIComponent(options.password)}@`
+          `https://${encodeURIComponent(options.username)}:${encodeURIComponent(options.password)}@`,
         )
         await this.git.clone(authUrl, options.directory, gitOptions, progressHandler)
       } else if (options.sshKey) {
@@ -78,13 +78,13 @@ export class GitService {
           percent: 100,
           total: 100,
           transferred: 100,
-          message: 'Clone completed successfully'
+          message: 'Clone completed successfully',
         })
       }
 
       return {
         success: true,
-        path: options.directory
+        path: options.directory,
       }
     } catch (error) {
       if (onProgress) {
@@ -93,13 +93,13 @@ export class GitService {
           percent: 0,
           total: 0,
           transferred: 0,
-          message: error instanceof Error ? error.message : 'Clone failed'
+          message: error instanceof Error ? error.message : 'Clone failed',
         })
       }
 
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Clone failed'
+        error: error instanceof Error ? error.message : 'Clone failed',
       }
     }
   }
@@ -107,7 +107,7 @@ export class GitService {
   async validateRepository(repoPath: string): Promise<RepositoryValidation> {
     try {
       const git = simpleGit(repoPath)
-      
+
       // Check if it's a git repository
       const isRepo = await git.checkIsRepo()
       if (!isRepo) {
@@ -115,7 +115,7 @@ export class GitService {
           isValid: false,
           isGitRepository: false,
           hasRemote: false,
-          error: 'Not a git repository'
+          error: 'Not a git repository',
         }
       }
 
@@ -126,14 +126,14 @@ export class GitService {
       return {
         isValid: true,
         isGitRepository: true,
-        hasRemote
+        hasRemote,
       }
     } catch (error) {
       return {
         isValid: false,
         isGitRepository: false,
         hasRemote: false,
-        error: error instanceof Error ? error.message : 'Validation failed'
+        error: error instanceof Error ? error.message : 'Validation failed',
       }
     }
   }
@@ -175,12 +175,12 @@ export class GitService {
 
       return {
         success: true,
-        path: options.path
+        path: options.path,
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create repository'
+        error: error instanceof Error ? error.message : 'Failed to create repository',
       }
     }
   }
@@ -199,7 +199,7 @@ export class GitService {
     try {
       const git = simpleGit(repoPath)
       const remotes = await git.getRemotes(true)
-      return remotes.find(r => r.name === 'origin')?.refs.fetch
+      return remotes.find((r) => r.name === 'origin')?.refs.fetch
     } catch {
       return undefined
     }
@@ -250,7 +250,7 @@ export class GitService {
       percent,
       total,
       transferred,
-      message: data.trim()
+      message: data.trim(),
     }
   }
 }

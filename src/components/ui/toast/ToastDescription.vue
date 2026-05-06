@@ -1,8 +1,5 @@
 <template>
-  <ToastDescription
-    v-bind="forwarded"
-    :class="cn('text-sm opacity-90', props.class)"
-  >
+  <ToastDescription v-bind="forwarded" :class="cn('text-sm opacity-90', props.class)">
     <slot />
   </ToastDescription>
 </template>

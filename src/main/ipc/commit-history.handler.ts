@@ -10,7 +10,7 @@ export function registerCommitHistoryHandlers() {
         repoPath,
         (scanned, total) => {
           event.sender.send('commits:scan-progress', { repositoryId, scanned, total })
-        }
+        },
       )
 
       event.sender.send('commits:scan-complete', { repositoryId, added: result.added })
@@ -21,33 +21,41 @@ export function registerCommitHistoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'commits:full-scan', async (event, repositoryId: number, repoPath: string) => {
-    try {
-      const result = await commitHistoryService.fullScan(
-        repositoryId,
-        repoPath,
-        (scanned, total) => {
-          event.sender.send('commits:scan-progress', { repositoryId, scanned, total })
-        }
-      )
+  perf.handle(
+    ipcMain,
+    'commits:full-scan',
+    async (event, repositoryId: number, repoPath: string) => {
+      try {
+        const result = await commitHistoryService.fullScan(
+          repositoryId,
+          repoPath,
+          (scanned, total) => {
+            event.sender.send('commits:scan-progress', { repositoryId, scanned, total })
+          },
+        )
 
-      event.sender.send('commits:scan-complete', { repositoryId, added: result.added })
-      return { success: true, added: result.added }
-    } catch (error) {
-      console.error('Error in commits:full-scan:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
+        event.sender.send('commits:scan-complete', { repositoryId, added: result.added })
+        return { success: true, added: result.added }
+      } catch (error) {
+        console.error('Error in commits:full-scan:', error)
+        return { success: false, error: (error as Error).message }
+      }
+    },
+  )
 
-  perf.handle(ipcMain, 'commits:list', async (_, repositoryId: number, offset?: number, limit?: number) => {
-    try {
-      const commits = await commitHistoryService.getCommits(repositoryId, offset, limit)
-      return { success: true, data: commits }
-    } catch (error) {
-      console.error('Error in commits:list:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
+  perf.handle(
+    ipcMain,
+    'commits:list',
+    async (_, repositoryId: number, offset?: number, limit?: number) => {
+      try {
+        const commits = await commitHistoryService.getCommits(repositoryId, offset, limit)
+        return { success: true, data: commits }
+      } catch (error) {
+        console.error('Error in commits:list:', error)
+        return { success: false, error: (error as Error).message }
+      }
+    },
+  )
 
   perf.handle(ipcMain, 'commits:count', async (_, repositoryId: number) => {
     try {
@@ -59,18 +67,29 @@ export function registerCommitHistoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'commits:search', async (_, repositoryId: number, query: string, offset?: number, limit?: number, tagMatchHashes?: string[]) => {
-    try {
-      const [commits, total] = await Promise.all([
-        commitHistoryService.searchCommits(repositoryId, query, offset, limit, tagMatchHashes),
-        commitHistoryService.searchCommitCount(repositoryId, query, tagMatchHashes),
-      ])
-      return { success: true, data: { commits, total } }
-    } catch (error) {
-      console.error('Error in commits:search:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
+  perf.handle(
+    ipcMain,
+    'commits:search',
+    async (
+      _,
+      repositoryId: number,
+      query: string,
+      offset?: number,
+      limit?: number,
+      tagMatchHashes?: string[],
+    ) => {
+      try {
+        const [commits, total] = await Promise.all([
+          commitHistoryService.searchCommits(repositoryId, query, offset, limit, tagMatchHashes),
+          commitHistoryService.searchCommitCount(repositoryId, query, tagMatchHashes),
+        ])
+        return { success: true, data: { commits, total } }
+      } catch (error) {
+        console.error('Error in commits:search:', error)
+        return { success: false, error: (error as Error).message }
+      }
+    },
+  )
 
   perf.handle(ipcMain, 'commits:files', async (_, repoPath: string, commitHash: string) => {
     try {
@@ -82,13 +101,17 @@ export function registerCommitHistoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'commits:file-diff', async (_, repoPath: string, commitHash: string, filePath: string) => {
-    try {
-      const diff = await commitHistoryService.getCommitFileDiff(repoPath, commitHash, filePath)
-      return { success: true, data: diff }
-    } catch (error) {
-      console.error('Error in commits:file-diff:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
+  perf.handle(
+    ipcMain,
+    'commits:file-diff',
+    async (_, repoPath: string, commitHash: string, filePath: string) => {
+      try {
+        const diff = await commitHistoryService.getCommitFileDiff(repoPath, commitHash, filePath)
+        return { success: true, data: diff }
+      } catch (error) {
+        console.error('Error in commits:file-diff:', error)
+        return { success: false, error: (error as Error).message }
+      }
+    },
+  )
 }

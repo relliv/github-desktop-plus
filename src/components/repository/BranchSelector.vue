@@ -4,56 +4,43 @@
       <Button
         variant="outline"
         size="sm"
-        class="flex flex-row items-center w-[245px] h-[30px] bg-card-translucent hover:bg-card-translucent/10"
+        class="bg-card-translucent hover:bg-card-translucent/10 flex h-[30px] w-[245px] flex-row items-center"
         @contextmenu.prevent="openContextMenu"
         @mouseenter="startTooltipDelay"
         @mouseleave="cancelTooltip"
       >
-        <GitBranch
-          class="size-3.5 shrink-0 text-muted-foreground"
-          :stroke-width="1"
-        />
-        <span class="truncate flex-1 text-left ml-2 text-xs">{{
-          currentBranch || "No branch"
+        <GitBranch class="text-muted-foreground size-3.5 shrink-0" :stroke-width="1" />
+        <span class="ml-2 flex-1 truncate text-left text-xs">{{
+          currentBranch || 'No branch'
         }}</span>
-        <ChevronDown
-          class="ml-2 h-4 w-4 shrink-0 opacity-50"
-          :stroke-width="1"
-        />
+        <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" :stroke-width="1" />
       </Button>
     </PopoverTrigger>
 
     <PopoverPortal>
       <PopoverContent class="z-50 w-[245px] p-0" align="start">
         <div
-          class="bg-white/90 dark:bg-card/90 mt-1 rounded-md shadow-md dark:shadow-lg border border-border backdrop-blur-lg"
+          class="dark:bg-card/90 border-border mt-1 rounded-md border bg-white/90 shadow-md backdrop-blur-lg dark:shadow-lg"
         >
           <div class="p-2">
             <input
               v-model="searchQuery"
               placeholder="Find a branch..."
-              class="w-full px-2 py-1 text-sm border rounded bg-background/70 text-foreground border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              class="bg-background/70 text-foreground border-border placeholder:text-muted-foreground focus:ring-ring w-full rounded border px-2 py-1 text-sm focus:ring-1 focus:outline-none"
             />
           </div>
-          <div
-            class="border-t border-border max-h-[350px] overflow-y-auto mr-1"
-            v-lenis
-          >
+          <div class="border-border mr-1 max-h-[350px] overflow-y-auto border-t" v-lenis>
             <button
               v-for="branch in filteredBranches"
               :key="branch"
               @click="switchBranch(branch)"
               :class="[
-                'w-full px-3 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors flex items-center justify-between',
+                'text-foreground hover:bg-accent flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors',
                 branch === currentBranch ? 'bg-accent' : '',
               ]"
             >
               <span class="truncate">{{ branch }}</span>
-              <Check
-                v-if="branch === currentBranch"
-                class="w-4 h-4 shrink-0"
-                :stroke-width="1"
-              />
+              <Check v-if="branch === currentBranch" class="h-4 w-4 shrink-0" :stroke-width="1" />
             </button>
           </div>
         </div>
@@ -65,10 +52,10 @@
   <Teleport to="body">
     <div
       v-if="tooltipOpen && !popoverOpen"
-      class="fixed z-50 rounded-md bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md border animate-in fade-in-0 zoom-in-95"
+      class="bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 fixed z-50 rounded-md border px-3 py-1.5 text-xs shadow-md"
       :style="{ left: tooltipPos.x + 'px', top: tooltipPos.y + 'px' }"
     >
-      {{ currentBranch || "No branch" }}
+      {{ currentBranch || 'No branch' }}
     </div>
   </Teleport>
 
@@ -81,14 +68,14 @@
       @contextmenu.prevent="closeContextMenu"
     >
       <div
-        class="absolute w-48 rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
+        class="bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 absolute w-48 rounded-md border p-1 shadow-md"
         :style="{ left: ctxMenu.x + 'px', top: ctxMenu.y + 'px' }"
       >
         <button
-          class="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+          class="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none"
           @click="copyBranchName"
         >
-          <Copy class="w-4 h-4 mr-2" :stroke-width="1.5" />
+          <Copy class="mr-2 h-4 w-4" :stroke-width="1.5" />
           Copy Branch Name
         </button>
       </div>
@@ -100,15 +87,12 @@
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle class="flex items-center gap-2">
-          <AlertTriangle class="w-5 h-5 text-yellow-500" />
+          <AlertTriangle class="h-5 w-5 text-yellow-500" />
           Uncommitted Changes
         </AlertDialogTitle>
-        <AlertDialogDescription class="text-left space-y-3">
-          <p>
-            You have uncommitted changes that would be overwritten by switching
-            branches.
-          </p>
-          <p class="text-sm text-muted-foreground">
+        <AlertDialogDescription class="space-y-3 text-left">
+          <p>You have uncommitted changes that would be overwritten by switching branches.</p>
+          <p class="text-muted-foreground text-sm">
             Would you like to stash your changes and switch to
             <strong>{{ pendingBranch }}</strong
             >?
@@ -117,29 +101,16 @@
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction @click="stashAndSwitch">
-          Stash & Switch
-        </AlertDialogAction>
+        <AlertDialogAction @click="stashAndSwitch"> Stash & Switch </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import {
-  ChevronDown,
-  Check,
-  AlertTriangle,
-  GitBranch,
-  Copy,
-} from "lucide-vue-next";
-import {
-  Popover,
-  PopoverContent,
-  PopoverPortal,
-  PopoverTrigger,
-} from "../ui/Popover";
+import { ref, computed, watch } from 'vue'
+import { ChevronDown, Check, AlertTriangle, GitBranch, Copy } from 'lucide-vue-next'
+import { Popover, PopoverContent, PopoverPortal, PopoverTrigger } from '../ui/Popover'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -149,126 +120,123 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
-import Button from "../ui/Button.vue";
-import { useRepositoriesStore } from "@/shared/stores";
-import { useToast } from "@/composables/useToast";
+} from '../ui/alert-dialog'
+import Button from '../ui/Button.vue'
+import { useRepositoriesStore } from '@/shared/stores'
+import { useToast } from '@/composables/useToast'
 
-const repositoriesStore = useRepositoriesStore();
-const { toast } = useToast();
-const searchQuery = ref("");
-const showErrorDialog = ref(false);
-const pendingBranch = ref<string>("");
-const popoverOpen = ref(false);
-const tooltipOpen = ref(false);
-const tooltipPos = ref({ x: 0, y: 0 });
-let tooltipTimeout: ReturnType<typeof setTimeout> | null = null;
+const repositoriesStore = useRepositoriesStore()
+const { toast } = useToast()
+const searchQuery = ref('')
+const showErrorDialog = ref(false)
+const pendingBranch = ref<string>('')
+const popoverOpen = ref(false)
+const tooltipOpen = ref(false)
+const tooltipPos = ref({ x: 0, y: 0 })
+let tooltipTimeout: ReturnType<typeof setTimeout> | null = null
 
 function startTooltipDelay(event: MouseEvent) {
-  cancelTooltip();
-  const target = event.currentTarget as HTMLElement;
+  cancelTooltip()
+  const target = event.currentTarget as HTMLElement
   tooltipTimeout = setTimeout(() => {
-    const rect = target.getBoundingClientRect();
+    const rect = target.getBoundingClientRect()
     tooltipPos.value = {
       x: rect.left,
       y: rect.bottom + 4,
-    };
-    tooltipOpen.value = true;
-  }, 500);
+    }
+    tooltipOpen.value = true
+  }, 500)
 }
 
 function cancelTooltip() {
-  if (tooltipTimeout) clearTimeout(tooltipTimeout);
-  tooltipTimeout = null;
-  tooltipOpen.value = false;
+  if (tooltipTimeout) clearTimeout(tooltipTimeout)
+  tooltipTimeout = null
+  tooltipOpen.value = false
 }
 
 watch(popoverOpen, (open) => {
-  if (open) cancelTooltip();
-});
+  if (open) cancelTooltip()
+})
 
 const ctxMenu = ref<{ visible: boolean; x: number; y: number }>({
   visible: false,
   x: 0,
   y: 0,
-});
+})
 
 function openContextMenu(event: MouseEvent) {
-  ctxMenu.value = { visible: true, x: event.clientX, y: event.clientY };
+  ctxMenu.value = { visible: true, x: event.clientX, y: event.clientY }
 }
 
 function closeContextMenu() {
-  ctxMenu.value = { visible: false, x: 0, y: 0 };
+  ctxMenu.value = { visible: false, x: 0, y: 0 }
 }
 
 function copyBranchName() {
-  if (!currentBranch.value) return;
-  navigator.clipboard.writeText(currentBranch.value);
-  closeContextMenu();
+  if (!currentBranch.value) return
+  navigator.clipboard.writeText(currentBranch.value)
+  closeContextMenu()
   toast({
-    title: "Branch name copied",
+    title: 'Branch name copied',
     description: currentBranch.value,
     duration: 3000,
-  });
+  })
 }
 
-const currentRepository = computed(() => repositoriesStore.currentRepository);
-const branches = computed(() => repositoriesStore.branches?.local || []);
-const currentBranch = computed(() => repositoriesStore.branches?.current || "");
-const hasChanges = computed(() => repositoriesStore.hasChanges);
+const currentRepository = computed(() => repositoriesStore.currentRepository)
+const branches = computed(() => repositoriesStore.branches?.local || [])
+const currentBranch = computed(() => repositoriesStore.branches?.current || '')
+const hasChanges = computed(() => repositoriesStore.hasChanges)
 
 const filteredBranches = computed(() => {
-  if (!searchQuery.value) return branches.value;
+  if (!searchQuery.value) return branches.value
   return branches.value.filter((branch) =>
     branch.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  );
-});
+  )
+})
 
 const switchBranch = async (branch: string) => {
-  popoverOpen.value = false;
+  popoverOpen.value = false
 
-  if (!currentRepository.value || branch === currentBranch.value) return;
+  if (!currentRepository.value || branch === currentBranch.value) return
 
   // Proactively warn if there are uncommitted changes
   if (hasChanges.value) {
-    pendingBranch.value = branch;
-    showErrorDialog.value = true;
-    return;
+    pendingBranch.value = branch
+    showErrorDialog.value = true
+    return
   }
 
-  await performCheckout(branch);
-};
+  await performCheckout(branch)
+}
 
 const performCheckout = async (branch: string) => {
-  if (!currentRepository.value) return;
+  if (!currentRepository.value) return
 
   try {
-    await window.api.git.checkout(currentRepository.value.path, branch);
-    await Promise.all([
-      repositoriesStore.fetchGitStatus(),
-      repositoriesStore.fetchBranches(),
-    ]);
+    await window.api.git.checkout(currentRepository.value.path, branch)
+    await Promise.all([repositoriesStore.fetchGitStatus(), repositoriesStore.fetchBranches()])
   } catch (error) {
-    console.error("Failed to switch branch:", error);
+    console.error('Failed to switch branch:', error)
   }
-};
+}
 
 const stashAndSwitch = async () => {
-  if (!currentRepository.value || !pendingBranch.value) return;
+  if (!currentRepository.value || !pendingBranch.value) return
 
   try {
     // Stash current changes
     await window.api.git.stash(
       currentRepository.value.path,
       `Auto-stash before switching to ${pendingBranch.value}`,
-    );
+    )
 
     // Switch to the target branch
-    const branch = pendingBranch.value;
-    pendingBranch.value = "";
-    await performCheckout(branch);
+    const branch = pendingBranch.value
+    pendingBranch.value = ''
+    await performCheckout(branch)
   } catch (error) {
-    console.error("Failed to stash and switch:", error);
+    console.error('Failed to stash and switch:', error)
   }
-};
+}
 </script>

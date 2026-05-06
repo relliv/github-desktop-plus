@@ -3,8 +3,8 @@
     v-bind="forwarded"
     :class="
       cn(
-        'relative isolate z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 text-popover-foreground shadow-lg',
-        'before:content-[\'\'] before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-popover before:backdrop-blur-xs',
+        'text-popover-foreground relative isolate z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg',
+        'before:bg-popover before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:backdrop-blur-xs before:content-['']',
         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
         props.class,
       )
@@ -15,26 +15,26 @@
 </template>
 
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from "vue";
+import { type HTMLAttributes, computed } from 'vue'
 import {
   ContextMenuSubContent,
   type ContextMenuSubContentProps,
   type ContextMenuSubContentEmits,
   useForwardPropsEmits,
-} from "reka-ui";
-import { cn } from "@/lib/utils";
+} from 'reka-ui'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<
   ContextMenuSubContentProps & {
-    class?: HTMLAttributes["class"];
+    class?: HTMLAttributes['class']
   }
->();
-const emits = defineEmits<ContextMenuSubContentEmits>();
+>()
+const emits = defineEmits<ContextMenuSubContentEmits>()
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
-  return delegated;
-});
+  const { class: _, ...delegated } = props
+  return delegated
+})
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>

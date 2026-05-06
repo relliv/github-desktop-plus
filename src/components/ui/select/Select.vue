@@ -19,11 +19,11 @@ const isOpen = ref(false)
 provide('select', {
   modelValue: props.modelValue,
   isOpen,
-  toggle: () => isOpen.value = !isOpen.value,
-  close: () => isOpen.value = false,
+  toggle: () => (isOpen.value = !isOpen.value),
+  close: () => (isOpen.value = false),
   select: (value: string) => {
     emit('update:modelValue', value)
     isOpen.value = false
-  }
+  },
 })
 </script>

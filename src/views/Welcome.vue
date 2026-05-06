@@ -1,50 +1,54 @@
 <template>
-  <div class="flex-1 flex items-center justify-center p-8">
-    <div class="max-w-2xl w-full text-center">
+  <div class="flex flex-1 items-center justify-center p-8">
+    <div class="w-full max-w-2xl text-center">
       <div class="mb-8">
-        <GitBranch class="w-24 h-24 mx-auto text-primary mb-4" :stroke-width="1" />
-        <h1 class="text-4xl font-bold mb-4">Welcome to GitHub Desktop Plus</h1>
-        <p class="text-lg text-muted-foreground">
+        <GitBranch class="text-primary mx-auto mb-4 h-24 w-24" :stroke-width="1" />
+        <h1 class="mb-4 text-4xl font-bold">Welcome to GitHub Desktop Plus</h1>
+        <p class="text-muted-foreground text-lg">
           A powerful Git client built with Electron and Vue 3
         </p>
       </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card class="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="openRepository">
-          <FolderOpen class="w-12 h-12 mb-4 text-primary" :stroke-width="1" />
-          <h3 class="text-lg font-semibold mb-2">Open Repository</h3>
-          <p class="text-sm text-muted-foreground">
+
+      <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Card
+          class="hover:bg-accent/50 flex cursor-pointer flex-col items-center justify-center p-6 transition-colors"
+          @click="openRepository"
+        >
+          <FolderOpen class="text-primary mb-4 h-12 w-12" :stroke-width="1" />
+          <h3 class="mb-2 text-lg font-semibold">Open Repository</h3>
+          <p class="text-muted-foreground text-sm">
             Open an existing Git repository from your computer
           </p>
         </Card>
-        
-        <Card class="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-accent/50 transition-colors" @click="cloneRepository">
-          <Download class="w-12 h-12 mb-4 text-primary" :stroke-width="1" />
-          <h3 class="text-lg font-semibold mb-2">Clone Repository</h3>
-          <p class="text-sm text-muted-foreground">
-            Clone a repository from GitHub or any Git URL
-          </p>
+
+        <Card
+          class="hover:bg-accent/50 flex cursor-pointer flex-col items-center justify-center p-6 transition-colors"
+          @click="cloneRepository"
+        >
+          <Download class="text-primary mb-4 h-12 w-12" :stroke-width="1" />
+          <h3 class="mb-2 text-lg font-semibold">Clone Repository</h3>
+          <p class="text-muted-foreground text-sm">Clone a repository from GitHub or any Git URL</p>
         </Card>
       </div>
-      
+
       <div v-if="recentRepositories.length > 0" class="text-left">
-        <h2 class="text-xl font-semibold mb-4">Recent Repositories</h2>
+        <h2 class="mb-4 text-xl font-semibold">Recent Repositories</h2>
         <div class="space-y-2">
-          <Card 
+          <Card
             v-for="repo in recentRepositories"
             :key="repo.id"
-            class="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            class="hover:bg-accent/50 cursor-pointer p-4 transition-colors"
             @click="selectRepository(repo)"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <GitBranch class="w-5 h-5 text-muted-foreground" :stroke-width="1" />
+                <GitBranch class="text-muted-foreground h-5 w-5" :stroke-width="1" />
                 <div>
                   <div class="font-medium">{{ repo.name }}</div>
-                  <div class="text-sm text-muted-foreground">{{ repo.path }}</div>
+                  <div class="text-muted-foreground text-sm">{{ repo.path }}</div>
                 </div>
               </div>
-              <Star v-if="repo.isFavorite" class="w-4 h-4 text-yellow-500" :stroke-width="1" />
+              <Star v-if="repo.isFavorite" class="h-4 w-4 text-yellow-500" :stroke-width="1" />
             </div>
           </Card>
         </div>

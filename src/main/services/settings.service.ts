@@ -24,11 +24,7 @@ export class SettingsService {
     return perf.measure(`settings-service:get(${key})`, async () => {
       try {
         const [setting] = await trackDbOp(
-          db
-            .select()
-            .from(schema.appSettings)
-            .where(eq(schema.appSettings.key, key))
-            .limit(1),
+          db.select().from(schema.appSettings).where(eq(schema.appSettings.key, key)).limit(1),
         )
 
         return setting?.value ?? null

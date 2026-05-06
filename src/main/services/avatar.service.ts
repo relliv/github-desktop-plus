@@ -36,14 +36,11 @@ export class AvatarService {
     const unique = [...new Set(emails.map((e) => e.toLowerCase()))]
     const result: Record<string, string | null> = {}
 
-    const cached = await db
-      .select()
-      .from(schema.avatarCache)
-      .all()
+    const cached = await db.select().from(schema.avatarCache).all()
 
     const now = Date.now()
     const cacheMap = new Map<string, { avatarUrl: string | null; fetchedAt: Date }>(
-      cached.map((row) => [row.email, { avatarUrl: row.avatarUrl, fetchedAt: row.fetchedAt }])
+      cached.map((row) => [row.email, { avatarUrl: row.avatarUrl, fetchedAt: row.fetchedAt }]),
     )
 
     const toFetch: string[] = []
@@ -135,7 +132,7 @@ export class AvatarService {
         unique.map(async (owner) => {
           const avatar = await this.getOwnerAvatar(owner)
           return [owner, avatar] as const
-        })
+        }),
       )
 
       for (const entry of entries) {
@@ -166,7 +163,9 @@ export class AvatarService {
    */
   private async downloadAndCache(cacheKey: string, imageUrl: string): Promise<string | null> {
     try {
-      const buffer = await perf.measure(`avatar-net:download(${cacheKey})`, () => this.downloadImage(imageUrl))
+      const buffer = await perf.measure(`avatar-net:download(${cacheKey})`, () =>
+        this.downloadImage(imageUrl),
+      )
       if (!buffer || buffer.length === 0) {
         await this.upsertCache(cacheKey, null)
         return null
@@ -201,7 +200,7 @@ export class AvatarService {
             fetchedAt: new Date(),
           },
         })
-        .then(() => {})
+        .then(() => {}),
     )
   }
 
@@ -236,83 +235,89 @@ export class AvatarService {
   }
 
   private fetchGitHubOwnerAvatar(owner: string): Promise<string | null> {
-    return perf.measure(`avatar-net:github-api(user:${owner})`, () =>
-      new Promise<string | null>((resolve, reject) => {
-        const url = `https://api.github.com/users/${encodeURIComponent(owner)}`
+    return perf.measure(
+      `avatar-net:github-api(user:${owner})`,
+      () =>
+        new Promise<string | null>((resolve, reject) => {
+          const url = `https://api.github.com/users/${encodeURIComponent(owner)}`
 
-        const request = net.request(url)
-        request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
-        request.setHeader('Accept', 'application/vnd.github.v3+json')
+          const request = net.request(url)
+          request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
+          request.setHeader('Accept', 'application/vnd.github.v3+json')
 
-        let body = ''
+          let body = ''
 
-        request.on('response', (response) => {
-          if (response.statusCode !== 200) {
-            resolve(null)
-            return
-          }
+          request.on('response', (response) => {
+            if (response.statusCode !== 200) {
+              resolve(null)
+              return
+            }
 
-          response.on('data', (chunk) => {
-            body += chunk.toString()
-          })
+            response.on('data', (chunk) => {
+              body += chunk.toString()
+            })
 
-          response.on('end', () => {
-            try {
-              const data = JSON.parse(body)
-              if (data.avatar_url) {
-                resolve(data.avatar_url + '&size=64')
-              } else {
+            response.on('end', () => {
+              try {
+                const data = JSON.parse(body)
+                if (data.avatar_url) {
+                  resolve(data.avatar_url + '&size=64')
+                } else {
+                  resolve(null)
+                }
+              } catch {
                 resolve(null)
               }
-            } catch {
-              resolve(null)
-            }
+            })
           })
-        })
 
-        request.on('error', (err) => reject(err))
-        request.end()
-      })
+          request.on('error', (err) => reject(err))
+          request.end()
+        }),
     )
   }
 
   private fetchGitHubAvatar(email: string): Promise<string | null> {
-    return perf.measure(`avatar-net:github-api(search:${email})`, () => new Promise((resolve, reject) => {
-      const url = `https://api.github.com/search/users?q=${encodeURIComponent(email)}+in:email&per_page=1`
+    return perf.measure(
+      `avatar-net:github-api(search:${email})`,
+      () =>
+        new Promise((resolve, reject) => {
+          const url = `https://api.github.com/search/users?q=${encodeURIComponent(email)}+in:email&per_page=1`
 
-      const request = net.request(url)
-      request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
-      request.setHeader('Accept', 'application/vnd.github.v3+json')
+          const request = net.request(url)
+          request.setHeader('User-Agent', 'GitHub-Desktop-Plus')
+          request.setHeader('Accept', 'application/vnd.github.v3+json')
 
-      let body = ''
+          let body = ''
 
-      request.on('response', (response) => {
-        if (response.statusCode !== 200) {
-          resolve(null)
-          return
-        }
-
-        response.on('data', (chunk) => {
-          body += chunk.toString()
-        })
-
-        response.on('end', () => {
-          try {
-            const data = JSON.parse(body)
-            if (data.total_count > 0 && data.items?.[0]?.avatar_url) {
-              resolve(data.items[0].avatar_url + '&size=64')
-            } else {
+          request.on('response', (response) => {
+            if (response.statusCode !== 200) {
               resolve(null)
+              return
             }
-          } catch {
-            resolve(null)
-          }
-        })
-      })
 
-      request.on('error', (err) => reject(err))
-      request.end()
-    }))
+            response.on('data', (chunk) => {
+              body += chunk.toString()
+            })
+
+            response.on('end', () => {
+              try {
+                const data = JSON.parse(body)
+                if (data.total_count > 0 && data.items?.[0]?.avatar_url) {
+                  resolve(data.items[0].avatar_url + '&size=64')
+                } else {
+                  resolve(null)
+                }
+              } catch {
+                resolve(null)
+              }
+            })
+          })
+
+          request.on('error', (err) => reject(err))
+          request.end()
+        }),
+    )
   }
 }
 

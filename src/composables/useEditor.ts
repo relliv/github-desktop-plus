@@ -55,7 +55,7 @@ export function useEditor() {
       } else {
         result = await window.api.editor.openFileDefault({ filePath, lineNumber })
       }
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to open file')
       }
@@ -67,20 +67,20 @@ export function useEditor() {
 
   const getEditorIconUrl = (editor: Editor): string => {
     const slugMap: Record<string, string> = {
-      'vscode': 'vscodium',
+      vscode: 'vscodium',
       'vscode-insiders': 'vscodium',
-      'vscodium': 'vscodium',
-      'cursor': 'cursor',
-      'windsurf': 'windsurf',
-      'sublime': 'sublimetext',
-      'webstorm': 'webstorm',
-      'intellij': 'intellijidea',
-      'vim': 'vim',
-      'nvim': 'neovim',
-      'emacs': 'gnuemacs',
-      'zed': 'zedindustries',
-      'xcode': 'xcode',
-      'fleet': 'intellijidea',
+      vscodium: 'vscodium',
+      cursor: 'cursor',
+      windsurf: 'windsurf',
+      sublime: 'sublimetext',
+      webstorm: 'webstorm',
+      intellij: 'intellijidea',
+      vim: 'vim',
+      nvim: 'neovim',
+      emacs: 'gnuemacs',
+      zed: 'zedindustries',
+      xcode: 'xcode',
+      fleet: 'intellijidea',
       'android-studio': 'androidstudio',
     }
     const slug = slugMap[editor.id] || editor.id
@@ -99,6 +99,6 @@ export function useEditor() {
     error,
     detectEditors,
     openInEditor,
-    getEditorIconUrl
+    getEditorIconUrl,
   }
 }

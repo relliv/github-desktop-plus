@@ -6,33 +6,120 @@ import path from 'path'
 export class EditorDetectorService {
   constructor() {
     this.editors = []
-    
+
     // Common editor configurations
     this.editorConfigs = {
       darwin: [
         // Visual Studio Code variants
-        { name: 'Visual Studio Code', id: 'vscode', paths: ['/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'], command: 'code' },
-        { name: 'Visual Studio Code - Insiders', id: 'vscode-insiders', paths: ['/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/bin/code-insiders'], command: 'code-insiders' },
-        { name: 'VSCodium', id: 'vscodium', paths: ['/Applications/VSCodium.app/Contents/Resources/app/bin/codium'], command: 'codium' },
-        { name: 'Cursor', id: 'cursor', paths: ['/Applications/Cursor.app/Contents/Resources/app/bin/cursor'], command: 'cursor' },
-        { name: 'Windsurf', id: 'windsurf', paths: ['/Applications/Windsurf.app/Contents/Resources/app/bin/windsurf'], command: 'windsurf' },
-        
+        {
+          name: 'Visual Studio Code',
+          id: 'vscode',
+          paths: ['/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'],
+          command: 'code',
+        },
+        {
+          name: 'Visual Studio Code - Insiders',
+          id: 'vscode-insiders',
+          paths: [
+            '/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/bin/code-insiders',
+          ],
+          command: 'code-insiders',
+        },
+        {
+          name: 'VSCodium',
+          id: 'vscodium',
+          paths: ['/Applications/VSCodium.app/Contents/Resources/app/bin/codium'],
+          command: 'codium',
+        },
+        {
+          name: 'Cursor',
+          id: 'cursor',
+          paths: ['/Applications/Cursor.app/Contents/Resources/app/bin/cursor'],
+          command: 'cursor',
+        },
+        {
+          name: 'Windsurf',
+          id: 'windsurf',
+          paths: ['/Applications/Windsurf.app/Contents/Resources/app/bin/windsurf'],
+          command: 'windsurf',
+        },
+
         // JetBrains IDEs
-        { name: 'WebStorm', id: 'webstorm', paths: ['/Applications/WebStorm.app/Contents/MacOS/webstorm'], command: 'webstorm' },
-        { name: 'IntelliJ IDEA', id: 'intellij', paths: ['/Applications/IntelliJ IDEA.app/Contents/MacOS/idea'], command: 'idea' },
-        { name: 'PyCharm', id: 'pycharm', paths: ['/Applications/PyCharm.app/Contents/MacOS/pycharm'], command: 'pycharm' },
-        { name: 'GoLand', id: 'goland', paths: ['/Applications/GoLand.app/Contents/MacOS/goland'], command: 'goland' },
-        { name: 'Fleet', id: 'fleet', paths: ['/Applications/Fleet.app/Contents/MacOS/Fleet'], command: 'fleet' },
-        
+        {
+          name: 'WebStorm',
+          id: 'webstorm',
+          paths: ['/Applications/WebStorm.app/Contents/MacOS/webstorm'],
+          command: 'webstorm',
+        },
+        {
+          name: 'IntelliJ IDEA',
+          id: 'intellij',
+          paths: ['/Applications/IntelliJ IDEA.app/Contents/MacOS/idea'],
+          command: 'idea',
+        },
+        {
+          name: 'PyCharm',
+          id: 'pycharm',
+          paths: ['/Applications/PyCharm.app/Contents/MacOS/pycharm'],
+          command: 'pycharm',
+        },
+        {
+          name: 'GoLand',
+          id: 'goland',
+          paths: ['/Applications/GoLand.app/Contents/MacOS/goland'],
+          command: 'goland',
+        },
+        {
+          name: 'Fleet',
+          id: 'fleet',
+          paths: ['/Applications/Fleet.app/Contents/MacOS/Fleet'],
+          command: 'fleet',
+        },
+
         // Other popular editors
-        { name: 'Sublime Text', id: 'sublime', paths: ['/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'], command: 'subl' },
-        { name: 'Atom', id: 'atom', paths: ['/Applications/Atom.app/Contents/Resources/app/atom.sh'], command: 'atom' },
-        { name: 'Zed', id: 'zed', paths: ['/Applications/Zed.app/Contents/MacOS/zed'], command: 'zed' },
-        { name: 'Nova', id: 'nova', paths: ['/Applications/Nova.app/Contents/MacOS/Nova'], command: 'nova' },
-        { name: 'TextMate', id: 'textmate', paths: ['/Applications/TextMate.app/Contents/MacOS/TextMate'], command: 'mate' },
-        { name: 'BBEdit', id: 'bbedit', paths: ['/Applications/BBEdit.app/Contents/MacOS/BBEdit'], command: 'bbedit' },
-        { name: 'Xcode', id: 'xcode', paths: ['/Applications/Xcode.app/Contents/MacOS/Xcode'], command: 'xcode' },
-        
+        {
+          name: 'Sublime Text',
+          id: 'sublime',
+          paths: ['/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'],
+          command: 'subl',
+        },
+        {
+          name: 'Atom',
+          id: 'atom',
+          paths: ['/Applications/Atom.app/Contents/Resources/app/atom.sh'],
+          command: 'atom',
+        },
+        {
+          name: 'Zed',
+          id: 'zed',
+          paths: ['/Applications/Zed.app/Contents/MacOS/zed'],
+          command: 'zed',
+        },
+        {
+          name: 'Nova',
+          id: 'nova',
+          paths: ['/Applications/Nova.app/Contents/MacOS/Nova'],
+          command: 'nova',
+        },
+        {
+          name: 'TextMate',
+          id: 'textmate',
+          paths: ['/Applications/TextMate.app/Contents/MacOS/TextMate'],
+          command: 'mate',
+        },
+        {
+          name: 'BBEdit',
+          id: 'bbedit',
+          paths: ['/Applications/BBEdit.app/Contents/MacOS/BBEdit'],
+          command: 'bbedit',
+        },
+        {
+          name: 'Xcode',
+          id: 'xcode',
+          paths: ['/Applications/Xcode.app/Contents/MacOS/Xcode'],
+          command: 'xcode',
+        },
+
         // Terminal editors
         { name: 'Vim', id: 'vim', paths: [], command: 'vim' },
         { name: 'NeoVim', id: 'nvim', paths: [], command: 'nvim' },
@@ -40,50 +127,143 @@ export class EditorDetectorService {
       ],
       win32: [
         // Visual Studio Code variants
-        { name: 'Visual Studio Code', id: 'vscode', paths: ['%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe', '%PROGRAMFILES%\\Microsoft VS Code\\Code.exe'], command: 'code' },
-        { name: 'Visual Studio Code - Insiders', id: 'vscode-insiders', paths: ['%LOCALAPPDATA%\\Programs\\Microsoft VS Code Insiders\\Code - Insiders.exe'], command: 'code-insiders' },
-        { name: 'VSCodium', id: 'vscodium', paths: ['%LOCALAPPDATA%\\Programs\\VSCodium\\VSCodium.exe'], command: 'codium' },
-        { name: 'Cursor', id: 'cursor', paths: ['%LOCALAPPDATA%\\Programs\\Cursor\\Cursor.exe'], command: 'cursor' },
-        { name: 'Windsurf', id: 'windsurf', paths: ['%LOCALAPPDATA%\\Programs\\Windsurf\\Windsurf.exe'], command: 'windsurf' },
-        
+        {
+          name: 'Visual Studio Code',
+          id: 'vscode',
+          paths: [
+            '%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe',
+            '%PROGRAMFILES%\\Microsoft VS Code\\Code.exe',
+          ],
+          command: 'code',
+        },
+        {
+          name: 'Visual Studio Code - Insiders',
+          id: 'vscode-insiders',
+          paths: ['%LOCALAPPDATA%\\Programs\\Microsoft VS Code Insiders\\Code - Insiders.exe'],
+          command: 'code-insiders',
+        },
+        {
+          name: 'VSCodium',
+          id: 'vscodium',
+          paths: ['%LOCALAPPDATA%\\Programs\\VSCodium\\VSCodium.exe'],
+          command: 'codium',
+        },
+        {
+          name: 'Cursor',
+          id: 'cursor',
+          paths: ['%LOCALAPPDATA%\\Programs\\Cursor\\Cursor.exe'],
+          command: 'cursor',
+        },
+        {
+          name: 'Windsurf',
+          id: 'windsurf',
+          paths: ['%LOCALAPPDATA%\\Programs\\Windsurf\\Windsurf.exe'],
+          command: 'windsurf',
+        },
+
         // JetBrains IDEs
-        { name: 'WebStorm', id: 'webstorm', paths: ['%PROGRAMFILES%\\JetBrains\\WebStorm*\\bin\\webstorm64.exe'], command: 'webstorm' },
-        { name: 'IntelliJ IDEA', id: 'intellij', paths: ['%PROGRAMFILES%\\JetBrains\\IntelliJ IDEA*\\bin\\idea64.exe'], command: 'idea' },
-        { name: 'PyCharm', id: 'pycharm', paths: ['%PROGRAMFILES%\\JetBrains\\PyCharm*\\bin\\pycharm64.exe'], command: 'pycharm' },
-        
+        {
+          name: 'WebStorm',
+          id: 'webstorm',
+          paths: ['%PROGRAMFILES%\\JetBrains\\WebStorm*\\bin\\webstorm64.exe'],
+          command: 'webstorm',
+        },
+        {
+          name: 'IntelliJ IDEA',
+          id: 'intellij',
+          paths: ['%PROGRAMFILES%\\JetBrains\\IntelliJ IDEA*\\bin\\idea64.exe'],
+          command: 'idea',
+        },
+        {
+          name: 'PyCharm',
+          id: 'pycharm',
+          paths: ['%PROGRAMFILES%\\JetBrains\\PyCharm*\\bin\\pycharm64.exe'],
+          command: 'pycharm',
+        },
+
         // Other editors
-        { name: 'Sublime Text', id: 'sublime', paths: ['%PROGRAMFILES%\\Sublime Text\\sublime_text.exe'], command: 'subl' },
+        {
+          name: 'Sublime Text',
+          id: 'sublime',
+          paths: ['%PROGRAMFILES%\\Sublime Text\\sublime_text.exe'],
+          command: 'subl',
+        },
         { name: 'Atom', id: 'atom', paths: ['%LOCALAPPDATA%\\atom\\atom.exe'], command: 'atom' },
-        { name: 'Notepad++', id: 'notepadpp', paths: ['%PROGRAMFILES%\\Notepad++\\notepad++.exe'], command: 'notepad++' },
-        { name: 'Visual Studio', id: 'visualstudio', paths: ['%PROGRAMFILES%\\Microsoft Visual Studio\\*\\*\\Common7\\IDE\\devenv.exe'], command: 'devenv' },
+        {
+          name: 'Notepad++',
+          id: 'notepadpp',
+          paths: ['%PROGRAMFILES%\\Notepad++\\notepad++.exe'],
+          command: 'notepad++',
+        },
+        {
+          name: 'Visual Studio',
+          id: 'visualstudio',
+          paths: ['%PROGRAMFILES%\\Microsoft Visual Studio\\*\\*\\Common7\\IDE\\devenv.exe'],
+          command: 'devenv',
+        },
       ],
       linux: [
         // Visual Studio Code variants
-        { name: 'Visual Studio Code', id: 'vscode', paths: ['/usr/share/code/code', '/snap/bin/code'], command: 'code' },
-        { name: 'Visual Studio Code - Insiders', id: 'vscode-insiders', paths: ['/usr/share/code-insiders/code-insiders'], command: 'code-insiders' },
-        { name: 'VSCodium', id: 'vscodium', paths: ['/usr/share/codium/codium', '/snap/bin/codium'], command: 'codium' },
-        { name: 'Windsurf', id: 'windsurf', paths: ['/usr/share/windsurf/windsurf', '/snap/bin/windsurf'], command: 'windsurf' },
-        
+        {
+          name: 'Visual Studio Code',
+          id: 'vscode',
+          paths: ['/usr/share/code/code', '/snap/bin/code'],
+          command: 'code',
+        },
+        {
+          name: 'Visual Studio Code - Insiders',
+          id: 'vscode-insiders',
+          paths: ['/usr/share/code-insiders/code-insiders'],
+          command: 'code-insiders',
+        },
+        {
+          name: 'VSCodium',
+          id: 'vscodium',
+          paths: ['/usr/share/codium/codium', '/snap/bin/codium'],
+          command: 'codium',
+        },
+        {
+          name: 'Windsurf',
+          id: 'windsurf',
+          paths: ['/usr/share/windsurf/windsurf', '/snap/bin/windsurf'],
+          command: 'windsurf',
+        },
+
         // JetBrains IDEs
-        { name: 'WebStorm', id: 'webstorm', paths: ['/opt/webstorm/bin/webstorm.sh'], command: 'webstorm' },
-        { name: 'IntelliJ IDEA', id: 'intellij', paths: ['/opt/idea/bin/idea.sh'], command: 'idea' },
-        
+        {
+          name: 'WebStorm',
+          id: 'webstorm',
+          paths: ['/opt/webstorm/bin/webstorm.sh'],
+          command: 'webstorm',
+        },
+        {
+          name: 'IntelliJ IDEA',
+          id: 'intellij',
+          paths: ['/opt/idea/bin/idea.sh'],
+          command: 'idea',
+        },
+
         // Other editors
-        { name: 'Sublime Text', id: 'sublime', paths: ['/opt/sublime_text/sublime_text'], command: 'subl' },
+        {
+          name: 'Sublime Text',
+          id: 'sublime',
+          paths: ['/opt/sublime_text/sublime_text'],
+          command: 'subl',
+        },
         { name: 'Atom', id: 'atom', paths: ['/usr/share/atom/atom'], command: 'atom' },
-        
+
         // Terminal editors
         { name: 'Vim', id: 'vim', paths: [], command: 'vim' },
         { name: 'NeoVim', id: 'nvim', paths: [], command: 'nvim' },
         { name: 'Emacs', id: 'emacs', paths: [], command: 'emacs' },
-      ]
+      ],
     }
   }
 
   async detectEditors() {
     const platform = process.platform
     const configs = this.editorConfigs[platform] || []
-    
+
     this.editors = []
 
     for (const config of configs) {
@@ -91,7 +271,7 @@ export class EditorDetectorService {
         name: config.name,
         id: config.id,
         executable: '',
-        available: false
+        available: false,
       }
 
       // Check specific paths
@@ -134,7 +314,7 @@ export class EditorDetectorService {
         return process.env[envVar] || ''
       })
     }
-    
+
     // Handle wildcards (basic glob pattern)
     if (expandedPath.includes('*')) {
       try {
@@ -152,18 +332,18 @@ export class EditorDetectorService {
   }
 
   getAvailableEditors() {
-    return this.editors.filter(e => e.available)
+    return this.editors.filter((e) => e.available)
   }
 
   async openInEditor(editor, filePath, lineNumber) {
     let command
-    
+
     // If no file path provided, just open the editor
     if (!filePath || filePath === '') {
       command = `"${editor.executable}"`
     } else {
       command = `"${editor.executable}" "${filePath}"`
-      
+
       // Add line number support for various editors
       if (lineNumber) {
         switch (editor.id) {
@@ -204,7 +384,7 @@ export class EditorDetectorService {
       if (process.platform === 'win32' && (!filePath || filePath === '')) {
         command = `start "" ${command}`
       }
-      
+
       exec(command, (error) => {
         if (error) {
           console.error('Failed to open editor:', error)
@@ -219,18 +399,22 @@ export class EditorDetectorService {
   async getDefaultEditor() {
     // Try to detect default editor from environment variables
     const defaultEditorEnv = process.env.EDITOR || process.env.VISUAL
-    
+
     if (defaultEditorEnv) {
       const editors = await this.detectEditors()
-      return editors.find(e => e.command === defaultEditorEnv || e.executable.includes(defaultEditorEnv)) || null
+      return (
+        editors.find(
+          (e) => e.command === defaultEditorEnv || e.executable.includes(defaultEditorEnv),
+        ) || null
+      )
     }
 
     // Otherwise, prioritize common editors
     const priorityOrder = ['vscode', 'cursor', 'sublime', 'atom', 'webstorm', 'vim']
     const editors = await this.detectEditors()
-    
+
     for (const editorId of priorityOrder) {
-      const editor = editors.find(e => e.id === editorId)
+      const editor = editors.find((e) => e.id === editorId)
       if (editor) {
         return editor
       }

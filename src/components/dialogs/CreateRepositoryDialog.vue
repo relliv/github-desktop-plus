@@ -3,9 +3,7 @@
     <DialogContent class="sm:max-w-[600px]">
       <DialogHeader>
         <DialogTitle>Create New Repository</DialogTitle>
-        <DialogDescription>
-          Create a new Git repository on your local machine
-        </DialogDescription>
+        <DialogDescription> Create a new Git repository on your local machine </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-4">
@@ -19,9 +17,7 @@
             :disabled="isCreating"
             @input="updatePath"
           />
-          <p class="text-xs text-muted-foreground">
-            The name of your new repository
-          </p>
+          <p class="text-muted-foreground text-xs">The name of your new repository</p>
         </div>
 
         <!-- Description -->
@@ -47,18 +43,11 @@
               :disabled="isCreating"
               class="flex-1"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              @click="browseDirectory"
-              :disabled="isCreating"
-            >
+            <Button variant="outline" size="sm" @click="browseDirectory" :disabled="isCreating">
               Browse
             </Button>
           </div>
-          <p class="text-xs text-muted-foreground">
-            Where to create the repository
-          </p>
+          <p class="text-muted-foreground text-xs">Where to create the repository</p>
         </div>
 
         <!-- Initialize Options -->
@@ -69,22 +58,14 @@
               v-model:checked="createOptions.initializeWithReadme"
               :disabled="isCreating"
             />
-            <Label htmlFor="readme" class="cursor-pointer">
-              Initialize with a README
-            </Label>
+            <Label htmlFor="readme" class="cursor-pointer"> Initialize with a README </Label>
           </div>
 
           <!-- Git Ignore -->
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
-              <Checkbox
-                id="gitignore"
-                v-model:checked="useGitignore"
-                :disabled="isCreating"
-              />
-              <Label htmlFor="gitignore" class="cursor-pointer">
-                Add .gitignore
-              </Label>
+              <Checkbox id="gitignore" v-model:checked="useGitignore" :disabled="isCreating" />
+              <Label htmlFor="gitignore" class="cursor-pointer"> Add .gitignore </Label>
             </div>
             <div v-if="useGitignore" class="ml-6">
               <Select v-model="gitignoreTemplate">
@@ -117,14 +98,8 @@
           <!-- License -->
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
-              <Checkbox
-                id="license"
-                v-model:checked="useLicense"
-                :disabled="isCreating"
-              />
-              <Label htmlFor="license" class="cursor-pointer">
-                Add a license
-              </Label>
+              <Checkbox id="license" v-model:checked="useLicense" :disabled="isCreating" />
+              <Label htmlFor="license" class="cursor-pointer"> Add a license </Label>
             </div>
             <div v-if="useLicense" class="ml-6">
               <Select v-model="licenseType">
@@ -153,13 +128,8 @@
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="close" :disabled="isCreating">
-          Cancel
-        </Button>
-        <Button
-          @click="createRepository"
-          :disabled="!canCreate || isCreating"
-        >
+        <Button variant="outline" @click="close" :disabled="isCreating"> Cancel </Button>
+        <Button @click="createRepository" :disabled="!canCreate || isCreating">
           {{ isCreating ? 'Creating...' : 'Create Repository' }}
         </Button>
       </DialogFooter>
@@ -169,7 +139,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -262,12 +232,12 @@ const browseDirectory = async () => {
 
 const createRepository = async () => {
   if (!canCreate.value) return
-  
+
   isCreating.value = true
-  
+
   try {
     const result = await window.api.git.create(createOptions.value)
-    
+
     if (result.success && result.path) {
       // Add to repository list
       await repositoriesStore.addRepository(result.path)
@@ -323,6 +293,6 @@ const close = () => {
 
 defineExpose({
   open,
-  close
+  close,
 })
 </script>

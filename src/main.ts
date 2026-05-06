@@ -11,7 +11,7 @@ perf.configure({
     console.log(msg)
     // Also send to main process so it appears in the terminal
     window.ipcRenderer?.send('main-process-message', msg)
-  }
+  },
 })
 
 perf.mark('renderer:script-start')
@@ -35,8 +35,7 @@ app.directive('lenis', vLenis)
 
 perf.mark('renderer:vue-configured')
 
-app.mount('#app')
-  .$nextTick(() => {
-    perf.mark('renderer:first-tick-after-mount')
-    postMessage({ payload: 'removeLoading' }, '*')
-  })
+app.mount('#app').$nextTick(() => {
+  perf.mark('renderer:first-tick-after-mount')
+  postMessage({ payload: 'removeLoading' }, '*')
+})

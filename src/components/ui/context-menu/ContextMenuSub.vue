@@ -5,7 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { ContextMenuSub, type ContextMenuSubProps, type ContextMenuSubEmits, useForwardPropsEmits } from 'reka-ui'
+import {
+  ContextMenuSub,
+  type ContextMenuSubProps,
+  type ContextMenuSubEmits,
+  useForwardPropsEmits,
+} from 'reka-ui'
 
 const props = defineProps<ContextMenuSubProps>()
 const emits = defineEmits<ContextMenuSubEmits>()

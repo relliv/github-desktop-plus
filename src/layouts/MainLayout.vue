@@ -1,9 +1,9 @@
 <template>
-  <div class="relative h-screen bg-background text-foreground">
+  <div class="bg-background text-foreground relative h-screen">
     <!-- Drag area overlapping sidebar header -->
     <div
       v-if="!appStore.isSidebarCollapsed"
-      class="absolute top-0 left-0 h-[50px] z-30 app-drag"
+      class="app-drag absolute top-0 left-0 z-30 h-[50px]"
       :style="{ width: 'var(--sidebar-width, 20%)' }"
     />
 
@@ -31,9 +31,9 @@
       </SplitterPanel>
 
       <!-- Resize Handle -->
-      <SplitterResizeHandle id="sidebar-handle" class="w-0 relative z-10 group">
+      <SplitterResizeHandle id="sidebar-handle" class="group relative z-10 w-0">
         <div
-          class="absolute inset-y-0 -left-0.5 -right-0.5 group-hover:bg-primary/30 group-data-[state=drag]:bg-primary transition-colors"
+          class="group-hover:bg-primary/30 group-data-[state=drag]:bg-primary absolute inset-y-0 -right-0.5 -left-0.5 transition-colors"
         />
       </SplitterResizeHandle>
 
@@ -41,17 +41,17 @@
       <SplitterPanel id="main-content" :min-size="40">
         <div
           :class="[
-            'flex flex-col h-full py-2',
+            'flex h-full flex-col py-2',
             appStore.isSidebarCollapsed && 'pl-2',
             appStore.isAiPanelCollapsed && 'pr-2',
           ]"
         >
           <div
-            class="flex-1 flex flex-col bg-card-translucent rounded-xl shadow-sm border border-border/50 overflow-hidden"
+            class="bg-card-translucent border-border/50 flex flex-1 flex-col overflow-hidden rounded-xl border shadow-sm"
           >
             <TitleBar />
 
-            <main class="flex-1 flex flex-col overflow-hidden">
+            <main class="flex flex-1 flex-col overflow-hidden">
               <router-view />
             </main>
           </div>
@@ -62,10 +62,10 @@
       <SplitterResizeHandle
         v-if="!appStore.isAiPanelCollapsed"
         id="ai-panel-handle"
-        class="w-0 relative z-10 group"
+        class="group relative z-10 w-0"
       >
         <div
-          class="absolute inset-y-0 -left-0.5 -right-0.5 group-hover:bg-primary/30 group-data-[state=drag]:bg-primary transition-colors"
+          class="group-hover:bg-primary/30 group-data-[state=drag]:bg-primary absolute inset-y-0 -right-0.5 -left-0.5 transition-colors"
         />
       </SplitterResizeHandle>
 
@@ -79,9 +79,9 @@
         :min-size="18"
         :max-size="40"
       >
-        <div class="flex flex-col h-full py-2 pr-2">
+        <div class="flex h-full flex-col py-2 pr-2">
           <div
-            class="flex-1 flex flex-col bg-card-translucent rounded-xl shadow-sm border border-border/50 overflow-hidden"
+            class="bg-card-translucent border-border/50 flex flex-1 flex-col overflow-hidden rounded-xl border shadow-sm"
           >
             <AiPanel class="h-full" />
           </div>
@@ -92,37 +92,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from "reka-ui";
-import TitleBar from "../components/layout/TitleBar.vue";
-import Sidebar from "../components/layout/Sidebar.vue";
-import AiPanel from "../components/layout/AiPanel.vue";
-import { useAutoRefresh } from "../composables/useAutoRefresh";
-import { useAppStore } from "../stores/app.store";
+import { ref, watch } from 'vue'
+import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
+import TitleBar from '../components/layout/TitleBar.vue'
+import Sidebar from '../components/layout/Sidebar.vue'
+import AiPanel from '../components/layout/AiPanel.vue'
+import { useAutoRefresh } from '../composables/useAutoRefresh'
+import { useAppStore } from '../stores/app.store'
 
-useAutoRefresh();
+useAutoRefresh()
 
-const appStore = useAppStore();
-const sidebarPanel = ref<InstanceType<typeof SplitterPanel> | null>(null);
+const appStore = useAppStore()
+const sidebarPanel = ref<InstanceType<typeof SplitterPanel> | null>(null)
 
 watch(
   () => appStore.isSidebarCollapsed,
   (collapsed) => {
     if (collapsed) {
-      sidebarPanel.value?.collapse();
+      sidebarPanel.value?.collapse()
     } else {
-      sidebarPanel.value?.expand();
+      sidebarPanel.value?.expand()
     }
   },
-);
+)
 
 function onLayoutChange(sizes: number[]) {
   // Update CSS variable so the top drag area matches sidebar width
-  const sidebarPercent = sizes[0] ?? 20;
-  document.documentElement.style.setProperty(
-    "--sidebar-width",
-    `${sidebarPercent}%`,
-  );
+  const sidebarPercent = sizes[0] ?? 20
+  document.documentElement.style.setProperty('--sidebar-width', `${sidebarPercent}%`)
 }
 </script>
 

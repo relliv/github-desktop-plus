@@ -13,7 +13,7 @@ declare global {
         unstage: (path: string, files: string[]) => Promise<any>
         discard: (
           path: string,
-          files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>
+          files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>,
         ) => Promise<any>
         commit: (path: string, message: string) => Promise<any>
         push: (path: string) => Promise<any>
@@ -57,9 +57,13 @@ declare global {
       commits: CommitsAPI
       avatar: {
         get: (email: string) => Promise<{ success: boolean; data: string | null }>
-        getBatch: (emails: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+        getBatch: (
+          emails: string[],
+        ) => Promise<{ success: boolean; data: Record<string, string | null> }>
         getOwner: (owner: string) => Promise<{ success: boolean; data: string | null }>
-        getOwners: (owners: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+        getOwners: (
+          owners: string[],
+        ) => Promise<{ success: boolean; data: Record<string, string | null> }>
       }
       shell: {
         openPath: (path: string) => Promise<any>
@@ -78,7 +82,10 @@ declare global {
       terminal: {
         detect: () => Promise<any>
         getAvailable: () => Promise<any>
-        open: (params: { terminal: any; cwd: string }) => Promise<{ success: boolean; error?: string }>
+        open: (params: {
+          terminal: any
+          cwd: string
+        }) => Promise<{ success: boolean; error?: string }>
       }
       settings?: {
         get: (key: string) => Promise<any>

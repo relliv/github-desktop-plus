@@ -5,7 +5,11 @@
       :key="toast.id"
       :duration="toast.duration"
       :variant="toast.variant"
-      @update:open="(open) => { if (!open) removeToast(toast.id) }"
+      @update:open="
+        (open) => {
+          if (!open) removeToast(toast.id)
+        }
+      "
     >
       <div class="grid gap-1">
         <ToastTitle v-if="toast.title">{{ toast.title }}</ToastTitle>

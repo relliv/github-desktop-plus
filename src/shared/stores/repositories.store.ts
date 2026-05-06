@@ -30,17 +30,12 @@ export const useRepositoriesStore = defineStore('repositories', () => {
   const branches = ref<BranchInfo | null>(null)
 
   // Getters
-  const favoriteRepositories = computed(() =>
-    repositories.value.filter((repo) => repo.isFavorite)
-  )
+  const favoriteRepositories = computed(() => repositories.value.filter((repo) => repo.isFavorite))
 
   const recentRepositories = computed(() =>
     [...repositories.value]
-      .sort(
-        (a, b) =>
-          new Date(b.lastOpenedAt).getTime() - new Date(a.lastOpenedAt).getTime()
-      )
-      .slice(0, 5)
+      .sort((a, b) => new Date(b.lastOpenedAt).getTime() - new Date(a.lastOpenedAt).getTime())
+      .slice(0, 5),
   )
 
   const hasChanges = computed(() => {
@@ -77,8 +72,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         repositories.value = result.data.map(parseRepositoryDates)
       }
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to load repositories'
+      error.value = err instanceof Error ? err.message : 'Failed to load repositories'
       console.error('Failed to load repositories:', err)
     } finally {
       isLoading.value = false
@@ -95,9 +89,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
       if (result.success && result.data) {
         const repo = parseRepositoryDates(result.data)
 
-        const existingIndex = repositories.value.findIndex(
-          (r) => r.id === repo.id
-        )
+        const existingIndex = repositories.value.findIndex((r) => r.id === repo.id)
         if (existingIndex >= 0) {
           repositories.value[existingIndex] = repo
         } else {
@@ -110,8 +102,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         throw new Error(result.error || 'Failed to add repository')
       }
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to add repository'
+      error.value = err instanceof Error ? err.message : 'Failed to add repository'
       throw err
     } finally {
       isLoading.value = false
@@ -127,9 +118,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
       if (result.success && result.data) {
         const repo = parseRepositoryDates(result.data)
 
-        const existingIndex = repositories.value.findIndex(
-          (r) => r.id === repo.id
-        )
+        const existingIndex = repositories.value.findIndex((r) => r.id === repo.id)
         if (existingIndex >= 0) {
           repositories.value[existingIndex] = repo
         } else {
@@ -144,8 +133,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         throw new Error(result.error || 'Failed to open repository')
       }
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to open repository'
+      error.value = err instanceof Error ? err.message : 'Failed to open repository'
       throw err
     } finally {
       isLoading.value = false
@@ -166,8 +154,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         }
       }
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to remove repository'
+      error.value = err instanceof Error ? err.message : 'Failed to remove repository'
       throw err
     }
   }
@@ -186,8 +173,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         }
       }
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to toggle favorite'
+      error.value = err instanceof Error ? err.message : 'Failed to toggle favorite'
       throw err
     }
   }
@@ -213,9 +199,12 @@ export const useRepositoriesStore = defineStore('repositories', () => {
       // Deduplicate commit scan
       if (_scanInFlight !== repo.id) {
         _scanInFlight = repo.id
-        window.api.commits.scan(repo.id, repo.path)
+        window.api.commits
+          .scan(repo.id, repo.path)
           .catch(console.error)
-          .finally(() => { _scanInFlight = null })
+          .finally(() => {
+            _scanInFlight = null
+          })
       }
     } else {
       gitStatus.value = null
@@ -308,8 +297,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
         }
       }
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to update branch'
+      error.value = err instanceof Error ? err.message : 'Failed to update branch'
       throw err
     }
   }

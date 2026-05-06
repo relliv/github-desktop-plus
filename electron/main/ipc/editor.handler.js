@@ -33,9 +33,9 @@ export function registerEditorHandlers() {
       await editorDetector.openInEditor(editor, filePath, lineNumber)
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   })
@@ -45,18 +45,18 @@ export function registerEditorHandlers() {
     try {
       const defaultEditor = await editorDetector.getDefaultEditor()
       if (!defaultEditor) {
-        return { 
-          success: false, 
-          error: 'No default editor found' 
+        return {
+          success: false,
+          error: 'No default editor found',
         }
       }
-      
+
       await editorDetector.openInEditor(defaultEditor, filePath, lineNumber)
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   })

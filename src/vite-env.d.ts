@@ -37,14 +37,22 @@ interface Window {
       count: (repositoryId: number) => Promise<any>
       files: (repoPath: string, commitHash: string) => Promise<any>
       fileDiff: (repoPath: string, commitHash: string, filePath: string) => Promise<any>
-      onScanProgress: (callback: (data: { repositoryId: number; scanned: number; total: number }) => void) => () => void
-      onScanComplete: (callback: (data: { repositoryId: number; added: number }) => void) => () => void
+      onScanProgress: (
+        callback: (data: { repositoryId: number; scanned: number; total: number }) => void,
+      ) => () => void
+      onScanComplete: (
+        callback: (data: { repositoryId: number; added: number }) => void,
+      ) => () => void
     }
     avatar: {
       get: (email: string) => Promise<{ success: boolean; data: string | null }>
-      getBatch: (emails: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+      getBatch: (
+        emails: string[],
+      ) => Promise<{ success: boolean; data: Record<string, string | null> }>
       getOwner: (owner: string) => Promise<{ success: boolean; data: string | null }>
-      getOwners: (owners: string[]) => Promise<{ success: boolean; data: Record<string, string | null> }>
+      getOwners: (
+        owners: string[],
+      ) => Promise<{ success: boolean; data: Record<string, string | null> }>
     }
     shell: {
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
@@ -55,13 +63,23 @@ interface Window {
       detect: () => Promise<any[]>
       getAvailable: () => Promise<any[]>
       getDefault: () => Promise<any | null>
-      openFile: (params: { editor: any; filePath: string; lineNumber?: number }) => Promise<{ success: boolean; error?: string }>
-      openFileDefault: (params: { filePath: string; lineNumber?: number }) => Promise<{ success: boolean; error?: string }>
+      openFile: (params: {
+        editor: any
+        filePath: string
+        lineNumber?: number
+      }) => Promise<{ success: boolean; error?: string }>
+      openFileDefault: (params: {
+        filePath: string
+        lineNumber?: number
+      }) => Promise<{ success: boolean; error?: string }>
     }
     terminal: {
       detect: () => Promise<any[]>
       getAvailable: () => Promise<any[]>
-      open: (params: { terminal: any; cwd: string }) => Promise<{ success: boolean; error?: string }>
+      open: (params: {
+        terminal: any
+        cwd: string
+      }) => Promise<{ success: boolean; error?: string }>
     }
     settings: {
       get: (key: string) => Promise<{ success: boolean; data: string | null }>

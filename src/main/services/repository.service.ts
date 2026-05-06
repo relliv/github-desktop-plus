@@ -47,7 +47,7 @@ export class RepositoryService {
       let remoteUrl: string | null = null
       try {
         const remotes = await git.getRemotes(true)
-        const origin = remotes.find(r => r.name === 'origin')
+        const origin = remotes.find((r) => r.name === 'origin')
         remoteUrl = origin?.refs?.fetch || origin?.refs?.push || null
       } catch {
         // No remote configured
@@ -68,7 +68,7 @@ export class RepositoryService {
             lastOpenedAt: new Date(),
             currentBranch: status.current || null,
             remoteUrl: remoteUrl,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(schema.repositories.path, repoPath))
           .returning()
@@ -87,7 +87,7 @@ export class RepositoryService {
           isFavorite: false,
           lastOpenedAt: new Date(),
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .returning()
 
@@ -108,7 +108,7 @@ export class RepositoryService {
           .update(schema.repositories)
           .set({
             ...updates,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(schema.repositories.id, id))
           .returning()
@@ -139,7 +139,7 @@ export class RepositoryService {
           .update(schema.repositories)
           .set({
             isFavorite: !repo.isFavorite,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(schema.repositories.id, id))
           .returning()
@@ -156,9 +156,7 @@ export class RepositoryService {
   async deleteRepository(id: number) {
     return perf.measure(`repo-service:delete(${id})`, async () => {
       try {
-        await db
-          .delete(schema.repositories)
-          .where(eq(schema.repositories.id, id))
+        await db.delete(schema.repositories).where(eq(schema.repositories.id, id))
 
         return { success: true }
       } catch (error) {
@@ -176,7 +174,7 @@ export class RepositoryService {
           .update(schema.repositories)
           .set({
             currentBranch: branch,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(schema.repositories.id, id))
           .returning()
@@ -199,7 +197,7 @@ export class RepositoryService {
 
       if (repos.length === 0) return
 
-      const repoInputs = repos.map(r => ({ id: r.id, path: r.path, remoteUrl: r.remoteUrl }))
+      const repoInputs = repos.map((r) => ({ id: r.id, path: r.path, remoteUrl: r.remoteUrl }))
 
       // Run all git operations in a worker thread (off main thread)
       const results = await this.runRemoteRefreshWorker(repoInputs)
@@ -212,7 +210,7 @@ export class RepositoryService {
             .set({ remoteUrl: result.remoteUrl, updatedAt: new Date() })
             .where(eq(schema.repositories.id, result.id))
           // Yield event loop so IPC handlers can process
-          await new Promise(resolve => setTimeout(resolve, 0))
+          await new Promise((resolve) => setTimeout(resolve, 0))
         }
       }
     } catch (error) {
@@ -227,7 +225,7 @@ export class RepositoryService {
   // Progress is reported via the onProgress callback.
   async scanFolder(
     folderPath: string,
-    onProgress?: (data: { found: number; added: number; current: string }) => void
+    onProgress?: (data: { found: number; added: number; current: string }) => void,
   ): Promise<{ added: number; skipped: number; errors: string[] }> {
     const endScan = perf.start(`repo-service:scan-folder(${folderPath})`)
     try {
@@ -235,13 +233,13 @@ export class RepositoryService {
       const existingRepos = await db
         .select({ path: schema.repositories.path })
         .from(schema.repositories)
-      const existingPaths = new Set(existingRepos.map(r => r.path))
+      const existingPaths = new Set(existingRepos.map((r) => r.path))
 
       // Discover git repos off the main thread (one level deep only)
       const repoPaths = await this.runFolderScanWorker(folderPath)
 
       // Filter out already-imported repos
-      const newRepoPaths = repoPaths.filter(p => !existingPaths.has(p))
+      const newRepoPaths = repoPaths.filter((p) => !existingPaths.has(p))
       const skipped = repoPaths.length - newRepoPaths.length
       perf.mark(`repo-service:scan-found(${repoPaths.length} repos, ${skipped} already imported)`)
 
@@ -261,7 +259,7 @@ export class RepositoryService {
         }
 
         // Yield event loop between each repo so IPC stays responsive
-        await new Promise(resolve => setTimeout(resolve, 0))
+        await new Promise((resolve) => setTimeout(resolve, 0))
       }
 
       return { added, skipped, errors }
@@ -316,7 +314,7 @@ export class RepositoryService {
   }
 
   private runRemoteRefreshWorker(
-    repos: Array<{ id: number; path: string; remoteUrl: string | null }>
+    repos: Array<{ id: number; path: string; remoteUrl: string | null }>,
   ): Promise<Array<{ id: number; remoteUrl: string | null; changed: boolean }>> {
     const workerCode = `
       const { parentPort } = require('worker_threads');

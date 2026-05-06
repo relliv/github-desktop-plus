@@ -32,7 +32,7 @@ export const useSettingsStore = defineStore('settings', () => {
     showLineNumbers: true,
     syntaxHighlighting: true,
     fontSize: 14,
-    fontFamily: 'monospace'
+    fontFamily: 'monospace',
   })
 
   // Getters
@@ -55,7 +55,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function toggleEditor(editorId: string) {
     const current = settings.value.selectedEditors
     if (current.includes(editorId)) {
-      settings.value.selectedEditors = current.filter(id => id !== editorId)
+      settings.value.selectedEditors = current.filter((id) => id !== editorId)
     } else {
       settings.value.selectedEditors = [...current, editorId]
     }
@@ -139,7 +139,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function applyTheme(theme: Settings['theme']) {
     const root = document.documentElement
-    
+
     if (theme === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       root.classList.toggle('dark', prefersDark)
@@ -184,6 +184,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setAutoFetch,
     setAutoFetchInterval,
     updateSettings,
-    loadSettings
+    loadSettings,
   }
 })

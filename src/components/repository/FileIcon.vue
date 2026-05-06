@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { File } from "lucide-vue-next";
-import { useAppStore } from "@/stores/app.store";
+import { computed } from 'vue'
+import { File } from 'lucide-vue-next'
+import { useAppStore } from '@/stores/app.store'
 import {
   siTypescript,
   siJavascript,
@@ -48,16 +48,16 @@ import {
   siPostcss,
   siGraphql,
   siSqlite,
-} from "simple-icons";
-import type { SimpleIcon } from "simple-icons";
+} from 'simple-icons'
+import type { SimpleIcon } from 'simple-icons'
 
 interface Props {
-  filename: string;
-  className?: string;
+  filename: string
+  className?: string
 }
 
-const props = defineProps<Props>();
-const appStore = useAppStore();
+const props = defineProps<Props>()
+const appStore = useAppStore()
 
 const extensionMap: Record<string, SimpleIcon> = {
   ts: siTypescript,
@@ -101,67 +101,66 @@ const extensionMap: Record<string, SimpleIcon> = {
   gql: siGraphql,
   sql: siSqlite,
   postcss: siPostcss,
-};
+}
 
 const filenameMap: Record<string, SimpleIcon> = {
   dockerfile: siDocker,
-  "docker-compose.yml": siDocker,
-  "docker-compose.yaml": siDocker,
-  ".gitignore": siGit,
-  ".gitattributes": siGit,
-  ".gitmodules": siGit,
-  ".eslintrc": siEslint,
-  ".eslintrc.js": siEslint,
-  ".eslintrc.cjs": siEslint,
-  "eslint.config.js": siEslint,
-  "eslint.config.mjs": siEslint,
-  "eslint.config.ts": siEslint,
-  ".prettierrc": siPrettier,
-  ".prettierrc.js": siPrettier,
-  "prettier.config.js": siPrettier,
-  "tailwind.config.js": siTailwindcss,
-  "tailwind.config.ts": siTailwindcss,
-  "vite.config.ts": siVite,
-  "vite.config.js": siVite,
-  "webpack.config.js": siWebpack,
-  "webpack.config.ts": siWebpack,
-  "package.json": siNodedotjs,
-  "package-lock.json": siNodedotjs,
-  "pnpm-lock.yaml": siNodedotjs,
-  "yarn.lock": siNodedotjs,
-  "tsconfig.json": siTypescript,
-  "tsconfig.node.json": siTypescript,
-  "tsconfig.app.json": siTypescript,
-  "postcss.config.js": siPostcss,
-  "postcss.config.cjs": siPostcss,
-};
+  'docker-compose.yml': siDocker,
+  'docker-compose.yaml': siDocker,
+  '.gitignore': siGit,
+  '.gitattributes': siGit,
+  '.gitmodules': siGit,
+  '.eslintrc': siEslint,
+  '.eslintrc.js': siEslint,
+  '.eslintrc.cjs': siEslint,
+  'eslint.config.js': siEslint,
+  'eslint.config.mjs': siEslint,
+  'eslint.config.ts': siEslint,
+  '.prettierrc': siPrettier,
+  '.prettierrc.js': siPrettier,
+  'prettier.config.js': siPrettier,
+  'tailwind.config.js': siTailwindcss,
+  'tailwind.config.ts': siTailwindcss,
+  'vite.config.ts': siVite,
+  'vite.config.js': siVite,
+  'webpack.config.js': siWebpack,
+  'webpack.config.ts': siWebpack,
+  'package.json': siNodedotjs,
+  'package-lock.json': siNodedotjs,
+  'pnpm-lock.yaml': siNodedotjs,
+  'yarn.lock': siNodedotjs,
+  'tsconfig.json': siTypescript,
+  'tsconfig.node.json': siTypescript,
+  'tsconfig.app.json': siTypescript,
+  'postcss.config.js': siPostcss,
+  'postcss.config.cjs': siPostcss,
+}
 
 function lightenHex(hex: string, amount: number): string {
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const lighten = (c: number) =>
-    Math.min(255, Math.round(c + (255 - c) * amount));
-  return `rgb(${lighten(r)}, ${lighten(g)}, ${lighten(b)})`;
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+  const lighten = (c: number) => Math.min(255, Math.round(c + (255 - c) * amount))
+  return `rgb(${lighten(r)}, ${lighten(g)}, ${lighten(b)})`
 }
 
 const resolvedIcon = computed(() => {
-  const name = props.filename.split("/").pop()?.toLowerCase() || "";
-  const ext = name.split(".").pop()?.toLowerCase() || "";
-  return filenameMap[name] ?? extensionMap[ext] ?? null;
-});
+  const name = props.filename.split('/').pop()?.toLowerCase() || ''
+  const ext = name.split('.').pop()?.toLowerCase() || ''
+  return filenameMap[name] ?? extensionMap[ext] ?? null
+})
 
 const iconSvg = computed(() => {
-  if (!resolvedIcon.value) return null;
+  if (!resolvedIcon.value) return null
   return resolvedIcon.value.svg.replace(
-    "<svg ",
+    '<svg ',
     `<svg fill="currentColor" width="100%" height="100%" `,
-  );
-});
+  )
+})
 
 const iconColor = computed(() => {
-  if (!resolvedIcon.value) return undefined;
-  const hex = resolvedIcon.value.hex;
-  return appStore.isDark ? lightenHex(hex, 0.6) : `#${hex}`;
-});
+  if (!resolvedIcon.value) return undefined
+  const hex = resolvedIcon.value.hex
+  return appStore.isDark ? lightenHex(hex, 0.6) : `#${hex}`
+})
 </script>

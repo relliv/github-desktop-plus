@@ -1,44 +1,35 @@
 <template>
   <div class="editor-selector">
     <div v-if="loading" class="flex items-center justify-center p-4">
-      <Loader2 class="w-5 h-5 animate-spin" />
+      <Loader2 class="h-5 w-5 animate-spin" />
       <span class="ml-2">Detecting editors...</span>
     </div>
-    
-    <div v-else-if="error" class="text-red-500 p-4">
+
+    <div v-else-if="error" class="p-4 text-red-500">
       {{ error }}
     </div>
-    
+
     <div v-else class="space-y-2">
-      <div class="flex items-center justify-between mb-4">
+      <div class="mb-4 flex items-center justify-between">
         <Label>External Editor</Label>
-        <Button
-          variant="ghost"
-          size="sm"
-          @click="detectEditors"
-          :disabled="loading"
-        >
-          <RefreshCw class="w-4 h-4" />
+        <Button variant="ghost" size="sm" @click="detectEditors" :disabled="loading">
+          <RefreshCw class="h-4 w-4" />
         </Button>
       </div>
-      
+
       <Select v-model="selectedEditorId" @update:modelValue="onEditorChange">
         <SelectTrigger>
           <SelectValue placeholder="Select an editor" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem 
-            v-for="editor in availableEditors" 
-            :key="editor.id"
-            :value="editor.id"
-          >
+          <SelectItem v-for="editor in availableEditors" :key="editor.id" :value="editor.id">
             <div class="flex items-center gap-2">
-              <component 
-                :is="getEditorIconComponent(editor)" 
-                class="w-4 h-4"
-              />
+              <component :is="getEditorIconComponent(editor)" class="h-4 w-4" />
               <span>{{ editor.name }}</span>
-              <span v-if="defaultEditor?.id === editor.id" class="text-xs text-muted-foreground ml-auto">
+              <span
+                v-if="defaultEditor?.id === editor.id"
+                class="text-muted-foreground ml-auto text-xs"
+              >
                 (default)
               </span>
             </div>
@@ -48,8 +39,8 @@
           </SelectItem>
         </SelectContent>
       </Select>
-      
-      <p class="text-sm text-muted-foreground mt-2">
+
+      <p class="text-muted-foreground mt-2 text-sm">
         {{ availableEditors.length }} editor{{ availableEditors.length !== 1 ? 's' : '' }} detected
       </p>
     </div>
@@ -59,26 +50,26 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useEditor } from '@/composables/useEditor'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select'
 import Label from '@/components/ui/Label.vue'
 import Button from '@/components/ui/Button.vue'
-import { 
-  RefreshCw, 
-  Loader2, 
-  FileCode2, 
-  MousePointer2, 
-  FileText, 
-  Globe, 
-  Lightbulb, 
-  Terminal, 
-  Zap, 
-  Hammer 
+import {
+  RefreshCw,
+  Loader2,
+  FileCode2,
+  MousePointer2,
+  FileText,
+  Globe,
+  Lightbulb,
+  Terminal,
+  Zap,
+  Hammer,
 } from 'lucide-vue-next'
 
 interface Props {
@@ -91,37 +82,31 @@ const emit = defineEmits<{
   'editor-selected': [editor: any]
 }>()
 
-const { 
-  availableEditors, 
-  defaultEditor, 
-  loading, 
-  error, 
-  detectEditors, 
-  getEditorIcon 
-} = useEditor()
+const { availableEditors, defaultEditor, loading, error, detectEditors, getEditorIcon } =
+  useEditor()
 
 const selectedEditorId = ref(props.modelValue || '')
 
 const getEditorIconComponent = (editor: any) => {
   const iconName = getEditorIcon(editor)
   const iconMap: Record<string, any> = {
-    'FileCode2': FileCode2,
-    'MousePointer2': MousePointer2,
-    'FileText': FileText,
-    'Globe': Globe,
-    'Lightbulb': Lightbulb,
-    'Terminal': Terminal,
-    'Zap': Zap,
-    'Hammer': Hammer,
+    FileCode2: FileCode2,
+    MousePointer2: MousePointer2,
+    FileText: FileText,
+    Globe: Globe,
+    Lightbulb: Lightbulb,
+    Terminal: Terminal,
+    Zap: Zap,
+    Hammer: Hammer,
   }
-  
+
   return iconMap[iconName] || FileText
 }
 
 const onEditorChange = (editorId: string) => {
   emit('update:modelValue', editorId)
-  
-  const editor = availableEditors.value.find(e => e.id === editorId)
+
+  const editor = availableEditors.value.find((e) => e.id === editorId)
   if (editor) {
     emit('editor-selected', editor)
   }

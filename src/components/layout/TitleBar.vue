@@ -1,25 +1,21 @@
 <template>
-  <div
-    class="flex flex-row items-center justify-between h-10 pl-3 pr-1 app-drag flex-shrink-0"
-  >
+  <div class="app-drag flex h-10 flex-shrink-0 flex-row items-center justify-between pr-1 pl-3">
     <!-- Left - Sidebar toggle + App title -->
     <div class="flex items-center gap-2">
       <button
-        class="app-no-drag p-1 rounded hover:bg-accent transition-colors"
+        class="app-no-drag hover:bg-accent rounded p-1 transition-colors"
         @click="appStore.toggleSidebar()"
         :title="appStore.isSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'"
       >
-        <PanelLeft class="size-4 text-muted-foreground" :stroke-width="1.5" />
+        <PanelLeft class="text-muted-foreground size-4" :stroke-width="1.5" />
       </button>
-      <span class="text-xs font-semibold text-foreground select-none">
-        GitHub Desktop Plus
-      </span>
+      <span class="text-foreground text-xs font-semibold select-none"> GitHub Desktop Plus </span>
     </div>
 
     <!-- Right side - AI toggle + Window controls -->
-    <div class="flex items-center app-no-drag">
+    <div class="app-no-drag flex items-center">
       <button
-        class="p-1 rounded hover:bg-accent transition-colors mr-1"
+        class="hover:bg-accent mr-1 rounded p-1 transition-colors"
         @click="appStore.toggleAiPanel()"
         :title="appStore.isAiPanelCollapsed ? 'Open AI chat' : 'Close AI chat'"
       >
@@ -35,11 +31,11 @@
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from "../../stores/app.store";
-import WindowControls from "@/components/ui/WindowControls.vue";
-import { PanelLeft, Sparkles } from "lucide-vue-next";
+import { useAppStore } from '../../stores/app.store'
+import WindowControls from '@/components/ui/WindowControls.vue'
+import { PanelLeft, Sparkles } from 'lucide-vue-next'
 
-const appStore = useAppStore();
+const appStore = useAppStore()
 </script>
 
 <style scoped>

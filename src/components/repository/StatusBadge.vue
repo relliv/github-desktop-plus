@@ -1,10 +1,5 @@
 <template>
-  <span 
-    :class="[
-      'px-2 py-0.5 text-xs rounded-full font-medium',
-      statusClass
-    ]"
-  >
+  <span :class="['rounded-full px-2 py-0.5 text-xs font-medium', statusClass]">
     {{ statusText }}
   </span>
 </template>
@@ -37,12 +32,18 @@ const statusClass = computed(() => {
 
 const statusText = computed(() => {
   switch (props.status) {
-    case 'modified': return 'M'
-    case 'added': return 'A'
-    case 'deleted': return 'D'
-    case 'renamed': return 'R'
-    case 'conflicted': return 'C'
-    default: return '?'
+    case 'modified':
+      return 'M'
+    case 'added':
+      return 'A'
+    case 'deleted':
+      return 'D'
+    case 'renamed':
+      return 'R'
+    case 'conflicted':
+      return 'C'
+    default:
+      return '?'
   }
 })
 </script>

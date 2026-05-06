@@ -18,6 +18,6 @@ const emit = defineEmits(['update:modelValue'])
 
 provide('radioGroup', {
   modelValue: computed(() => props.modelValue),
-  select: (value: string) => emit('update:modelValue', value)
+  select: (value: string) => emit('update:modelValue', value),
 })
 </script>

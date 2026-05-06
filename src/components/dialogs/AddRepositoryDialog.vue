@@ -11,21 +11,21 @@
       <Tabs v-model="activeTab" class="w-full">
         <TabsList class="grid w-full grid-cols-3">
           <TabsTrigger value="add" class="flex items-center gap-1.5">
-            <FolderOpen class="w-3.5 h-3.5" :stroke-width="1.5" />
+            <FolderOpen class="h-3.5 w-3.5" :stroke-width="1.5" />
             Add Existing
           </TabsTrigger>
           <TabsTrigger value="create" class="flex items-center gap-1.5">
-            <FilePlus class="w-3.5 h-3.5" :stroke-width="1.5" />
+            <FilePlus class="h-3.5 w-3.5" :stroke-width="1.5" />
             Create New
           </TabsTrigger>
           <TabsTrigger value="clone" class="flex items-center gap-1.5">
-            <GitBranch class="w-3.5 h-3.5" :stroke-width="1.5" />
+            <GitBranch class="h-3.5 w-3.5" :stroke-width="1.5" />
             Clone
           </TabsTrigger>
         </TabsList>
 
         <!-- Add Existing Tab -->
-        <TabsContent value="add" class="space-y-4 mt-4">
+        <TabsContent value="add" class="mt-4 space-y-4">
           <div class="space-y-2">
             <Label htmlFor="add-path">Repository Path</Label>
             <div class="flex gap-2">
@@ -46,33 +46,45 @@
                 Browse
               </Button>
             </div>
-            <p v-if="validationResult && !validationResult.isValid" class="text-sm text-destructive">
+            <p
+              v-if="validationResult && !validationResult.isValid"
+              class="text-destructive text-sm"
+            >
               {{ validationResult.error }}
             </p>
-            <p v-else-if="validationResult && validationResult.isValid" class="text-sm text-green-600 dark:text-green-400">
+            <p
+              v-else-if="validationResult && validationResult.isValid"
+              class="text-sm text-green-600 dark:text-green-400"
+            >
               ✓ Valid Git repository
-              <span v-if="validationResult.hasRemote" class="text-muted-foreground">(has remote)</span>
+              <span v-if="validationResult.hasRemote" class="text-muted-foreground"
+                >(has remote)</span
+              >
             </p>
           </div>
 
-          <div v-if="repositoryInfo" class="space-y-2 p-2 bg-muted rounded-lg">
+          <div v-if="repositoryInfo" class="bg-muted space-y-2 rounded-lg p-2">
             <div class="flex items-center gap-2">
-              <GitBranch class="w-4 h-4 text-muted-foreground" :stroke-width="1" />
+              <GitBranch class="text-muted-foreground h-4 w-4" :stroke-width="1" />
               <span class="text-sm font-medium">{{ repositoryInfo.name }}</span>
             </div>
             <div v-if="repositoryInfo.currentBranch" class="flex items-center gap-2">
-              <div class="w-4 h-4" />
-              <span class="text-sm text-muted-foreground">Branch: {{ repositoryInfo.currentBranch }}</span>
+              <div class="h-4 w-4" />
+              <span class="text-muted-foreground text-sm"
+                >Branch: {{ repositoryInfo.currentBranch }}</span
+              >
             </div>
             <div v-if="repositoryInfo.remoteUrl" class="flex items-center gap-2">
-              <div class="w-4 h-4" />
-              <span class="text-sm text-muted-foreground truncate">Remote: {{ repositoryInfo.remoteUrl }}</span>
+              <div class="h-4 w-4" />
+              <span class="text-muted-foreground truncate text-sm"
+                >Remote: {{ repositoryInfo.remoteUrl }}</span
+              >
             </div>
           </div>
         </TabsContent>
 
         <!-- Create New Tab -->
-        <TabsContent value="create" class="space-y-4 mt-4">
+        <TabsContent value="create" class="mt-4 space-y-4">
           <div class="space-y-2">
             <Label htmlFor="create-name">Repository Name</Label>
             <Input
@@ -82,7 +94,7 @@
               :disabled="isCreating"
               @input="updateCreatePath"
             />
-            <p class="text-xs text-muted-foreground">The name of your new repository</p>
+            <p class="text-muted-foreground text-xs">The name of your new repository</p>
           </div>
 
           <div class="space-y-2">
@@ -106,16 +118,25 @@
                 :disabled="isCreating"
                 class="flex-1"
               />
-              <Button variant="outline" size="sm" @click="browseCreateDirectory" :disabled="isCreating">
+              <Button
+                variant="outline"
+                size="sm"
+                @click="browseCreateDirectory"
+                :disabled="isCreating"
+              >
                 Browse
               </Button>
             </div>
-            <p class="text-xs text-muted-foreground">Where to create the repository</p>
+            <p class="text-muted-foreground text-xs">Where to create the repository</p>
           </div>
 
           <div class="space-y-3">
             <div class="flex items-center space-x-2">
-              <Checkbox id="readme" v-model:checked="createOptions.initializeWithReadme" :disabled="isCreating" />
+              <Checkbox
+                id="readme"
+                v-model:checked="createOptions.initializeWithReadme"
+                :disabled="isCreating"
+              />
               <Label htmlFor="readme" class="cursor-pointer">Initialize with a README</Label>
             </div>
 
@@ -194,9 +215,13 @@
                 placeholder="https://github.com/user/repository.git"
                 :class="cloneUrlError ? 'border-destructive' : ''"
               />
-              <p v-if="cloneUrlError" class="text-xs text-destructive">{{ cloneUrlError }}</p>
-              <p v-else-if="cloneRepoName" class="text-xs text-muted-foreground">Will clone <span class="font-medium text-foreground">{{ cloneRepoName }}</span></p>
-              <p v-else class="text-xs text-muted-foreground">HTTPS or SSH URL for the repository</p>
+              <p v-if="cloneUrlError" class="text-destructive text-xs">{{ cloneUrlError }}</p>
+              <p v-else-if="cloneRepoName" class="text-muted-foreground text-xs">
+                Will clone <span class="text-foreground font-medium">{{ cloneRepoName }}</span>
+              </p>
+              <p v-else class="text-muted-foreground text-xs">
+                HTTPS or SSH URL for the repository
+              </p>
             </div>
 
             <div class="space-y-2">
@@ -210,28 +235,43 @@
                 />
                 <Button variant="outline" size="sm" @click="browseCloneDirectory">Browse</Button>
               </div>
-              <p v-if="cloneDirExists" class="text-xs text-destructive">A folder already exists at this path. Choose a different location.</p>
-              <p v-else class="text-xs text-muted-foreground">Where to clone the repository</p>
+              <p v-if="cloneDirExists" class="text-destructive text-xs">
+                A folder already exists at this path. Choose a different location.
+              </p>
+              <p v-else class="text-muted-foreground text-xs">Where to clone the repository</p>
             </div>
 
             <Collapsible v-model:open="showAdvanced">
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" class="w-full justify-between">
                   Advanced Options
-                  <ChevronDown :class="['w-4 h-4 transition-transform', showAdvanced && 'rotate-180']" :stroke-width="1" />
+                  <ChevronDown
+                    :class="['h-4 w-4 transition-transform', showAdvanced && 'rotate-180']"
+                    :stroke-width="1"
+                  />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent class="space-y-4 pt-4">
                 <div class="space-y-2">
                   <Label htmlFor="clone-branch">Branch</Label>
                   <Input id="clone-branch" v-model="cloneOptions.branch" placeholder="main" />
-                  <p class="text-xs text-muted-foreground">Specific branch to clone (default: repository's default branch)</p>
+                  <p class="text-muted-foreground text-xs">
+                    Specific branch to clone (default: repository's default branch)
+                  </p>
                 </div>
 
                 <div class="space-y-2">
                   <Label htmlFor="clone-depth">Clone Depth</Label>
-                  <Input id="clone-depth" v-model.number="cloneOptions.depth" type="number" min="1" placeholder="Full history" />
-                  <p class="text-xs text-muted-foreground">Number of commits to fetch (leave empty for full history)</p>
+                  <Input
+                    id="clone-depth"
+                    v-model.number="cloneOptions.depth"
+                    type="number"
+                    min="1"
+                    placeholder="Full history"
+                  />
+                  <p class="text-muted-foreground text-xs">
+                    Number of commits to fetch (leave empty for full history)
+                  </p>
                 </div>
 
                 <div class="space-y-2">
@@ -243,7 +283,11 @@
                     </TabsList>
                     <TabsContent value="https" class="space-y-2">
                       <Input v-model="cloneOptions.username" placeholder="Username" />
-                      <Input v-model="cloneOptions.password" type="password" placeholder="Password or Personal Access Token" />
+                      <Input
+                        v-model="cloneOptions.password"
+                        type="password"
+                        placeholder="Password or Personal Access Token"
+                      />
                     </TabsContent>
                   </Tabs>
                 </div>
@@ -260,8 +304,10 @@
               </div>
               <Progress :value="cloneProgress.percent" />
             </div>
-            <div v-if="cloneProgress.message" class="text-sm text-muted-foreground">{{ cloneProgress.message }}</div>
-            <div v-if="cloneProgress.transferred > 0" class="text-sm text-muted-foreground">
+            <div v-if="cloneProgress.message" class="text-muted-foreground text-sm">
+              {{ cloneProgress.message }}
+            </div>
+            <div v-if="cloneProgress.transferred > 0" class="text-muted-foreground text-sm">
               {{ cloneProgress.transferred }} / {{ cloneProgress.total }} objects
             </div>
           </div>
@@ -315,17 +361,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Select,
   SelectContent,
@@ -342,7 +379,12 @@ import Textarea from '@/components/ui/Textarea.vue'
 import { ChevronDown, GitBranch, FolderOpen, FilePlus } from 'lucide-vue-next'
 import { useRepositoriesStore } from '@/shared/stores'
 import { useSettingsStore } from '@/stores/settings.store'
-import type { CloneOptions, CloneProgress, CreateRepositoryOptions, RepositoryValidation } from '@/shared/types/git.types'
+import type {
+  CloneOptions,
+  CloneProgress,
+  CreateRepositoryOptions,
+  RepositoryValidation,
+} from '@/shared/types/git.types'
 import { gitignoreTemplates, licenseTemplates } from '@/utils/templates'
 
 const emit = defineEmits<{
@@ -361,7 +403,11 @@ const activeTab = ref<'add' | 'create' | 'clone'>('add')
 const isValidating = ref(false)
 const repositoryPath = ref('')
 const validationResult = ref<RepositoryValidation | null>(null)
-const repositoryInfo = ref<{ name: string; currentBranch: string | null; remoteUrl?: string } | null>(null)
+const repositoryInfo = ref<{
+  name: string
+  currentBranch: string | null
+  remoteUrl?: string
+} | null>(null)
 
 const canOpen = computed(() => repositoryPath.value && validationResult.value?.isValid)
 
@@ -382,7 +428,11 @@ const validateRepository = async (path: string) => {
     if (validation.isValid) {
       const result = await window.api.git.openRepository(path)
       if (result.success) {
-        repositoryInfo.value = { name: result.name, currentBranch: result.currentBranch, remoteUrl: result.remoteUrl }
+        repositoryInfo.value = {
+          name: result.name,
+          currentBranch: result.currentBranch,
+          remoteUrl: result.remoteUrl,
+        }
       }
     }
   } catch (error) {
@@ -542,58 +592,78 @@ const isValidRepoUrl = (url: string): boolean => {
   if (/^git@[^:]+:.+\/.+/.test(t)) return true
   try {
     const u = new URL(t)
-    return (u.protocol === 'https:' || u.protocol === 'http:') &&
+    return (
+      (u.protocol === 'https:' || u.protocol === 'http:') &&
       u.pathname.split('/').filter(Boolean).length >= 2
+    )
   } catch {
     return false
   }
 }
 
 let cloneUrlDebounce: ReturnType<typeof setTimeout> | null = null
-watch(() => cloneOptions.value.url, (url) => {
-  cloneRepoName.value = ''
-  cloneUrlError.value = ''
-  if (cloneUrlDebounce) clearTimeout(cloneUrlDebounce)
-  if (!url.trim()) return
-  cloneUrlDebounce = setTimeout(async () => {
-    if (!isValidRepoUrl(url)) {
-      cloneUrlError.value = 'Invalid repository URL'
-      return
-    }
-    const name = parseRepoNameFromUrl(url)
-    cloneRepoName.value = name
-    // Auto-populate directory if empty
-    if (name && !cloneOptions.value.directory) {
-      const basePath = defaultCloneBasePath.value || settingsStore.defaultClonePath || await window.api.shell.getHomePath()
-      cloneOptions.value.directory = `${basePath}/${name}`
-    }
-  }, 400)
-})
+watch(
+  () => cloneOptions.value.url,
+  (url) => {
+    cloneRepoName.value = ''
+    cloneUrlError.value = ''
+    if (cloneUrlDebounce) clearTimeout(cloneUrlDebounce)
+    if (!url.trim()) return
+    cloneUrlDebounce = setTimeout(async () => {
+      if (!isValidRepoUrl(url)) {
+        cloneUrlError.value = 'Invalid repository URL'
+        return
+      }
+      const name = parseRepoNameFromUrl(url)
+      cloneRepoName.value = name
+      // Auto-populate directory if empty
+      if (name && !cloneOptions.value.directory) {
+        const basePath =
+          defaultCloneBasePath.value ||
+          settingsStore.defaultClonePath ||
+          (await window.api.shell.getHomePath())
+        cloneOptions.value.directory = `${basePath}/${name}`
+      }
+    }, 400)
+  },
+)
 
 const progressStageText = computed(() => {
   switch (cloneProgress.value.stage) {
-    case 'counting': return 'Counting objects...'
-    case 'compressing': return 'Compressing objects...'
-    case 'receiving': return 'Receiving objects...'
-    case 'resolving': return 'Resolving deltas...'
-    case 'complete': return 'Clone completed!'
-    case 'error': return 'Clone failed'
-    default: return 'Cloning...'
+    case 'counting':
+      return 'Counting objects...'
+    case 'compressing':
+      return 'Compressing objects...'
+    case 'receiving':
+      return 'Receiving objects...'
+    case 'resolving':
+      return 'Resolving deltas...'
+    case 'complete':
+      return 'Clone completed!'
+    case 'error':
+      return 'Clone failed'
+    default:
+      return 'Cloning...'
   }
 })
 
-const canClone = computed(() => cloneOptions.value.url && cloneOptions.value.directory && !cloneDirExists.value)
+const canClone = computed(
+  () => cloneOptions.value.url && cloneOptions.value.directory && !cloneDirExists.value,
+)
 
 // Check if clone directory already exists
 let cloneDirCheckTimeout: ReturnType<typeof setTimeout> | null = null
-watch(() => cloneOptions.value.directory, (dir) => {
-  cloneDirExists.value = false
-  if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
-  if (!dir.trim()) return
-  cloneDirCheckTimeout = setTimeout(async () => {
-    cloneDirExists.value = await window.api.shell.pathExists(dir)
-  }, 300)
-})
+watch(
+  () => cloneOptions.value.directory,
+  (dir) => {
+    cloneDirExists.value = false
+    if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
+    if (!dir.trim()) return
+    cloneDirCheckTimeout = setTimeout(async () => {
+      cloneDirExists.value = await window.api.shell.pathExists(dir)
+    }, 300)
+  },
+)
 
 watch(authType, (newType) => {
   if (newType === 'none') {
@@ -668,7 +738,14 @@ const close = () => {
     isValidating.value = false
 
     // Reset create (keep defaultCreatePath — persisted in localStorage)
-    createOptions.value = { name: '', description: '', path: '', initializeWithReadme: true, gitignoreTemplate: undefined, license: undefined }
+    createOptions.value = {
+      name: '',
+      description: '',
+      path: '',
+      initializeWithReadme: true,
+      gitignoreTemplate: undefined,
+      license: undefined,
+    }
     useGitignore.value = false
     gitignoreTemplate.value = 'node'
     customGitignore.value = ''
@@ -681,7 +758,14 @@ const close = () => {
     isCloning.value = false
     showAdvanced.value = false
     authType.value = 'none'
-    cloneOptions.value = { url: '', directory: '', branch: undefined, depth: undefined, username: undefined, password: undefined }
+    cloneOptions.value = {
+      url: '',
+      directory: '',
+      branch: undefined,
+      depth: undefined,
+      username: undefined,
+      password: undefined,
+    }
     cloneProgress.value = { stage: 'counting', percent: 0, total: 0, transferred: 0 }
     cloneRepoName.value = ''
     cloneUrlError.value = ''

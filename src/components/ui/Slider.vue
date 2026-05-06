@@ -1,12 +1,7 @@
 <template>
-  <div
-    :class="cn('relative flex w-full touch-none select-none items-center', className)"
-  >
-    <div class="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
-      <div
-        class="absolute h-full bg-primary"
-        :style="{ width: `${percentage}%` }"
-      />
+  <div :class="cn('relative flex w-full touch-none items-center select-none', className)">
+    <div class="bg-secondary relative h-2 w-full grow overflow-hidden rounded-full">
+      <div class="bg-primary absolute h-full" :style="{ width: `${percentage}%` }" />
     </div>
     <input
       type="range"
@@ -35,7 +30,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
-  step: 1
+  step: 1,
 })
 
 const emit = defineEmits(['update:modelValue'])

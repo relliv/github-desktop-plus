@@ -6,7 +6,7 @@ import {
   CloneOptions,
   CloneProgress,
   CreateRepositoryOptions,
-  RepositoryValidation
+  RepositoryValidation,
 } from '../../src/shared/types/git.types'
 import { perf } from '@shared/perf'
 
@@ -37,7 +37,7 @@ export function registerGitHandlers() {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to open repository'
+        error: error instanceof Error ? error.message : 'Failed to open repository',
       }
     }
   })
@@ -53,7 +53,7 @@ export function registerGitHandlers() {
         // -unormal: show untracked files but don't recurse into untracked dirs
         repoGit.raw(['status', '--porcelain=v1', '-unormal']),
         // Get ahead/behind from status --branch --porcelain (first line only)
-        repoGit.raw(['status', '--branch', '--porcelain=v1', '-unormal']).then(out => {
+        repoGit.raw(['status', '--branch', '--porcelain=v1', '-unormal']).then((out) => {
           const firstLine = out.split('\n')[0] || ''
           const abMatch = firstLine.match(/\[ahead (\d+)(?:, behind (\d+))?\]|\[behind (\d+)\]/)
           return {
@@ -96,10 +96,15 @@ export function registerGitHandlers() {
         if (y === 'M') modified.push(file)
         else if (y === 'D') deleted.push(file)
         else if (x === '?' && y === '?') added.push(file)
-        else if (x === 'U' || y === 'U' || (x === 'A' && y === 'A') || (x === 'D' && y === 'D')) conflicted.push(file)
-        else if (x === 'A' && y === ' ') { /* staged only */ }
-        else if (x === 'M' && y === ' ') { /* staged only */ }
-        else if (x === 'D' && y === ' ') { /* staged only */ }
+        else if (x === 'U' || y === 'U' || (x === 'A' && y === 'A') || (x === 'D' && y === 'D'))
+          conflicted.push(file)
+        else if (x === 'A' && y === ' ') {
+          /* staged only */
+        } else if (x === 'M' && y === ' ') {
+          /* staged only */
+        } else if (x === 'D' && y === ' ') {
+          /* staged only */
+        }
       }
 
       return { modified, added, deleted, renamed, conflicted, staged, ...aheadBehind }
@@ -203,7 +208,7 @@ export function registerGitHandlers() {
     async (
       _,
       repoPath: string,
-      files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>
+      files: Array<{ path: string; mode: 'untracked' | 'staged-add' | 'tracked' }>,
     ) => {
       try {
         const repoGit = simpleGit(repoPath)
@@ -235,7 +240,7 @@ export function registerGitHandlers() {
       } catch (error) {
         throw new Error(`Failed to discard changes: ${error}`)
       }
-    }
+    },
   )
 
   // Commit
@@ -246,7 +251,7 @@ export function registerGitHandlers() {
       return {
         success: true,
         commit: result.commit,
-        summary: result.summary
+        summary: result.summary,
       }
     } catch (error) {
       throw new Error(`Failed to commit: ${error}`)
@@ -271,7 +276,7 @@ export function registerGitHandlers() {
       const result = await repoGit.pull()
       return {
         success: true,
-        summary: result.summary
+        summary: result.summary,
       }
     } catch (error) {
       throw new Error(`Failed to pull: ${error}`)
@@ -347,7 +352,10 @@ export function registerGitHandlers() {
       }
       return { success: true, data: tags }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get tags' }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get tags',
+      }
     }
   })
 
@@ -377,7 +385,7 @@ export function registerGitHandlers() {
           percent: data.progress,
           total: data.total || 0,
           transferred: data.processed || 0,
-          message: data.stage
+          message: data.stage,
         }
       }
 
@@ -389,7 +397,7 @@ export function registerGitHandlers() {
           } catch {
             // Ignore progress send failures
           }
-        }
+        },
       })
 
       const cloneOptions: string[] = []
@@ -400,64 +408,92 @@ export function registerGitHandlers() {
       if (options.username && options.password) {
         cloneUrl = options.url.replace(
           /^https:\/\//,
-          `https://${encodeURIComponent(options.username)}:${encodeURIComponent(options.password)}@`
+          `https://${encodeURIComponent(options.username)}:${encodeURIComponent(options.password)}@`,
         )
       }
 
       await progressGit.clone(cloneUrl, options.directory, cloneOptions)
 
       event.sender.send('git:clone:progress', {
-        stage: 'complete', percent: 100, total: 100, transferred: 100,
-        message: 'Clone completed successfully'
+        stage: 'complete',
+        percent: 100,
+        total: 100,
+        transferred: 100,
+        message: 'Clone completed successfully',
       })
 
       return { success: true, path: options.directory }
     } catch (error) {
       event.sender.send('git:clone:progress', {
-        stage: 'error', percent: 0, total: 0, transferred: 0,
-        message: error instanceof Error ? error.message : 'Clone failed'
+        stage: 'error',
+        percent: 0,
+        total: 0,
+        transferred: 0,
+        message: error instanceof Error ? error.message : 'Clone failed',
       })
       return { success: false, error: error instanceof Error ? error.message : 'Clone failed' }
     }
   })
 
   // Validate repository
-  perf.handle(ipcMain, 'git:validate', async (_: IpcMainInvokeEvent, repoPath: string): Promise<RepositoryValidation> => {
-    try {
-      const repoGit = simpleGit(repoPath)
-      const isRepo = await repoGit.checkIsRepo()
-      if (!isRepo) {
-        return { isValid: false, isGitRepository: false, hasRemote: false, error: 'Not a git repository' }
+  perf.handle(
+    ipcMain,
+    'git:validate',
+    async (_: IpcMainInvokeEvent, repoPath: string): Promise<RepositoryValidation> => {
+      try {
+        const repoGit = simpleGit(repoPath)
+        const isRepo = await repoGit.checkIsRepo()
+        if (!isRepo) {
+          return {
+            isValid: false,
+            isGitRepository: false,
+            hasRemote: false,
+            error: 'Not a git repository',
+          }
+        }
+        const remotes = await repoGit.getRemotes(true)
+        return { isValid: true, isGitRepository: true, hasRemote: remotes.length > 0 }
+      } catch (error) {
+        return {
+          isValid: false,
+          isGitRepository: false,
+          hasRemote: false,
+          error: error instanceof Error ? error.message : 'Validation failed',
+        }
       }
-      const remotes = await repoGit.getRemotes(true)
-      return { isValid: true, isGitRepository: true, hasRemote: remotes.length > 0 }
-    } catch (error) {
-      return { isValid: false, isGitRepository: false, hasRemote: false, error: error instanceof Error ? error.message : 'Validation failed' }
-    }
-  })
+    },
+  )
 
   // Get current branch
-  perf.handle(ipcMain, 'git:getCurrentBranch', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
-    try {
-      const repoGit = simpleGit(repoPath)
-      const branches = await repoGit.branchLocal()
-      return branches.current || null
-    } catch {
-      return null
-    }
-  })
+  perf.handle(
+    ipcMain,
+    'git:getCurrentBranch',
+    async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
+      try {
+        const repoGit = simpleGit(repoPath)
+        const branches = await repoGit.branchLocal()
+        return branches.current || null
+      } catch {
+        return null
+      }
+    },
+  )
 
   // Get remote URL
-  perf.handle(ipcMain, 'git:getRemoteUrl', async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
-    try {
-      const repoGit = simpleGit(repoPath)
-      const remotes = await repoGit.getRemotes(true)
-      const origin = remotes.find(r => r.name === 'origin') ?? remotes[0]
-      return origin?.refs?.fetch ?? null
-    } catch {
-      return null
-    }
-  })
+  perf.handle(
+    ipcMain,
+    'git:getRemoteUrl',
+    async (_: IpcMainInvokeEvent, repoPath: string): Promise<string | null> => {
+      try {
+        const repoGit = simpleGit(repoPath)
+        const remotes = await repoGit.getRemotes(true)
+        const origin = remotes.find((r) => r.name === 'origin') ?? remotes[0]
+        return origin?.refs?.fetch ?? null
+      } catch {
+        return null
+      }
+    },
+  )
 
   // Get diff for a working tree file (unstaged changes)
   perf.handle(ipcMain, 'git:diff-file', async (_, repoPath: string, filePath: string) => {
@@ -479,7 +515,7 @@ export function registerGitHandlers() {
             '--- /dev/null',
             `+++ b/${filePath}`,
             `@@ -0,0 +1,${lines.length} @@`,
-            ...lines.map(l => `+${l}`)
+            ...lines.map((l) => `+${l}`),
           ]
           return { success: true, data: diffLines.join('\n') }
         } catch {
@@ -490,7 +526,10 @@ export function registerGitHandlers() {
 
       return { success: true, data: diff }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get diff' }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get diff',
+      }
     }
   })
 
@@ -501,7 +540,10 @@ export function registerGitHandlers() {
       const diff = await repoGit.diff(['--cached', filePath])
       return { success: true, data: diff }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get staged diff' }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get staged diff',
+      }
     }
   })
 
@@ -519,11 +561,14 @@ export function registerGitHandlers() {
         `--- a/${filePath}`,
         '+++ /dev/null',
         `@@ -1,${lines.length} +0,0 @@`,
-        ...lines.map(l => `-${l}`)
+        ...lines.map((l) => `-${l}`),
       ]
       return { success: true, data: diffLines.join('\n') }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get deleted file diff' }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get deleted file diff',
+      }
     }
   })
 
@@ -533,22 +578,25 @@ export function registerGitHandlers() {
     try {
       const repoGit = simpleGit(repoPath)
 
-      const [authorsAndDatesRaw, fileListRaw, totalCommitsRaw, branchData, tagsRaw] = await perf.measure('stats:git-queries', () => Promise.all([
-        // Log: author + date + body (for co-authors), capped at 3000 commits
-        // Use record separator (\x1e) to delimit commits, unit separator (\x1f) for fields
-        repoGit.raw(['log', '--format=%x1e%aN%x1f%aI%x1f%b', '--max-count=3000']),
-        // File list for language breakdown
-        repoGit.raw(['ls-files']),
-        // Total commit count on current branch
-        repoGit.raw(['rev-list', '--count', 'HEAD']),
-        // Branch counts
-        Promise.all([
-          repoGit.raw(['branch', '--no-color']),
-          repoGit.raw(['branch', '-r', '--no-color']),
-        ]),
-        // Tags count
-        repoGit.raw(['tag', '-l']),
-      ]))
+      const [authorsAndDatesRaw, fileListRaw, totalCommitsRaw, branchData, tagsRaw] =
+        await perf.measure('stats:git-queries', () =>
+          Promise.all([
+            // Log: author + date + body (for co-authors), capped at 3000 commits
+            // Use record separator (\x1e) to delimit commits, unit separator (\x1f) for fields
+            repoGit.raw(['log', '--format=%x1e%aN%x1f%aI%x1f%b', '--max-count=3000']),
+            // File list for language breakdown
+            repoGit.raw(['ls-files']),
+            // Total commit count on current branch
+            repoGit.raw(['rev-list', '--count', 'HEAD']),
+            // Branch counts
+            Promise.all([
+              repoGit.raw(['branch', '--no-color']),
+              repoGit.raw(['branch', '-r', '--no-color']),
+            ]),
+            // Tags count
+            repoGit.raw(['tag', '-l']),
+          ]),
+        )
 
       // Parse authors + dates in a single pass
       const endParseLog = perf.start('stats:parse-log')
@@ -584,12 +632,13 @@ export function registerGitHandlers() {
 
       // Determine date range → use monthly buckets for repos > 1 year old,
       // weekly buckets for newer/shorter histories
-      const sortedDates = datedEntries.map(e => e.dateStr).sort()
+      const sortedDates = datedEntries.map((e) => e.dateStr).sort()
       const firstDate = sortedDates[0]
       const lastDate = sortedDates[sortedDates.length - 1]
-      const dayRange = firstDate && lastDate
-        ? (new Date(lastDate).getTime() - new Date(firstDate).getTime()) / 86400000
-        : 0
+      const dayRange =
+        firstDate && lastDate
+          ? (new Date(lastDate).getTime() - new Date(firstDate).getTime()) / 86400000
+          : 0
       const granularity: 'week' | 'month' = dayRange > 365 ? 'month' : 'week'
 
       function getBucketKey(dateStr: string): string {
@@ -642,8 +691,7 @@ export function registerGitHandlers() {
       }
 
       // Top extensions, rest grouped as "Other"
-      const sortedExts = Object.entries(extensionCounts)
-        .sort(([, a], [, b]) => b - a)
+      const sortedExts = Object.entries(extensionCounts).sort(([, a], [, b]) => b - a)
       const topExts = sortedExts.slice(0, 8)
       const otherCount = sortedExts.slice(8).reduce((sum, [, c]) => sum + c, 0)
       const languages = topExts.map(([ext, count]) => ({ name: ext, count }))
@@ -651,11 +699,13 @@ export function registerGitHandlers() {
       endParseFiles()
 
       // Branch counts
-      const localBranches = branchData[0].split('\n').filter(l => l.trim()).length
-      const remoteBranches = branchData[1].split('\n').filter(l => l.trim() && !l.includes('HEAD')).length
+      const localBranches = branchData[0].split('\n').filter((l) => l.trim()).length
+      const remoteBranches = branchData[1]
+        .split('\n')
+        .filter((l) => l.trim() && !l.includes('HEAD')).length
 
       // Tags count
-      const tagCount = tagsRaw.split('\n').filter(l => l.trim()).length
+      const tagCount = tagsRaw.split('\n').filter((l) => l.trim()).length
 
       return {
         success: true,
@@ -681,32 +731,42 @@ export function registerGitHandlers() {
   })
 
   // Create new repository
-  perf.handle(ipcMain, 'git:create', async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
-    try {
-      await fs.mkdir(options.path, { recursive: true })
-      const repoGit = simpleGit(options.path)
-      await repoGit.init()
+  perf.handle(
+    ipcMain,
+    'git:create',
+    async (_: IpcMainInvokeEvent, options: CreateRepositoryOptions) => {
+      try {
+        await fs.mkdir(options.path, { recursive: true })
+        const repoGit = simpleGit(options.path)
+        await repoGit.init()
 
-      if (options.initializeWithReadme) {
-        const readmePath = path.join(options.path, 'README.md')
-        await fs.writeFile(readmePath, `# ${options.name}\n\n${options.description || 'A new repository'}\n`)
-        await repoGit.add('README.md')
-      }
-      if (options.gitignoreTemplate) {
-        await fs.writeFile(path.join(options.path, '.gitignore'), options.gitignoreTemplate)
-        await repoGit.add('.gitignore')
-      }
-      if (options.license) {
-        await fs.writeFile(path.join(options.path, 'LICENSE'), options.license)
-        await repoGit.add('LICENSE')
-      }
+        if (options.initializeWithReadme) {
+          const readmePath = path.join(options.path, 'README.md')
+          await fs.writeFile(
+            readmePath,
+            `# ${options.name}\n\n${options.description || 'A new repository'}\n`,
+          )
+          await repoGit.add('README.md')
+        }
+        if (options.gitignoreTemplate) {
+          await fs.writeFile(path.join(options.path, '.gitignore'), options.gitignoreTemplate)
+          await repoGit.add('.gitignore')
+        }
+        if (options.license) {
+          await fs.writeFile(path.join(options.path, 'LICENSE'), options.license)
+          await repoGit.add('LICENSE')
+        }
 
-      const status = await repoGit.status()
-      if (status.files.length > 0) await repoGit.commit('Initial commit')
+        const status = await repoGit.status()
+        if (status.files.length > 0) await repoGit.commit('Initial commit')
 
-      return { success: true, path: options.path }
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create repository' }
-    }
-  })
+        return { success: true, path: options.path }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to create repository',
+        }
+      }
+    },
+  )
 }

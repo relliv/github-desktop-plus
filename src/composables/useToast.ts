@@ -17,31 +17,31 @@ export function useToast() {
       id,
       variant: 'default',
       duration: 5000,
-      ...options
+      ...options,
     }
-    
+
     toasts.value.push(newToast)
-    
+
     // Auto remove after duration
     if (newToast.duration && newToast.duration > 0) {
       setTimeout(() => {
         removeToast(id)
       }, newToast.duration)
     }
-    
+
     return id
   }
-  
+
   const removeToast = (id: string) => {
-    const index = toasts.value.findIndex(t => t.id === id)
+    const index = toasts.value.findIndex((t) => t.id === id)
     if (index > -1) {
       toasts.value.splice(index, 1)
     }
   }
-  
+
   return {
     toast,
     toasts,
-    removeToast
+    removeToast,
   }
 }

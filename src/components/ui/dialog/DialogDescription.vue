@@ -1,8 +1,5 @@
 <template>
-  <DialogDescription
-    :class="cn('text-sm text-muted-foreground', props.class)"
-    v-bind="props"
-  >
+  <DialogDescription :class="cn('text-muted-foreground text-sm', props.class)" v-bind="props">
     <slot />
   </DialogDescription>
 </template>

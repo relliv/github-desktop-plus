@@ -15,45 +15,45 @@ const routes: RouteRecordRaw[] = [
         name: 'Welcome',
         component: Welcome,
         meta: {
-          title: 'Welcome - GitHub Desktop Plus'
-        }
+          title: 'Welcome - GitHub Desktop Plus',
+        },
       },
       {
         path: 'repository',
         name: 'Repository',
         component: Repository,
         meta: {
-          title: 'Repository - GitHub Desktop Plus'
-        }
+          title: 'Repository - GitHub Desktop Plus',
+        },
       },
       {
         path: 'settings',
         name: 'Settings',
         component: Settings,
         meta: {
-          title: 'Settings - GitHub Desktop Plus'
-        }
+          title: 'Settings - GitHub Desktop Plus',
+        },
       },
       {
         path: 'external-editor',
         name: 'ExternalEditor',
         component: ExternalEditor,
         meta: {
-          title: 'External Editor - GitHub Desktop Plus'
-        }
-      }
-    ]
-  }
+          title: 'External Editor - GitHub Desktop Plus',
+        },
+      },
+    ],
+  },
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
 })
 
 // Update window title on route change
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title as string || 'GitHub Desktop Plus'
+  document.title = (to.meta.title as string) || 'GitHub Desktop Plus'
   next()
 })
 

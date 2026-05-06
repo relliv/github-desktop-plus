@@ -23,7 +23,7 @@ export function registerWindowHandlers() {
   ipcMain.handle('dialog:open-directory', async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     const result = await dialog.showOpenDialog(win!, {
-      properties: ['openDirectory']
+      properties: ['openDirectory'],
     })
 
     if (!result.canceled && result.filePaths.length > 0) {

@@ -13,7 +13,7 @@ const activeScans = new Map<number, { cancelled: boolean }>()
 function parseCommitLog(rawLog: string, repositoryId: number): schema.NewCommit[] {
   if (!rawLog.trim()) return []
 
-  const records = rawLog.split(RECORD_END).filter(r => r.trim())
+  const records = rawLog.split(RECORD_END).filter((r) => r.trim())
   const commits: schema.NewCommit[] = []
 
   for (const record of records) {
@@ -46,7 +46,7 @@ export class CommitHistoryService {
   async scanCommits(
     repositoryId: number,
     repoPath: string,
-    onProgress?: (scanned: number, total: number) => void
+    onProgress?: (scanned: number, total: number) => void,
   ): Promise<{ added: number }> {
     // Cancel any existing scan for this repo
     const existing = activeScans.get(repositoryId)
@@ -80,7 +80,7 @@ export class CommitHistoryService {
       }
 
       const rawLog = await perf.measure(`commits:git-log(repo:${repositoryId})`, () =>
-        git.raw(['log', ...logArgs])
+        git.raw(['log', ...logArgs]),
       )
       const commits = parseCommitLog(rawLog, repositoryId)
 
@@ -121,7 +121,7 @@ export class CommitHistoryService {
   async fullScan(
     repositoryId: number,
     repoPath: string,
-    onProgress?: (scanned: number, total: number) => void
+    onProgress?: (scanned: number, total: number) => void,
   ): Promise<{ added: number }> {
     const existing = activeScans.get(repositoryId)
     if (existing) {
@@ -133,13 +133,11 @@ export class CommitHistoryService {
 
     try {
       const endFullScan = perf.start(`commits:full-scan(repo:${repositoryId})`)
-      await db
-        .delete(schema.commits)
-        .where(eq(schema.commits.repositoryId, repositoryId))
+      await db.delete(schema.commits).where(eq(schema.commits.repositoryId, repositoryId))
 
       const git = simpleGit(repoPath)
       const rawLog = await perf.measure(`commits:full-git-log(repo:${repositoryId})`, () =>
-        git.raw(['log', LOG_FORMAT])
+        git.raw(['log', LOG_FORMAT]),
       )
       const commits = parseCommitLog(rawLog, repositoryId)
 
@@ -181,7 +179,7 @@ export class CommitHistoryService {
         .where(eq(schema.commits.repositoryId, repositoryId))
         .orderBy(desc(schema.commits.date))
         .offset(offset)
-        .limit(limit)
+        .limit(limit),
     )
   }
 
@@ -210,13 +208,16 @@ export class CommitHistoryService {
       conditions.push(inArray(schema.commits.hash, tagMatchHashes))
     }
 
-    return and(
-      eq(schema.commits.repositoryId, repositoryId),
-      or(...conditions),
-    )!
+    return and(eq(schema.commits.repositoryId, repositoryId), or(...conditions))!
   }
 
-  async searchCommits(repositoryId: number, query: string, offset = 0, limit = 50, tagMatchHashes?: string[]) {
+  async searchCommits(
+    repositoryId: number,
+    query: string,
+    offset = 0,
+    limit = 50,
+    tagMatchHashes?: string[],
+  ) {
     const whereClause = this.buildSearchWhere(repositoryId, query, tagMatchHashes)
 
     return perf.measure(`commits-db:search(repo:${repositoryId},q:${query})`, () =>
@@ -226,18 +227,19 @@ export class CommitHistoryService {
         .where(whereClause)
         .orderBy(desc(schema.commits.date))
         .offset(offset)
-        .limit(limit)
+        .limit(limit),
     )
   }
 
-  async searchCommitCount(repositoryId: number, query: string, tagMatchHashes?: string[]): Promise<number> {
+  async searchCommitCount(
+    repositoryId: number,
+    query: string,
+    tagMatchHashes?: string[],
+  ): Promise<number> {
     const whereClause = this.buildSearchWhere(repositoryId, query, tagMatchHashes)
 
     return perf.measure(`commits-db:search-count(repo:${repositoryId},q:${query})`, async () => {
-      const [result] = await db
-        .select({ count: count() })
-        .from(schema.commits)
-        .where(whereClause)
+      const [result] = await db.select({ count: count() }).from(schema.commits).where(whereClause)
 
       return result?.count ?? 0
     })
@@ -248,18 +250,25 @@ export class CommitHistoryService {
       try {
         const git = simpleGit(repoPath)
         const result = await git.raw([
-          'diff-tree', '--no-commit-id', '-r', '--name-status', commitHash,
+          'diff-tree',
+          '--no-commit-id',
+          '-r',
+          '--name-status',
+          commitHash,
         ])
 
         if (!result.trim()) return []
 
-        return result.trim().split('\n').map((line) => {
-          const [status, ...fileParts] = line.split('\t')
-          return {
-            status: status as 'A' | 'M' | 'D' | 'R' | 'C',
-            file: fileParts.join('\t'),
-          }
-        })
+        return result
+          .trim()
+          .split('\n')
+          .map((line) => {
+            const [status, ...fileParts] = line.split('\t')
+            return {
+              status: status as 'A' | 'M' | 'D' | 'R' | 'C',
+              file: fileParts.join('\t'),
+            }
+          })
       } catch (error) {
         console.error(`Error getting commit files for ${commitHash}:`, error)
         return []
@@ -268,27 +277,28 @@ export class CommitHistoryService {
   }
 
   async getCommitFileDiff(repoPath: string, commitHash: string, filePath: string) {
-    return perf.measure(`commits-git:diff(${commitHash.slice(0, 7)}/${filePath.split('/').pop()})`, async () => {
-      try {
-        const git = simpleGit(repoPath)
-        return await git.raw(['diff', `${commitHash}^`, commitHash, '--', filePath])
-      } catch {
-        // For initial commits with no parent, use show instead
+    return perf.measure(
+      `commits-git:diff(${commitHash.slice(0, 7)}/${filePath.split('/').pop()})`,
+      async () => {
         try {
           const git = simpleGit(repoPath)
-          return await git.raw(['show', '--format=', commitHash, '--', filePath])
-        } catch (innerError) {
-          console.error(`Error getting diff for ${filePath} in ${commitHash}:`, innerError)
-          return ''
+          return await git.raw(['diff', `${commitHash}^`, commitHash, '--', filePath])
+        } catch {
+          // For initial commits with no parent, use show instead
+          try {
+            const git = simpleGit(repoPath)
+            return await git.raw(['show', '--format=', commitHash, '--', filePath])
+          } catch (innerError) {
+            console.error(`Error getting diff for ${filePath} in ${commitHash}:`, innerError)
+            return ''
+          }
         }
-      }
-    })
+      },
+    )
   }
 
   async deleteCommitsForRepository(repositoryId: number) {
-    await db
-      .delete(schema.commits)
-      .where(eq(schema.commits.repositoryId, repositoryId))
+    await db.delete(schema.commits).where(eq(schema.commits.repositoryId, repositoryId))
   }
 }
 

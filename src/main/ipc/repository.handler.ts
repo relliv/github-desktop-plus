@@ -10,7 +10,7 @@ export function registerRepositoryHandlers() {
       if (!targetPath) {
         const result = await dialog.showOpenDialog({
           properties: ['openDirectory'],
-          title: 'Select Folder to Scan for Repositories'
+          title: 'Select Folder to Scan for Repositories',
         })
         if (result.canceled || !result.filePaths[0]) {
           return { success: false, canceled: true }
@@ -71,7 +71,7 @@ export function registerRepositoryHandlers() {
     try {
       const result = await dialog.showOpenDialog({
         properties: ['openDirectory'],
-        title: 'Select Git Repository'
+        title: 'Select Git Repository',
       })
 
       if (result.canceled || !result.filePaths[0]) {

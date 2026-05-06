@@ -3,9 +3,7 @@
     <DialogContent class="sm:max-w-[600px]">
       <DialogHeader>
         <DialogTitle>Clone Repository</DialogTitle>
-        <DialogDescription>
-          Clone a repository from a URL to your local machine
-        </DialogDescription>
+        <DialogDescription> Clone a repository from a URL to your local machine </DialogDescription>
       </DialogHeader>
 
       <div v-if="!isCloning" class="space-y-4">
@@ -18,9 +16,7 @@
             placeholder="https://github.com/user/repository.git"
             :disabled="isCloning"
           />
-          <p class="text-xs text-muted-foreground">
-            HTTPS or SSH URL for the repository
-          </p>
+          <p class="text-muted-foreground text-xs">HTTPS or SSH URL for the repository</p>
         </div>
 
         <!-- Clone Directory -->
@@ -34,21 +30,14 @@
               :disabled="isCloning"
               class="flex-1"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              @click="browseDirectory"
-              :disabled="isCloning"
-            >
+            <Button variant="outline" size="sm" @click="browseDirectory" :disabled="isCloning">
               Browse
             </Button>
           </div>
-          <p v-if="cloneDirExists" class="text-xs text-destructive">
+          <p v-if="cloneDirExists" class="text-destructive text-xs">
             A folder already exists at this path. Choose a different location.
           </p>
-          <p v-else class="text-xs text-muted-foreground">
-            Where to clone the repository
-          </p>
+          <p v-else class="text-muted-foreground text-xs">Where to clone the repository</p>
         </div>
 
         <!-- Advanced Options -->
@@ -56,9 +45,9 @@
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" class="w-full justify-between">
               Advanced Options
-              <ChevronDown 
-                :class="['w-4 h-4 transition-transform', showAdvanced && 'rotate-180']" 
-                :stroke-width="1" 
+              <ChevronDown
+                :class="['h-4 w-4 transition-transform', showAdvanced && 'rotate-180']"
+                :stroke-width="1"
               />
             </Button>
           </CollapsibleTrigger>
@@ -72,7 +61,7 @@
                 placeholder="main"
                 :disabled="isCloning"
               />
-              <p class="text-xs text-muted-foreground">
+              <p class="text-muted-foreground text-xs">
                 Specific branch to clone (default: repository's default branch)
               </p>
             </div>
@@ -88,7 +77,7 @@
                 placeholder="Full history"
                 :disabled="isCloning"
               />
-              <p class="text-xs text-muted-foreground">
+              <p class="text-muted-foreground text-xs">
                 Number of commits to fetch (leave empty for full history)
               </p>
             </div>
@@ -130,11 +119,11 @@
           <Progress :value="cloneProgress.percent" />
         </div>
 
-        <div v-if="cloneProgress.message" class="text-sm text-muted-foreground">
+        <div v-if="cloneProgress.message" class="text-muted-foreground text-sm">
           {{ cloneProgress.message }}
         </div>
 
-        <div v-if="cloneProgress.transferred > 0" class="text-sm text-muted-foreground">
+        <div v-if="cloneProgress.transferred > 0" class="text-muted-foreground text-sm">
           {{ cloneProgress.transferred }} / {{ cloneProgress.total }} objects
         </div>
       </div>
@@ -161,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -173,17 +162,8 @@ import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import Label from '@/components/ui/Label.vue'
 import { Progress } from '@/components/ui/progress'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChevronDown } from 'lucide-vue-next'
 import { useRepositoriesStore } from '@/shared/stores'
 import { useSettingsStore } from '@/stores/settings.store'
@@ -222,13 +202,20 @@ const cloneProgress = ref<CloneProgress>({
 
 const progressStageText = computed(() => {
   switch (cloneProgress.value.stage) {
-    case 'counting': return 'Counting objects...'
-    case 'compressing': return 'Compressing objects...'
-    case 'receiving': return 'Receiving objects...'
-    case 'resolving': return 'Resolving deltas...'
-    case 'complete': return 'Clone completed!'
-    case 'error': return 'Clone failed'
-    default: return 'Cloning...'
+    case 'counting':
+      return 'Counting objects...'
+    case 'compressing':
+      return 'Compressing objects...'
+    case 'receiving':
+      return 'Receiving objects...'
+    case 'resolving':
+      return 'Resolving deltas...'
+    case 'complete':
+      return 'Clone completed!'
+    case 'error':
+      return 'Clone failed'
+    default:
+      return 'Cloning...'
   }
 })
 
@@ -240,14 +227,17 @@ const canClone = computed(() => {
 
 // Check if clone directory already exists
 let cloneDirCheckTimeout: ReturnType<typeof setTimeout> | null = null
-watch(() => cloneOptions.value.directory, (dir) => {
-  cloneDirExists.value = false
-  if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
-  if (!dir.trim()) return
-  cloneDirCheckTimeout = setTimeout(async () => {
-    cloneDirExists.value = await window.api.shell.pathExists(dir)
-  }, 300)
-})
+watch(
+  () => cloneOptions.value.directory,
+  (dir) => {
+    cloneDirExists.value = false
+    if (cloneDirCheckTimeout) clearTimeout(cloneDirCheckTimeout)
+    if (!dir.trim()) return
+    cloneDirCheckTimeout = setTimeout(async () => {
+      cloneDirExists.value = await window.api.shell.pathExists(dir)
+    }, 300)
+  },
+)
 
 const parseRepoNameFromUrl = (url: string): string => {
   const cleaned = url.trim().replace(/\.git$/, '')
@@ -267,30 +257,35 @@ const isValidRepoUrl = (url: string): boolean => {
   if (/^git@[^:]+:.+\/.+/.test(t)) return true
   try {
     const u = new URL(t)
-    return (u.protocol === 'https:' || u.protocol === 'http:') &&
+    return (
+      (u.protocol === 'https:' || u.protocol === 'http:') &&
       u.pathname.split('/').filter(Boolean).length >= 2
+    )
   } catch {
     return false
   }
 }
 
 // Auto-populate directory when a valid URL is entered
-watch(() => cloneOptions.value.url, (url) => {
-  if (!url.trim() || !isValidRepoUrl(url)) return
-  const name = parseRepoNameFromUrl(url)
-  if (name && !cloneOptions.value.directory) {
-    const basePath = defaultCloneBasePath.value || settingsStore.defaultClonePath
-    if (basePath) {
-      cloneOptions.value.directory = `${basePath}/${name}`
-    } else {
-      window.api.shell.getHomePath().then((home) => {
-        if (!cloneOptions.value.directory) {
-          cloneOptions.value.directory = `${home}/${name}`
-        }
-      })
+watch(
+  () => cloneOptions.value.url,
+  (url) => {
+    if (!url.trim() || !isValidRepoUrl(url)) return
+    const name = parseRepoNameFromUrl(url)
+    if (name && !cloneOptions.value.directory) {
+      const basePath = defaultCloneBasePath.value || settingsStore.defaultClonePath
+      if (basePath) {
+        cloneOptions.value.directory = `${basePath}/${name}`
+      } else {
+        window.api.shell.getHomePath().then((home) => {
+          if (!cloneOptions.value.directory) {
+            cloneOptions.value.directory = `${home}/${name}`
+          }
+        })
+      }
     }
-  }
-})
+  },
+)
 
 // Clean up auth fields when auth type changes
 watch(authType, (newType) => {
@@ -328,12 +323,12 @@ const startClone = async () => {
 
   try {
     const result = await window.api.git.clone(cloneOptions.value)
-    
+
     if (result.success && result.path) {
       // Add to repository list
       await repositoriesStore.addRepository(result.path)
       emit('clone-complete', result.path)
-      
+
       // Close dialog after short delay
       setTimeout(() => {
         close()
@@ -345,7 +340,7 @@ const startClone = async () => {
       percent: 0,
       total: 0,
       transferred: 0,
-      message: error instanceof Error ? error.message : 'Clone failed'
+      message: error instanceof Error ? error.message : 'Clone failed',
     }
   } finally {
     unsubscribe()
@@ -394,6 +389,6 @@ const close = () => {
 
 defineExpose({
   open,
-  close
+  close,
 })
 </script>

@@ -34,10 +34,7 @@ export function useAutoRefresh() {
     if (!repo) return
 
     return perf.measure('auto-refresh:cycle', async () => {
-      await Promise.all([
-        repositoriesStore.fetchGitStatus(),
-        repositoriesStore.fetchBranches(),
-      ])
+      await Promise.all([repositoriesStore.fetchGitStatus(), repositoriesStore.fetchBranches()])
       window.api.commits.scan(repo.id, repo.path).catch(console.error)
     })
   }

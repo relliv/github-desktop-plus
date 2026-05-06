@@ -15,8 +15,8 @@ export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref<Account[]>([])
   const activeAccountId = ref<string | null>(null)
 
-  const activeAccount = computed(() =>
-    accounts.value.find((a) => a.id === activeAccountId.value) ?? null
+  const activeAccount = computed(
+    () => accounts.value.find((a) => a.id === activeAccountId.value) ?? null,
   )
 
   async function load() {

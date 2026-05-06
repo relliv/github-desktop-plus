@@ -1,8 +1,5 @@
 <template>
-  <AlertDialogTitle
-    :class="cn('text-lg font-semibold', props.class)"
-    v-bind="props"
-  >
+  <AlertDialogTitle :class="cn('text-lg font-semibold', props.class)" v-bind="props">
     <slot />
   </AlertDialogTitle>
 </template>

@@ -12,7 +12,8 @@
  *   perf.mark('app:ready')     // logs elapsed since process start
  */
 
-const origin = typeof performance !== 'undefined' ? performance.now.bind(performance) : () => Date.now()
+const origin =
+  typeof performance !== 'undefined' ? performance.now.bind(performance) : () => Date.now()
 const t0 = origin()
 
 type LogFn = (msg: string) => void
@@ -65,7 +66,7 @@ function configure(opts: { enabled?: boolean; log?: LogFn }) {
 function handle(
   ipc: { handle: (channel: string, listener: (...args: any[]) => any) => void },
   channel: string,
-  listener: (...args: any[]) => any
+  listener: (...args: any[]) => any,
 ): void {
   ipc.handle(channel, async (...args: any[]) => {
     return measure(`ipc:${channel}`, () => listener(...args))
