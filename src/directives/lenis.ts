@@ -22,7 +22,7 @@ export const vLenis: Directive<HTMLElement> = {
       lenis.resize()
     })
     // Observe all direct children (the actual scrollable content)
-    for (const child of el.children) {
+    for (const child of Array.from(el.children)) {
       ro.observe(child)
     }
     resizeObservers.set(el, ro)

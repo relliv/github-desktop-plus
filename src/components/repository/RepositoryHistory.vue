@@ -490,7 +490,7 @@
               <NxDiffViewer
                 :diff="fileDiff"
                 :theme="codeViewerTheme"
-                :language="selectedFileLanguage"
+                :language="selectedFileLanguage as any"
                 :show-header="false"
                 :file-extension="selectedFileExtension"
                 border-style="none"

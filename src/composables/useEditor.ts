@@ -65,6 +65,25 @@ export function useEditor() {
     }
   }
 
+  const getEditorIcon = (editor: Editor): string => {
+    const iconMap: Record<string, string> = {
+      vscode: 'FileCode2',
+      'vscode-insiders': 'FileCode2',
+      vscodium: 'FileCode2',
+      cursor: 'MousePointer2',
+      windsurf: 'Wind',
+      sublime: 'FileText',
+      webstorm: 'Globe',
+      intellij: 'Lightbulb',
+      vim: 'Terminal',
+      nvim: 'Terminal',
+      emacs: 'Hammer',
+      zed: 'Zap',
+      fleet: 'Lightbulb',
+    }
+    return iconMap[editor.id] || 'FileText'
+  }
+
   const getEditorIconUrl = (editor: Editor): string => {
     const slugMap: Record<string, string> = {
       vscode: 'vscodium',
@@ -99,6 +118,7 @@ export function useEditor() {
     error,
     detectEditors,
     openInEditor,
+    getEditorIcon,
     getEditorIconUrl,
   }
 }

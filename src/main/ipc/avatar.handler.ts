@@ -3,7 +3,7 @@ import { avatarService } from '../services/avatar.service'
 import { perf } from '@shared/perf'
 
 export function registerAvatarHandlers() {
-  perf.handle(ipcMain, 'avatar:get', async (_, email: string) => {
+  perf.handle(ipcMain, 'avatar:get', async (_: any, email: string) => {
     try {
       const avatarUrl = await avatarService.getAvatar(email)
       return { success: true, data: avatarUrl }
@@ -12,7 +12,7 @@ export function registerAvatarHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'avatar:get-batch', async (_, emails: string[]) => {
+  perf.handle(ipcMain, 'avatar:get-batch', async (_: any, emails: string[]) => {
     try {
       const avatars = await avatarService.getAvatars(emails)
       return { success: true, data: avatars }
@@ -21,7 +21,7 @@ export function registerAvatarHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'avatar:get-owner', async (_, owner: string) => {
+  perf.handle(ipcMain, 'avatar:get-owner', async (_: any, owner: string) => {
     try {
       const avatarUrl = await avatarService.getOwnerAvatar(owner)
       return { success: true, data: avatarUrl }
@@ -30,7 +30,7 @@ export function registerAvatarHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'avatar:get-owners', async (_, owners: string[]) => {
+  perf.handle(ipcMain, 'avatar:get-owners', async (_: any, owners: string[]) => {
     try {
       const avatars = await avatarService.getOwnerAvatars(owners)
       return { success: true, data: avatars }

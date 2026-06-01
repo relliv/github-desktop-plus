@@ -49,7 +49,7 @@
               </div>
               <div class="flex items-center gap-2">
                 <Badge v-if="defaultEditor?.id === editor.id" variant="secondary"> Default </Badge>
-                <Button size="sm" variant="ghost" @click="openInEditor(editor)"> Open </Button>
+                <Button size="sm" variant="ghost" @click="openEditorProject(editor)"> Open </Button>
               </div>
             </div>
           </div>
@@ -83,6 +83,13 @@ import {
 
 const { toast } = useToast()
 const { availableEditors, defaultEditor, openInEditor, getEditorIcon } = useEditor()
+type EditorType = {
+  name: string
+  id: string
+  executable: string
+  icon?: string
+  available: boolean
+}
 
 const selectedEditorId = ref('')
 const selectedEditor = ref<any>(null)
@@ -129,7 +136,7 @@ const openTestFile = async () => {
   }
 }
 
-const openInEditor = async (editor: any) => {
+const openEditorProject = async (editor: EditorType) => {
   try {
     // Open current project directory as example
     await window.api.editor.openFile({

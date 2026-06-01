@@ -197,7 +197,7 @@ export class RepositoryService {
 
       if (repos.length === 0) return
 
-      const repoInputs = repos.map((r) => ({ id: r.id, path: r.path, remoteUrl: r.remoteUrl }))
+      const repoInputs = repos.map((r: any) => ({ id: r.id, path: r.path, remoteUrl: r.remoteUrl }))
 
       // Run all git operations in a worker thread (off main thread)
       const results = await this.runRemoteRefreshWorker(repoInputs)

@@ -99,6 +99,16 @@ export class AvatarService {
     return undefined
   }
 
+  private fileToDataUri(filePath: string): string | null {
+    try {
+      const buffer = fs.readFileSync(filePath)
+      if (buffer.length === 0) return null
+      return `data:image/png;base64,${buffer.toString('base64')}`
+    } catch {
+      return null
+    }
+  }
+
   private async fetchAndCache(email: string): Promise<string | null> {
     const normalizedEmail = email.toLowerCase()
 

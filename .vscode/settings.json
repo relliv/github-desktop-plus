@@ -46,4 +46,6 @@
     "titleBar.inactiveForeground": "#e7e7e799"
   },
   "peacock.color": "#4c3a7a",
+  "snyk.advanced.autoSelectOrganization": true,
+  "snyk.advanced.organization": "a174064a-da4b-4121-b3a8-f2c5df0a9a54",
 }

@@ -4,7 +4,7 @@ import { perf } from '@shared/perf'
 
 export function registerRepositoryHandlers() {
   // Scan a folder for git repositories — runs off main thread, adds sequentially
-  perf.handle(ipcMain, 'repository:scan-folder', async (event, folderPath?: string) => {
+  perf.handle(ipcMain, 'repository:scan-folder', async (event: any, folderPath?: string) => {
     try {
       let targetPath = folderPath
       if (!targetPath) {
@@ -57,7 +57,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'repository:add', async (_, repoPath: string) => {
+  perf.handle(ipcMain, 'repository:add', async (_: any, repoPath: string) => {
     try {
       const repository = await repositoryService.addRepository(repoPath)
       return { success: true, data: repository }
@@ -86,7 +86,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'repository:update', async (_, id: number, updates: any) => {
+  perf.handle(ipcMain, 'repository:update', async (_: any, id: number, updates: any) => {
     try {
       const repository = await repositoryService.updateRepository(id, updates)
       return { success: true, data: repository }
@@ -96,7 +96,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'repository:toggle-favorite', async (_, id: number) => {
+  perf.handle(ipcMain, 'repository:toggle-favorite', async (_: any, id: number) => {
     try {
       const repository = await repositoryService.toggleFavorite(id)
       return { success: true, data: repository }
@@ -106,7 +106,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'repository:delete', async (_, id: number) => {
+  perf.handle(ipcMain, 'repository:delete', async (_: any, id: number) => {
     try {
       await repositoryService.deleteRepository(id)
       return { success: true }
@@ -116,7 +116,7 @@ export function registerRepositoryHandlers() {
     }
   })
 
-  perf.handle(ipcMain, 'repository:update-branch', async (_, id: number, branch: string) => {
+  perf.handle(ipcMain, 'repository:update-branch', async (_: any, id: number, branch: string) => {
     try {
       const repository = await repositoryService.updateRepositoryBranch(id, branch)
       return { success: true, data: repository }

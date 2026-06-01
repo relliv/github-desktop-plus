@@ -19,7 +19,7 @@ A modern Git client built with Electron, Vue 3, and Tailwind CSS.
 pnpm install
 
 # Rebuild native modules for Electron
-npx electron-rebuild
+npx @electron/rebuild
 
 # Start development server
 pnpm dev

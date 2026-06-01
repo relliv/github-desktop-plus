@@ -1,4 +1,4 @@
-import { simpleGit, SimpleGit, CloneOptions as SimpleGitCloneOptions } from 'simple-git'
+import { simpleGit, SimpleGit } from 'simple-git'
 import * as path from 'path'
 import * as fs from 'fs/promises'
 import {
@@ -38,11 +38,11 @@ export class GitService {
       await fs.mkdir(options.directory, { recursive: true })
 
       // Configure git options
-      const gitOptions: Partial<SimpleGitCloneOptions> = {
+      const gitOptions = {
         '--progress': null,
         '--branch': options.branch || undefined,
         '--depth': options.depth || undefined,
-      }
+      } as any
 
       // Set up progress handler
       const progressHandler = {
@@ -52,7 +52,7 @@ export class GitService {
             onProgress(progress)
           }
         },
-      }
+      } as any
 
       // Configure authentication if provided
       if (options.username && options.password) {

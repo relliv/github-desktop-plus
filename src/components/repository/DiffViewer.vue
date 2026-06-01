@@ -29,7 +29,7 @@
       <NxDiffViewer
         :diff="diff"
         :theme="codeViewerTheme"
-        :language="fileLanguage"
+        :language="fileLanguage as any"
         :show-header="true"
         :old-file-name="selectedFile ?? undefined"
         :new-file-name="selectedFile ?? undefined"

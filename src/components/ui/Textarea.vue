@@ -22,7 +22,7 @@ interface Props {
   id?: string
   modelValue?: string
   placeholder?: string
-  rows?: number
+  rows?: number | string
   disabled?: boolean
   className?: string
 }

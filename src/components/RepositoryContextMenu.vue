@@ -123,7 +123,7 @@ interface Props {
     name: string
     path: string
     isFavorite?: boolean
-    currentBranch?: string
+    currentBranch?: string | null
   }
 }
 

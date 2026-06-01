@@ -312,7 +312,7 @@ export const useRepositoriesStore = defineStore('repositories', () => {
     scanProgress.value = null
 
     // Listen for progress updates
-    const removeScanProgress = window.api.repository.onScanProgress((data) => {
+    const removeScanProgress = window.api.repository.onScanProgress((data: any) => {
       scanProgress.value = data
     })
     const removeScanComplete = window.api.repository.onScanComplete(() => {

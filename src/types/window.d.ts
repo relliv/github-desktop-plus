@@ -2,6 +2,7 @@ import type { CommitsAPI } from '../preload/api.d'
 
 declare global {
   interface Window {
+    ipcRenderer: import('electron').IpcRenderer
     api: {
       git: {
         openRepository: (path: string) => Promise<any>
@@ -27,6 +28,10 @@ declare global {
         validate: (path: string) => Promise<any>
         create: (options: any) => Promise<any>
         getRemoteUrl: (path: string) => Promise<any>
+        getTags: (path: string) => Promise<any>
+        diffFile: (path: string, filePath: string) => Promise<any>
+        diffStaged: (path: string, filePath: string) => Promise<any>
+        diffDeleted: (path: string, filePath: string) => Promise<any>
         onCloneProgress: (callback: (progress: any) => void) => () => void
       }
       window: {
@@ -53,6 +58,14 @@ declare global {
         toggleFavorite: (id: number) => Promise<any>
         delete: (id: number) => Promise<any>
         updateBranch: (id: number, branch: string) => Promise<any>
+        refreshRemotes: () => Promise<any>
+        scanFolder: (folderPath?: string) => Promise<any>
+        onScanProgress: (
+          callback: (data: { found: number; added: number; current: string }) => void,
+        ) => () => void
+        onScanComplete: (
+          callback: (data: { added: number; skipped: number; errors: string[] }) => void,
+        ) => () => void
       }
       commits: CommitsAPI
       avatar: {
@@ -87,10 +100,11 @@ declare global {
           cwd: string
         }) => Promise<{ success: boolean; error?: string }>
       }
-      settings?: {
+      settings: {
         get: (key: string) => Promise<any>
         set: (key: string, value: string) => Promise<any>
       }
+      onPreloadedSidebarData: (callback: (data: any) => void) => void
     }
   }
 }
