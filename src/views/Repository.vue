@@ -205,6 +205,13 @@
               >
                 STAGED
               </span>
+              <button
+                @click="isDiffFullWindow = true"
+                class="text-muted-foreground hover:text-foreground hover:bg-accent rounded p-1 transition-colors"
+                title="Full window"
+              >
+                <Maximize2 class="size-3.5" :stroke-width="1.5" />
+              </button>
             </div>
             <DiffViewer
               :selected-file="changesSelectedFile"
@@ -230,6 +237,47 @@
         <RepositorySettings />
       </TabsContent>
     </Tabs>
+
+    <!-- Full window diff overlay -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="isDiffFullWindow"
+          class="bg-card fixed inset-2 z-50 flex flex-col rounded-xl border shadow-2xl"
+        >
+          <div class="flex items-center gap-2 border-b px-4 py-3">
+            <h2 class="flex-1 truncate font-semibold">
+              {{ changesSelectedFile || 'Diff' }}
+            </h2>
+            <span
+              v-if="changesSelectedFile && changesIsStaged"
+              class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+            >
+              STAGED
+            </span>
+            <button
+              @click="isDiffFullWindow = false"
+              class="text-muted-foreground hover:text-foreground hover:bg-accent rounded p-1 transition-colors"
+              title="Exit full window"
+            >
+              <Minimize2 class="size-3.5" :stroke-width="1.5" />
+            </button>
+          </div>
+          <DiffViewer
+            :selected-file="changesSelectedFile"
+            :is-staged="changesIsStaged"
+            :file-status="changesFileStatus"
+          />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 
   <!-- No repository selected -->
@@ -335,6 +383,8 @@ import {
   History,
   Columns2,
   Rows2,
+  Maximize2,
+  Minimize2,
 } from 'lucide-vue-next'
 import { Popover, PopoverContent, PopoverPortal, PopoverTrigger } from '../components/ui/Popover'
 import { useRepositoriesStore } from '@/shared/stores'
@@ -387,6 +437,21 @@ const changesIsStaged = ref(false)
 const changesFileStatus = ref<'modified' | 'added' | 'deleted' | 'renamed' | 'conflicted'>(
   'modified',
 )
+const isDiffFullWindow = ref(false)
+
+function handleDiffFullWindowKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    isDiffFullWindow.value = false
+  }
+}
+
+watch(isDiffFullWindow, (active) => {
+  if (active) {
+    document.addEventListener('keydown', handleDiffFullWindowKeydown)
+  } else {
+    document.removeEventListener('keydown', handleDiffFullWindowKeydown)
+  }
+})
 
 const onChangeFileSelected = (
   file: string,
@@ -466,6 +531,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('focus', handleWindowFocus)
+  document.removeEventListener('keydown', handleDiffFullWindowKeydown)
 })
 const gitStatus = computed(() => repositoriesStore.gitStatus)
 const changeCount = computed(() => {

@@ -480,6 +480,13 @@
               <h2 class="truncate text-sm font-semibold">
                 {{ selectedFile ? selectedFile.file : 'Diff' }}
               </h2>
+              <button
+                @click="isDiffFullWindow = true"
+                class="text-muted-foreground hover:text-foreground hover:bg-accent rounded p-1 transition-colors"
+                title="Full window"
+              >
+                <Maximize2 class="size-3.5" :stroke-width="1.5" />
+              </button>
             </div>
 
             <div v-if="isLoadingDiff" class="flex flex-1 items-center justify-center">
@@ -534,6 +541,62 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Full window diff overlay -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="isDiffFullWindow"
+          class="bg-card fixed inset-2 z-50 flex flex-col rounded-xl border shadow-2xl"
+        >
+          <div class="flex h-[55px] shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
+            <h2 class="truncate text-sm font-semibold">
+              {{ selectedFile ? selectedFile.file : 'Diff' }}
+            </h2>
+            <button
+              @click="isDiffFullWindow = false"
+              class="text-muted-foreground hover:text-foreground hover:bg-accent rounded p-1 transition-colors"
+              title="Exit full window"
+            >
+              <Minimize2 class="size-3.5" :stroke-width="1.5" />
+            </button>
+          </div>
+
+          <div v-if="isLoadingDiff" class="flex flex-1 items-center justify-center">
+            <span class="text-muted-foreground text-xs">Loading diff...</span>
+          </div>
+
+          <div v-else-if="fileDiff" class="min-h-0 flex-1 overflow-auto" v-lenis>
+            <NxDiffViewer
+              :diff="fileDiff"
+              :theme="codeViewerTheme"
+              :language="selectedFileLanguage as any"
+              :show-header="false"
+              :file-extension="selectedFileExtension"
+              border-style="none"
+            />
+          </div>
+
+          <div v-else class="flex flex-1 items-center justify-center">
+            <div class="text-center">
+              <Code class="text-muted-foreground mx-auto mb-3 size-8" :stroke-width="1" />
+              <p class="text-muted-foreground text-sm">
+                {{
+                  selectedCommit ? 'Select a file to view diff' : 'Select a commit to get started'
+                }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -569,6 +632,8 @@ import {
   Tag,
   Search,
   X,
+  Maximize2,
+  Minimize2,
 } from 'lucide-vue-next'
 import NumberFlow from '@number-flow/vue'
 import { DiffViewer as NxDiffViewer } from '@ngeenx/nx-vue-code-viewer'
@@ -675,6 +740,21 @@ const tagMap = ref<Record<string, string[]>>({})
 
 const copiedHash = ref<string | null>(null)
 const hoveredCommit = ref<string | null>(null)
+const isDiffFullWindow = ref(false)
+
+function handleFullWindowKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    isDiffFullWindow.value = false
+  }
+}
+
+watch(isDiffFullWindow, (active) => {
+  if (active) {
+    document.addEventListener('keydown', handleFullWindowKeydown)
+  } else {
+    document.removeEventListener('keydown', handleFullWindowKeydown)
+  }
+})
 
 // Search state
 const searchQuery = ref('')
@@ -803,6 +883,7 @@ onUnmounted(() => {
   cleanupComplete?.()
   stickyObserver?.disconnect()
   stickyObserver = null
+  document.removeEventListener('keydown', handleFullWindowKeydown)
 })
 
 // Watch for repository changes
