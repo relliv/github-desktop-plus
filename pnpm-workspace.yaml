@@ -12,6 +12,7 @@ minimumReleaseAgeExclude:
   - lint-staged@17.0.7
   - simple-icons@16.22.0
   - tinyexec@1.2.4
+  - prettier@3.9.0
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - better-sqlite3
