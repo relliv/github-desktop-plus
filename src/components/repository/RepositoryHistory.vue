@@ -554,7 +554,7 @@
       >
         <div
           v-if="isDiffFullWindow"
-          class="bg-card fixed inset-2 z-50 flex flex-col rounded-xl border shadow-2xl"
+          class="bg-card fixed inset-4 z-50 flex flex-col rounded-xl border shadow-2xl"
         >
           <div class="flex h-[55px] shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
             <h2 class="truncate text-sm font-semibold">
